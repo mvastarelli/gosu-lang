@@ -32,7 +32,7 @@ class MethodGenerator(
 
     private fun makeMethod(numVariables: Int, numSections: Int): String {
         return """
-  public int ${Randomizer.methodName()}() : Int {
+  function ${Randomizer.methodName()}() : int {
 ${(1..numVariables).joinToString("\n") { _ -> makeVariable() }}
 
 ${(1..numSections).joinToString("\n") { _ -> makeSection() }}

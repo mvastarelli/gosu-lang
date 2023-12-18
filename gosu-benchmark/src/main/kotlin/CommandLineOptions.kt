@@ -10,10 +10,20 @@ class CommandLineOptions {
     var path: String = "resources"
 
     @Parameter(
+        names = ["-sourceFiles"],
+        description = "Path to the source files to benchmark")
+    var sourceFiles = "**/*.gs"
+
+    @Parameter(
+        names = ["-tempPath"],
+        description = "Path to save the compiled classes to")
+    var tempPath: String = "/tmp/compiled"
+
+    @Parameter(
         names = ["-classes"],
         description = "Number of classes to create",
         validateWith = [PositiveInteger::class])
-    var numClasses: Int = 10
+    var numClasses: Int = 50
 
     @Parameter(
         names = ["-complexity"],

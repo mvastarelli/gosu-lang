@@ -6,7 +6,8 @@ class ClassGenerator(
     private val numMethods: Int,
     private val numProperties: Int,
     private val methodVariance: Double,
-    private val propertyVariance: Double
+    private val propertyVariance: Double,
+    private val packageName: String
 ) {
     val makeProperties = PropertyGenerator()::makeProperties
     val makeMethods = MethodGenerator()::makeMethods
@@ -16,10 +17,9 @@ class ClassGenerator(
         val actualNumProperties = randomizeVariance(numProperties, propertyVariance)
         val className = Randomizer.generateName()
 
-        val source = """
-package org.gosu.benchmark.generated;
+        val source = """package $packageName
 
-public class ${className}_Generated {
+public class ${className} {
 ${makeProperties(actualNumProperties)}
 ${makeMethods(actualNumMethods)}
 }

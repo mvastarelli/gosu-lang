@@ -11,13 +11,9 @@ class PropertyGenerator {
         val readonlyFlag = listOf("readonly", "")
 
         val generators = listOf(
-            { -> "Int as ${readonlyFlag.random()} Property$num = $num" },
+            { -> "int as ${readonlyFlag.random()} Property$num = $num" },
             { -> "String as ${readonlyFlag.random()} Property$num = \"Property$num\"" },
-            { -> "Boolean as ${readonlyFlag.random()} Property$num = ${boolValues.random()}" },
-            { -> "Double as ${readonlyFlag.random()} Property$num = $num.toDouble()" },
-            { -> "Float as ${readonlyFlag.random()} Property$num = $num.toFloat()" },
-            { -> "Long as ${readonlyFlag.random()} Property$num = $num.toLong()" },
-            { -> "Short as ${readonlyFlag.random()} Property$num = $num.toShort()" }
+            { -> "Boolean as ${readonlyFlag.random()} Property$num = ${boolValues.random()}" }
         )
 
         val typeGenerator = generators.random()

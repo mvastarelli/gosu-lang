@@ -111,4 +111,21 @@ public class CommandLineOptions {
     return _maxwarns;
   }
 
+  // -- Overrides for benchmarking
+
+  public void setMaxErrs(int maxerrs) {
+    _maxerrs = maxerrs;
+  }
+
+  public void setNoWarn(boolean value) {
+    _nowarn = value;
+  }
+
+  public void setVerbose(boolean value) {
+    _verbose = value;
+  }
+
+  public void setSourcepath(String value) {
+    _sourcepath = value;
+  }
 }

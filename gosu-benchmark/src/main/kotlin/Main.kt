@@ -2,9 +2,15 @@ package org.gosu.benchmark
 
 import gw.internal.ext.com.beust.jcommander.JCommander
 import gw.internal.ext.com.beust.jcommander.ParameterException
+import gw.lang.gosuc.simple.GosuCompiler
+import gw.lang.gosuc.simple.SoutCompilerDriver
 import org.gosu.benchmark.generators.ClassGenerator
+import java.io.File
+import java.nio.file.FileSystems
+import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.system.exitProcess
+import gw.lang.gosuc.cli.CommandLineOptions as GosuCommandLineOptions
 
 val complexityPresets = mapOf(
     ClassComplexity.SIMPLE to ClassComplexityPreset(5, 3, 10, 10),
@@ -23,7 +29,7 @@ fun main(args: Array<String>) {
             .build()
 
         if(!options.noGenerate) {
-            generateClasses(options.numClasses, options.complexity, options.path)
+            generateClasses(options.numClasses, options.complexity, options.path, options.complexity.toString())
         }
 
         if(options.skipBenchmark) {
@@ -31,9 +37,8 @@ fun main(args: Array<String>) {
             exitProcess(0)
         }
         else {
-            runBenchmarks()
+            runBenchmarks(options.path, options.sourceFiles, options.tempPath)
         }
-
     } catch(e: ParameterException) {
         System.err.println(e.message)
         e.usage()
@@ -41,32 +46,59 @@ fun main(args: Array<String>) {
     }
 }
 
-fun generateClasses(numClasses: Int, complexity: ClassComplexity, path: String) {
+fun generateClasses(numClasses: Int, complexity: ClassComplexity, path: String, packageName: String) {
     val preset = complexityPresets[complexity] ?: throw IllegalArgumentException("Invalid complexity preset: $complexity")
     val savePath = Path(path).toAbsolutePath()
     val clampedMethodVariance = clampVariance(preset.methodVariance)
     val clampedPropertyVariance = clampVariance(preset.propertyVariance)
-    val makeClass = ClassGenerator(preset.methods, preset.properties, clampedMethodVariance, clampedPropertyVariance)::makeClass
+    val makeClass = ClassGenerator(preset.methods, preset.properties, clampedMethodVariance, clampedPropertyVariance, packageName)::makeClass
 
     println("Generating $numClasses classes, ${preset.methods} methods, and ${preset.properties} properties")
     println("Saving to $savePath")
     println("Variances: ${clampedMethodVariance}% methods, ${clampedPropertyVariance}% properties")
 
+    Paths.get(savePath.toString(), packageName).toFile().mkdirs()
+
     for (i in 1..numClasses) {
         val generatedClass = makeClass()
-        val classPath = savePath.resolve("${generatedClass.name}.gs")
+        val classPath = Paths.get(savePath.toString(), packageName, "${generatedClass.name}.gs")
 
         println("Saving ${generatedClass.name} to $classPath")
-        classPath.toFile().writeText(generatedClass.source)
+        classPath.toFile().writeText(generatedClass.source, Charsets.UTF_8)
     }
 }
 
-fun runBenchmarks() {
+fun runBenchmarks(path: String, pattern: String, tempPath: String) {
+    val compiler = GosuCompiler()
+    val driver = SoutCompilerDriver(true, true)
+    val matcher = FileSystems.getDefault().getPathMatcher("glob:$pattern")
+
+    val files = File(path)
+        .walk()
+        .filter{ matcher.matches(it.toPath()) }
+        .map { f -> f.absolutePath }
+        .toList()
+
+    val classPath = System.getProperty("java.class.path").split(File.pathSeparator)
+    val sourcePath = arrayOf(File(path).absolutePath).toList()
+
+    val options = GosuCommandLineOptions().apply {
+        maxErrs = 1
+        isNoWarn = false
+        isVerbose = false
+        sourcepath = File(path).absolutePath
+        sourceFiles = files
+    }
+
     println("Running benchmarks")
+    compiler.initializeGosu(sourcePath, classPath, tempPath )
+    compiler.compile(options, driver)
+    compiler.uninitializeGosu()
+    println("Finished")
 }
 
 fun clampVariance(value: Int, maxVariance: Int=20): Double {
-    if(value > maxVariance) {
+    if (value > maxVariance) {
         return maxVariance.toDouble()
     }
 
