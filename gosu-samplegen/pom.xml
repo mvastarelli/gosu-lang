@@ -7,14 +7,13 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>Gosu :: Benchmark</name>
-    <artifactId>gosu-benchmark</artifactId>
+    <name>Gosu :: Sample Generator</name>
+    <artifactId>gosu-samplegen</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
-        <jmh.version>1.37</jmh.version>
     </properties>
 
     <build>
@@ -69,11 +68,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.gosu-lang.gosu</groupId>
-            <artifactId>gosu-core-api-precompiled</artifactId>
-            <version>1.17.5</version>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.10.0</version>
@@ -85,40 +79,10 @@
             <version>1.9.21</version>
         </dependency>
         <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>${jmh.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.gosu-lang.gosu</groupId>
-            <artifactId>gosu-core-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gosu-lang.gosu</groupId>
-            <artifactId>gosu-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gosu-lang.gosu</groupId>
-            <artifactId>gosu-doc</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gosu-lang.gosu.managed</groupId>
-            <artifactId>gw-asm-all</artifactId>
-            <version>9.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.gosu-lang.gosu.managed</groupId>
             <artifactId>gw-jcommander</artifactId>
             <version>1.72</version>
         </dependency>
     </dependencies>
+
 </project>

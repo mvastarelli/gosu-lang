@@ -1,4 +1,4 @@
-package org.gosu.benchmark
+package org.gosu.samplegen
 
 data class ClassComplexityPreset(
     val methods: Int,

@@ -1,4 +1,4 @@
-package org.gosu.benchmark.generators
+package org.gosu.samplegen.generators
 
 import kotlin.random.Random
 
@@ -46,7 +46,7 @@ ${(1..numSections).joinToString("\n") { _ -> makeSection() }}
             { listOf("\"true\"", "\"false\"").random() },
             { Random.nextInt(1, 100).toString() },
             { Random.nextDouble(1.0, 100.0).toString() },
-            { "\"${Randomizer.generateName(Random.nextInt(3,10))}\"" }
+            { "\"${Randomizer.variableName()}\"" }
         )
 
         return "${pad(indent)}var ${Randomizer.variableName()} = ${defaultValues.random().invoke()}"

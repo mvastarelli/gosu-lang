@@ -1,6 +1,6 @@
-package org.gosu.benchmark.generators
+package org.gosu.samplegen.generators
 
-import org.gosu.benchmark.GeneratedClass
+import org.gosu.samplegen.GeneratedClass
 
 class ClassGenerator(
     private val numMethods: Int,
@@ -15,7 +15,7 @@ class ClassGenerator(
     fun makeClass(): GeneratedClass {
         val actualNumMethods =  randomizeVariance(numMethods, methodVariance)
         val actualNumProperties = randomizeVariance(numProperties, propertyVariance)
-        val className = Randomizer.generateName()
+        val className = Randomizer.className()
 
         val source = """package $packageName
 

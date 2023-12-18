@@ -1,18 +1,7 @@
-package org.gosu.benchmark.generators
+package org.gosu.samplegen.generators
 
 class Randomizer {
     companion object {
-        fun generateName(length: Int = 10): String {
-            val upperChars = ('A' .. 'Z')
-            val lowerChars = ('a' .. 'z')
-            val allChars = lowerChars + upperChars
-
-            return upperChars.random() +
-                    (1..length)
-                        .map { allChars.random() }
-                        .joinToString("")
-        }
-
         fun className(length: Int = 8): String {
             val upperChars = ('A' .. 'Z')
             val lowerChars = ('a' .. 'z')

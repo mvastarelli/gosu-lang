@@ -1,4 +1,4 @@
-package org.gosu.benchmark.generators
+package org.gosu.samplegen.generators
 
 class PropertyGenerator {
     fun makeProperties(numProperties: Int): String {

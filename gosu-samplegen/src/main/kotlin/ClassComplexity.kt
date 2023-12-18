@@ -1,4 +1,4 @@
-package org.gosu.benchmark
+package org.gosu.samplegen
 
 enum class ClassComplexity {
     SIMPLE,
