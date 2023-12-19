@@ -48,7 +48,6 @@ fun generateClasses(numClasses: Int, complexity: ClassComplexity, path: String, 
         val generatedClass = makeClass()
         val classPath = Paths.get(savePath.toString(), packageName, "${generatedClass.name}.gs")
 
-        println("Saving ${generatedClass.name} to $classPath")
         classPath.toFile().writeText(generatedClass.source, Charsets.UTF_8)
     }
 }
