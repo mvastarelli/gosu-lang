@@ -10,36 +10,84 @@ import java.nio.file.*;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipInputStream;
 
 public class Main {
-  public static void main(String[] args) {
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  public static void main(String[] args) throws IOException {
     var options = new CommandLineOptions();
+    var sourcePath = makeTempFolder();
+    var tempPath = makeTempFolder();
 
     try {
       JCommander.newBuilder()
-        .programName("gosu-benchmark")
-        .addObject(options)
-        .args(args)
-        .build();
+              .programName("gosu-benchmark")
+              .addObject(options)
+              .args(args)
+              .build();
 
-      runBenchmark(options);
+      System.out.println(String.format("Source path: %s", sourcePath));
+      System.out.println(String.format("Temp path: %s", tempPath));
+
+      System.out.println("Extracting sources...");
+      extractSources(sourcePath);
+
+      System.out.println("Running benchmark...");
+      runBenchmark(sourcePath, tempPath);
     } catch (ParameterException e) {
       System.out.println(e.getMessage());
       e.usage();
       System.exit(1);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 
-  private static void runBenchmark(CommandLineOptions options) throws IOException {
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  private static String makeTempFolder() throws IOException {
+    var tempFolder = File.createTempFile("gosu-benchmark", "");
+    tempFolder.delete();
+    tempFolder.mkdir();
+    tempFolder.deleteOnExit();
+    return tempFolder.getAbsolutePath();
+  }
+
+  private static void extractSources(String tempPath) throws IOException {
+    var stream = Main.class.getClassLoader().getResourceAsStream("gosu-benchmark.zip");
+
+    try (stream) {
+      if (stream == null) {
+        throw new RuntimeException("Could not find gosu-benchmark.zip in resources.");
+      }
+      var zipStream = new ZipInputStream(stream);
+      var entry = zipStream.getNextEntry();
+
+      while (entry != null) {
+        var path = Paths.get(tempPath, entry.getName());
+        var parent = path.getParent();
+
+        if (parent != null) {
+          Files.createDirectories(parent);
+        }
+
+        if (!entry.isDirectory()) {
+          Files.copy(zipStream, path);
+        }
+
+        zipStream.closeEntry();
+        entry = zipStream.getNextEntry();
+      }
+    }
+  }
+
+  @SuppressWarnings("resource")
+  private static void runBenchmark(String sourcePath, String tempPath) throws IOException {
     var compiler = new GosuCompiler();
     var driver = new SoutCompilerDriver(false, false);
-    var matcher = FileSystems.getDefault().getPathMatcher("glob:" + options.getFilter());
+    var matcher = FileSystems.getDefault().getPathMatcher("glob:**/*");
 
-    var files = Files.walk(new File(options.getSourcePath()).toPath())
+    var files = Files.walk(new File(sourcePath).toPath())
             .map(Path::toAbsolutePath)
             .filter(matcher::matches)
+            .filter(path -> !Files.isDirectory(path))
             .map(Path::toString)
             .collect(Collectors.toList());
 
@@ -47,10 +95,9 @@ public class Main {
             .getProperty("java.class.path")
             .split(File.pathSeparator));
 
-    var sourcePath = new File(options.getSourcePath()).getAbsolutePath();
     var cliOptions = new gw.lang.gosuc.cli.CommandLineOptions();
 
-    cliOptions.setMaxErrs(100);
+    cliOptions.setMaxErrs(Integer.MAX_VALUE);
     cliOptions.setNoWarn(true);
     cliOptions.setVerbose(false);
     cliOptions.setSourcepath(sourcePath);
@@ -60,7 +107,7 @@ public class Main {
     compiler.initializeGosu(
             Collections.singletonList(sourcePath),
             classPath,
-            options.getTempPath());
+            tempPath);
 
     System.out.println("Compiling...");
     var thresholdExceeded = compiler.compile(cliOptions, driver);

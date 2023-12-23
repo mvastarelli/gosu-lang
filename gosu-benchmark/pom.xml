@@ -55,6 +55,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.gosu-lang.gosu</groupId>
+            <artifactId>gosu-test-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.gosu-lang.gosu.managed</groupId>
             <artifactId>gw-asm-all</artifactId>
             <version>9.2</version>
@@ -83,6 +88,32 @@
                         <arg>--add-exports=java.base/sun.reflect.annotation=ALL-UNNAMED</arg>
                     </compilerArgs>
                 </configuration>
+            </plugin>
+
+            <!-- plugin that executes a shell script -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-benchmarking-classes</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>pwsh</executable>
+                            <arguments>
+                                <argument>-noprofile</argument>
+                                <argument>-noninteractive</argument>
+                                <argument>generateScripts.ps1</argument>
+                                <argument>${project.basedir}/../</argument>
+                                <argument>${project.basedir}/src/main/resources/</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

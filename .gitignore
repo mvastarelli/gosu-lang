@@ -6,3 +6,5 @@
 target
 _build
 .gradle
+
+gosu-benchmark/src/main/resources/cache
