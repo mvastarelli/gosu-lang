@@ -8,6 +8,8 @@ import gw.lang.gosuc.simple.SoutCompilerDriver;
 import java.io.IOException;
 import java.nio.file.*;
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
@@ -80,6 +82,8 @@ public class Main {
 
   @SuppressWarnings("resource")
   private static void runBenchmark(String sourcePath, String tempPath) throws IOException {
+    System.out.println("Initializing compiler...");
+    var initStart = Instant.now();
     var compiler = new GosuCompiler();
     var driver = new SoutCompilerDriver(false, false);
     var matcher = FileSystems.getDefault().getPathMatcher("glob:**/*");
@@ -103,14 +107,17 @@ public class Main {
     cliOptions.setSourcepath(sourcePath);
     cliOptions.setSourceFiles(files);
 
-    System.out.println("Initializing compiler...");
     compiler.initializeGosu(
             Collections.singletonList(sourcePath),
             classPath,
             tempPath);
 
+    var initElapsed = Duration.between(initStart, Instant.now());
+
     System.out.println("Compiling...");
+    var compileStart = Instant.now();
     var thresholdExceeded = compiler.compile(cliOptions, driver);
+    var compileElapsed = Duration.between(compileStart, Instant.now());
 
     if(thresholdExceeded) {
       System.out.println("Compilation failed.");
@@ -120,6 +127,9 @@ public class Main {
 
     System.out.println("Cleaning up...");
     compiler.uninitializeGosu();
+
+    System.out.println(String.format("Initialization time: %,dms", initElapsed.toMillis()));
+    System.out.println(String.format("Compilation time: %,dms", compileElapsed.toMillis()));
 
     System.exit(thresholdExceeded ? 0 : 1);
   }
