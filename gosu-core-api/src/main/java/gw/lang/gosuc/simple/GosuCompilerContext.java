@@ -25,12 +25,10 @@ import static gw.lang.gosuc.simple.ICompilerDriver.ERROR;
 import static gw.lang.gosuc.simple.ICompilerDriver.WARNING;
 
 public class GosuCompilerContext extends CompilerContext {
-  private final GosuInitialization _gosuInitialization;
   private final File _sourceFile;
 
-  public GosuCompilerContext(GosuInitialization gosuInitialization, File compilingSourceFile, ICompilerDriver driver) {
+  public GosuCompilerContext(File compilingSourceFile, ICompilerDriver driver) {
     super(driver);
-    _gosuInitialization = gosuInitialization;
     _sourceFile = compilingSourceFile;
   }
 

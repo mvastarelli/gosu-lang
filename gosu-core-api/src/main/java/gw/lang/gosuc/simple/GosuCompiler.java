@@ -129,7 +129,7 @@ public class GosuCompiler implements IGosuCompiler
     for(var fileName : gosuFiles) {
               var file = new File( fileName );
               var fileDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
-              var context = new GosuCompilerContext(_gosuInitialization, file, fileDriver);
+              var context = new GosuCompilerContext(file, fileDriver);
 
               if( (driver.getErrors().size() > options.getMaxErrs()) ||
                   (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
@@ -183,7 +183,7 @@ public class GosuCompiler implements IGosuCompiler
   @Override
   public boolean compile( File sourceFile, ICompilerDriver driver )
   {
-    var context = new GosuCompilerContext(_gosuInitialization, sourceFile, driver);
+    var context = new GosuCompilerContext(sourceFile, driver);
     return context.compile();
   }
 
