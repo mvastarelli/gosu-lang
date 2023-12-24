@@ -2,18 +2,11 @@ package gw.lang.gosuc.simple;
 
 import gw.lang.reflect.IType;
 
-import java.util.Optional;
+import java.util.*;
 
-public class GosuCompilationResult extends CompilationResult {
-  private final IType _type;
-
-  public Optional<IType> getType() {
-    return _type == null ? Optional.empty() : Optional.of(_type);
-  }
-
+public class GosuCompilationResult extends CompilationResult<IType> {
   private GosuCompilationResult(boolean success, IType type) {
-    super(success);
-    _type = type;
+    super(success, type);
   }
 
   public static GosuCompilationResult failed() {
@@ -28,4 +21,3 @@ public class GosuCompilationResult extends CompilationResult {
     return new GosuCompilationResult(true, type);
   }
 }
-

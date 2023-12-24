@@ -6,26 +6,19 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
-public class JavaCompilationResult extends CompilationResult {
-  private final Collection<InMemoryClassJavaFileObject> _files;
+public class JavaCompilationResult extends CompilationResult<InMemoryClassJavaFileObject> {
   private final Collection<Diagnostic<? extends JavaFileObject>> _diagnostics;
 
-  public Optional<Collection<InMemoryClassJavaFileObject>> getJavaSource() {
-    return _files == null ? Optional.empty() : Optional.of(_files);
-  }
-
-  public Optional<Collection<Diagnostic<? extends  JavaFileObject>>> getDiagnostics() {
-    return _diagnostics == null ? Optional.empty() : Optional.of(_diagnostics);
+  public Collection<Diagnostic<? extends  JavaFileObject>> getDiagnostics() {
+    return _diagnostics;
   }
 
   private JavaCompilationResult(
           boolean success,
           Collection<InMemoryClassJavaFileObject> files,
           Collection<Diagnostic<? extends  JavaFileObject>> diagnostics) {
-    super(success);
-    _files = files;
+    super(success, files);
     _diagnostics = diagnostics;
   }
 

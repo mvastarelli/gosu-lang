@@ -25,23 +25,18 @@ public class GosuCompilerDiagnosticReporter implements ICompilationDiagnosticRep
 
   @Override
   public void report(GosuCompilationResult result) {
-    var type = result.getType();
+    for(var type : result.getTypes()) {
+      IParsedElement classElement = ((IGosuClass)type).getClassStatement();
+      IClassFileStatement classFileStatement = ((IClassStatement)classElement).getClassFileStatement();
+      classElement = classFileStatement == null ? classElement : classFileStatement;
+      ExecutionMode mode = CommonServices.getPlatformHelper().getExecutionMode();
 
-    if(type.isEmpty()) {
-      return;
-    }
-
-    // output warnings and errors - whether the type was valid or not
-    IParsedElement classElement = ((IGosuClass)type.get()).getClassStatement();
-    IClassFileStatement classFileStatement = ((IClassStatement)classElement).getClassFileStatement();
-    classElement = classFileStatement == null ? classElement : classFileStatement;
-    ExecutionMode mode = CommonServices.getPlatformHelper().getExecutionMode();
-
-    for( IParseIssue issue : classElement.getParseIssues() )
-    {
-      int category = issue instanceof ParseWarning ? WARNING : ERROR;
-      String message = mode == ExecutionMode.IDE ? issue.getUIMessage() : issue.getConsoleMessage();
-      _driver.sendCompileIssue( _sourceFile, category, issue.getTokenStart(), issue.getLine(), issue.getColumn(), message );
+      for( IParseIssue issue : classElement.getParseIssues() )
+      {
+        int category = issue instanceof ParseWarning ? WARNING : ERROR;
+        String message = mode == ExecutionMode.IDE ? issue.getUIMessage() : issue.getConsoleMessage();
+        _driver.sendCompileIssue( _sourceFile, category, issue.getTokenStart(), issue.getLine(), issue.getColumn(), message );
+      }
     }
   }
 }

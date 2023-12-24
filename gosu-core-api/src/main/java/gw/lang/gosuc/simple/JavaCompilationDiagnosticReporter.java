@@ -15,6 +15,6 @@ public class JavaCompilationDiagnosticReporter implements ICompilationDiagnostic
       return;
     }
 
-    diagnostics.get().forEach(_driver::sendCompileIssue);
+    diagnostics.forEach(_driver::sendCompileIssue);
   }
 }
