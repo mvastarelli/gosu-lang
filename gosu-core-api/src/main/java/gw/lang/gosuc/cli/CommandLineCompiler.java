@@ -3,10 +3,8 @@ package gw.lang.gosuc.cli;
 import gw.internal.ext.com.beust.jcommander.JCommander;
 import gw.lang.Gosu;
 import gw.lang.gosuc.GosucUtil;
-import gw.lang.gosuc.simple.GosuCompiler;
-import gw.lang.gosuc.simple.ICompilerDriver;
-import gw.lang.gosuc.simple.IGosuCompiler;
-import gw.lang.gosuc.simple.SoutCompilerDriver;
+import gw.lang.gosuc.simple.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +30,7 @@ public class CommandLineCompiler
     }
     else
     {
-      SoutCompilerDriver driver = new SoutCompilerDriver( true, !options.isNoWarn() );
+      var driver = new AggregateCompilerDriver( true, !options.isNoWarn() );
       boolean thresholdExceeded = invoke( options, driver );
 
       //print summary
@@ -41,7 +39,7 @@ public class CommandLineCompiler
     }
   }
 
-  public static boolean invoke( CommandLineOptions options, SoutCompilerDriver driver )
+  public static boolean invoke( CommandLineOptions options, ICompilerDriver driver )
   {
     return new CommandLineCompiler().execute( options, driver );
   }

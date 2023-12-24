@@ -31,21 +31,24 @@ public interface ICompilerDriver {
 
   default boolean isIncludeWarnings()
   {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("isInlcudeWarnings");
   }
 
-  default boolean hasErrors() 
-  {
-    throw new UnsupportedOperationException();
-  }
+  default boolean hasErrors() { throw new UnsupportedOperationException("hasErrors"); }
 
   default List<String> getErrors() 
   {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("getErrors");
   }
 
   default List<String> getWarnings() 
   {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("getWarnings");
   }
+
+  // New Methods
+
+  default void aggregate( ICompilerDriver other ) { throw new ArithmeticException(); } // { throw new UnsupportedOperationException("aggregate"); }
+
+  default boolean isEcho() { throw new UnsupportedOperationException("isEcho"); }
 }
