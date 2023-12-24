@@ -1,8 +1,10 @@
 package gw.lang.gosuc.simple;
 
+import gw.fs.IDirectory;
 import gw.lang.reflect.TypeSystem;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.StringTokenizer;
 
 import static gw.lang.gosuc.simple.ICompilerDriver.ERROR;
@@ -14,7 +16,6 @@ public abstract class BaseCompilerOutputWriter<TCompilationUnit, TResult extends
     _driver = driver;
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Override
   public void createOutputFiles(TResult result) {
     var moduleOutputDirectory = TypeSystem.getGlobalModule().getOutputPath();
@@ -23,27 +24,13 @@ public abstract class BaseCompilerOutputWriter<TCompilationUnit, TResult extends
       throw new RuntimeException("Can't make class file, no output path defined.");
     }
 
-    for (var gsClass : result.getTypes()) {
+    for (var unit : result.getTypes()) {
       try {
-        var outRelativePath = getRelativePath(gsClass);
-        var child = new File(moduleOutputDirectory.getPath().getFileSystemPathString());
-        child.mkdirs();
+        var outRelativePath = getRelativePath(unit);
+        var classFullPath = getClassFullPath(moduleOutputDirectory, outRelativePath);
 
-        for (var tokenizer = new StringTokenizer(outRelativePath, File.separator + "/"); tokenizer.hasMoreTokens(); ) {
-          var token = tokenizer.nextToken();
-          child = new File(child, token);
-
-          if (!child.exists()) {
-            if (token.endsWith(".class")) {
-              child.createNewFile();
-            } else {
-              child.mkdir();
-            }
-          }
-        }
-
-        populateClassFile(child, gsClass);
-        onClassFilePopulated(child.getParentFile(), gsClass);
+        populateClassFile(classFullPath, unit);
+        onClassFilePopulated(classFullPath.getParentFile(), unit);
       } catch (Throwable e) {
         _driver.sendCompileIssue(
                 null,
@@ -54,6 +41,27 @@ public abstract class BaseCompilerOutputWriter<TCompilationUnit, TResult extends
                 String.format("Cannot create .class files.%n%s", Utils.getStackTrace(e)));
       }
     }
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  private static File getClassFullPath(IDirectory moduleOutputDirectory, String outRelativePath) throws IOException {
+    var modulePath = new File(moduleOutputDirectory.getPath().getFileSystemPathString());
+    modulePath.mkdirs();
+
+    for (var tokenizer = new StringTokenizer(outRelativePath, File.separator + "/"); tokenizer.hasMoreTokens(); ) {
+      var token = tokenizer.nextToken();
+      modulePath = new File(modulePath, token);
+
+      if (!modulePath.exists()) {
+        if (token.endsWith(".class")) {
+          modulePath.createNewFile();
+        } else {
+          modulePath.mkdir();
+        }
+      }
+    }
+
+    return modulePath;
   }
 
   protected abstract String getRelativePath(TCompilationUnit unit);

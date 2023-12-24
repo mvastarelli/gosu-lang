@@ -27,26 +27,32 @@ public class GosuCompilerOutputWriter extends BaseCompilerOutputWriter<IType, Go
   @Override
   protected void populateClassFile(File classFile, IType unit) {
     var gosuClass = (IGosuClass)unit;
+    var bytes = TypeSystem.getGosuClassLoader().getBytes(gosuClass);
 
-    final byte[] bytes = TypeSystem.getGosuClassLoader().getBytes(gosuClass);
     try (OutputStream out = new FileOutputStream(classFile)) {
       out.write(bytes);
       _driver.registerOutput(_sourceFile, classFile);
     } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
+      _driver.sendCompileIssue(_sourceFile, ERROR, 0, 0, 0, "Cannot find .class file");
+      return;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      _driver.sendCompileIssue(_sourceFile, ERROR, 0, 0, 0, String.format("Cannot write to .class file: %s", e.getMessage()));
+      return;
     }
+
     for (IGosuClass innerClass : gosuClass.getInnerClasses()) {
-      final String innerClassName = String.format("%s$%s.class", classFile.getName().substring(0, classFile.getName().lastIndexOf('.')), innerClass.getRelativeName());
-      File innerClassFile = new File(classFile.getParent(), innerClassName);
+      var innerClassName = String.format("%s$%s.class", classFile.getName().substring(0, classFile.getName().lastIndexOf('.')), innerClass.getRelativeName());
+      var innerClassFile = new File(classFile.getParent(), innerClassName);
+
       if (innerClassFile.isFile()) {
         try {
           innerClassFile.createNewFile();
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          _driver.sendCompileIssue(_sourceFile, ERROR, 0, 0, 0, String.format("Cannot write inner class to .class file: %s", e.getMessage()));
+          return;
         }
       }
+
       populateClassFile(innerClassFile, innerClass);
     }
   }

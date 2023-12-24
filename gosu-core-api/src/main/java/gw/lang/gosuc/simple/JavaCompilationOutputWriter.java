@@ -4,6 +4,8 @@ import manifold.internal.javac.InMemoryClassJavaFileObject;
 
 import java.io.*;
 
+import static gw.lang.gosuc.simple.ICompilerDriver.ERROR;
+
 public class JavaCompilationOutputWriter extends BaseCompilerOutputWriter<InMemoryClassJavaFileObject, JavaCompilationResult> {
   public JavaCompilationOutputWriter(ICompilerDriver driver) {
     super(driver);
@@ -25,7 +27,7 @@ public class JavaCompilationOutputWriter extends BaseCompilerOutputWriter<InMemo
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      _driver.sendCompileIssue(null, ERROR, 0, 0, 0, String.format("Cannot write to .class file: %s", e.getMessage()));
     }
   }
 }
