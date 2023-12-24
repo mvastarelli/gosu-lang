@@ -23,6 +23,7 @@ public class GosuSourceCompiler implements ISourceCompiler<GosuCompilationResult
   @Override
   public GosuCompilationResult compile() {
     IType type = getType(_sourceFile);
+
     if (type == null) {
       _driver.sendCompileIssue(_sourceFile, ERROR, 0, 0, 0, "Cannot find type in the Gosu Type System.");
       return GosuCompilationResult.failed();
@@ -38,6 +39,8 @@ public class GosuSourceCompiler implements ISourceCompiler<GosuCompilationResult
         _driver.sendCompileIssue(_sourceFile, ERROR, 0, 0, 0, ex.getMessage());
         return GosuCompilationResult.failed();
       }
+
+      return GosuCompilationResult.failed(type);
     }
 
     return GosuCompilationResult.failed();

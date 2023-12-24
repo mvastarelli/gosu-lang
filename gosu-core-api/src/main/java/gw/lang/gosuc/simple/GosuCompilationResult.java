@@ -20,6 +20,10 @@ public class GosuCompilationResult extends CompilationResult {
     return new GosuCompilationResult(false, null);
   }
 
+  public static GosuCompilationResult failed(IType type) {
+    return new GosuCompilationResult(false, type);
+  }
+
   public static GosuCompilationResult success(IType type) {
     return new GosuCompilationResult(true, type);
   }

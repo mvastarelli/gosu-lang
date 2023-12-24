@@ -1,5 +1,6 @@
 package gw.lang.gosuc.simple;
 
+import gw.lang.gosuc.cli.CommandLineOptions;
 import gw.lang.javac.SourceJavaFileObject;
 import gw.lang.parser.GosuParserFactory;
 import manifold.internal.javac.IJavaParser;
@@ -11,22 +12,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JavaSourceCompiler implements ISourceCompiler<JavaCompilationResult> {
+  private CommandLineOptions _options;
   private final List<String> _sourceFiles;
-  private final boolean _isVerbose;
-  private final boolean _isNoWarn;
 
-  public JavaSourceCompiler(List<String> sourceFiles, boolean isVerbose, boolean isNoWarn) {
+  public JavaSourceCompiler(CommandLineOptions options, List<String> sourceFiles) {
+    _options = options;
     _sourceFiles = sourceFiles;
-    _isVerbose = isVerbose;
-    _isNoWarn = isNoWarn;
   }
 
   @Override
   public JavaCompilationResult compile() {
+    var isVerbose = _options.isVerbose();
+    var isNoWarn = _options.isNoWarn();
     var parser = GosuParserFactory.getInterface( IJavaParser.class );
     var errorHandler = new DiagnosticCollector<JavaFileObject>();
     List<JavaFileObject> sourceFiles = _sourceFiles.stream().map( SourceJavaFileObject::new ).collect( Collectors.toList() );
-    var files = parser.compile( sourceFiles, makeJavacOptions(_isVerbose, _isNoWarn ), errorHandler );
+    var files = parser.compile( sourceFiles, makeJavacOptions(isVerbose, isNoWarn ), errorHandler );
 
     return JavaCompilationResult.success(files, errorHandler.getDiagnostics());
   }

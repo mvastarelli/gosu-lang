@@ -164,7 +164,7 @@ public class GosuCompiler implements IGosuCompiler
     var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
     var context = new JavaCompilerContext(options, javaFiles, filesDriver);
 
-    context.compile(options.isVerbose(), options.isNoWarn());
+    context.compile();
     driver.aggregate(filesDriver);
 
     if( driver.getErrors().size() > options.getMaxErrs() )
