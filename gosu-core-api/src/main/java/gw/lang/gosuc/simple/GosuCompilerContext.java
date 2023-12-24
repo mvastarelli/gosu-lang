@@ -5,7 +5,6 @@ import gw.config.ExecutionMode;
 import gw.fs.FileFactory;
 import gw.fs.IDirectory;
 import gw.fs.IFile;
-import gw.lang.init.GosuInitialization;
 import gw.lang.parser.IParseIssue;
 import gw.lang.parser.IParsedElement;
 import gw.lang.parser.exceptions.ParseWarning;
@@ -28,7 +27,11 @@ public class GosuCompilerContext extends CompilerContext {
   private final File _sourceFile;
 
   public GosuCompilerContext(File compilingSourceFile, ICompilerDriver driver) {
-    super(driver);
+    super(
+            driver,
+            new GosuSourceCompiler(driver, compilingSourceFile),
+            new GosuCompilerDiagnosticReporter(driver, compilingSourceFile),
+            new GosuCompilerOutputWriter(driver, compilingSourceFile));
     _sourceFile = compilingSourceFile;
   }
 

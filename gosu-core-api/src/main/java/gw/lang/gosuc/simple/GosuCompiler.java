@@ -162,7 +162,7 @@ public class GosuCompiler implements IGosuCompiler
   private boolean compileJavaSources( CommandLineOptions options, ICompilerDriver driver, List<String> javaFiles )
   {
     var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
-    var context = new JavaCompilerContext(javaFiles, filesDriver);
+    var context = new JavaCompilerContext(options, javaFiles, filesDriver);
 
     context.compile(options.isVerbose(), options.isNoWarn());
     driver.aggregate(filesDriver);
