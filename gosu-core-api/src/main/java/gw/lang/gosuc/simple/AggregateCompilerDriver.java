@@ -61,6 +61,12 @@ public class AggregateCompilerDriver implements ICompilerDriver {
   }
 
   @Override
+  public int getNumErrors() { return acquireRead(_errors::size); }
+
+  @Override
+  public int getNumWarnings() { return acquireRead(_warnings::size); }
+
+  @Override
   public void aggregate( ICompilerDriver other ) {
     acquireWrite( () -> {
       _errors.addAll( other.getErrors() );

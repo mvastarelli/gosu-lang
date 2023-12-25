@@ -81,4 +81,10 @@ public class FileCompilerDriver implements ICompilerDriver{
   public List<String> getWarnings() {
     return _warnings;
   }
+
+  @Override
+  public int getNumErrors() { return _errors.size(); }
+
+  @Override
+  public int getNumWarnings() { return _warnings.size(); }
 }

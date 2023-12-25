@@ -86,6 +86,12 @@ public class SoutCompilerDriver implements ICompilerDriver {
   // New methods
 
   @Override
+  public int getNumErrors() { return errors.size(); }
+
+  @Override
+  public int getNumWarnings() { return warnings.size(); }
+
+  @Override
   public boolean isEcho() { return _echo; }
 
   @Override

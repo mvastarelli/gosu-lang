@@ -48,6 +48,10 @@ public interface ICompilerDriver {
 
   // New Methods
 
+  default int getNumErrors() { throw new UnsupportedOperationException("getNumErrors"); }
+
+  default int getNumWarnings() { throw new UnsupportedOperationException("getNumWarnings"); }
+
   default void aggregate( ICompilerDriver other ) { throw new UnsupportedOperationException("aggregate"); }
 
   default boolean isEcho() { throw new UnsupportedOperationException("isEcho"); }

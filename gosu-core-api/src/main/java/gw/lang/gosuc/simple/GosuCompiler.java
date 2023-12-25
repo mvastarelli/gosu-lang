@@ -53,12 +53,12 @@ public class GosuCompiler implements IGosuCompiler
       compileJavaSources( options, driver, javaFiles );
     }
 
-    if( driver.getErrors().size() > options.getMaxErrs() )
+    if( driver.getNumErrors() > options.getMaxErrs() )
     {
       System.out.println( String.format("Error threshold of %d exceeded; aborting compilation.", options.getMaxErrs()) );
       return true;
     }
-    if( !options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns() )
+    if( !options.isNoWarn() && driver.getNumWarnings() > options.getMaxWarns() )
     {
       System.out.println( String.format("Warning threshold of %d exceeded; aborting compilation.", options.getMaxWarns()) );
       return true;
