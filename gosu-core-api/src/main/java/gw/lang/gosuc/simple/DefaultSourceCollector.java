@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class DefaultSourceCollector implements ISourceCollector {
-  private static final String[] SOURCE_EXTENSIONS = { ".gs", ".gsx", ".gst", ".java" };
   private static final Map<SourceType, Predicate<String>> _sourceTypePredicates = Map.of(
       SourceType.GOSU, s -> s.matches("^.+\\.gs[xt]?$"),
       SourceType.JAVA, s -> s.endsWith(".java")
@@ -72,6 +71,9 @@ public class DefaultSourceCollector implements ISourceCollector {
 
   private boolean isSourceFile( String absolutePathName )
   {
-    return Arrays.stream( SOURCE_EXTENSIONS ).anyMatch( e -> absolutePathName.toLowerCase().endsWith( e ) );
+    return _sourceTypePredicates
+            .values()
+            .stream()
+            .anyMatch( p -> p.test(absolutePathName));
   }
 }
