@@ -44,14 +44,8 @@ public class GosuCompiler implements IGosuCompiler
     var gosuFiles = collector.getByExtension(GOSU).collect(Collectors.toList());
     var javaFiles = collector.getByExtension(JAVA).collect(Collectors.toList());
 
-    if( !gosuFiles.isEmpty() )
-    {
-      compileGosuSources( options, driver, gosuFiles );
-    }
-    else if( !javaFiles.isEmpty() )
-    {
-      compileJavaSources( options, driver, javaFiles );
-    }
+    compileGosuSources( options, driver, gosuFiles );
+    compileJavaSources( options, driver, javaFiles );
 
     if( driver.getNumErrors() > options.getMaxErrs() )
     {
@@ -136,6 +130,10 @@ public class GosuCompiler implements IGosuCompiler
   }
 
   private void compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles ) {
+    if(gosuFiles.isEmpty()) {
+      return;
+    }
+
     // TODO -- Add parallelism back in
 //    gosuFiles
 //            .stream()
@@ -146,8 +144,8 @@ public class GosuCompiler implements IGosuCompiler
       var fileDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
       var context = new GosuCompilerContext(file, fileDriver);
 
-      if ((driver.getErrors().size() > options.getMaxErrs()) ||
-              (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
+      if( (driver.getNumErrors() > options.getMaxErrs()) ||
+          (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
         break;
       }
 
@@ -162,6 +160,12 @@ public class GosuCompiler implements IGosuCompiler
 
   private void compileJavaSources( CommandLineOptions options, ICompilerDriver driver, List<String> javaFiles )
   {
+    if( javaFiles.isEmpty() ||
+        (driver.getNumErrors() > options.getMaxErrs()) ||
+        (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
+      return;
+    }
+
     var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
     var context = new JavaCompilerContext(options, javaFiles, filesDriver);
 
