@@ -36,6 +36,7 @@ public class GosuCompiler implements IGosuCompiler
     _sourceCollectorFactory = sourceCollectorFactory;
   }
 
+  @SuppressWarnings("RedundantStringFormatCall")
   @Override
   public boolean compile( CommandLineOptions options, ICompilerDriver driver )
   {
@@ -54,50 +55,16 @@ public class GosuCompiler implements IGosuCompiler
 
     if( driver.getErrors().size() > options.getMaxErrs() )
     {
-      System.out.printf( "\nError threshold of %d exceeded; aborting compilation.", options.getMaxErrs() );
+      System.out.println( String.format("Error threshold of %d exceeded; aborting compilation.", options.getMaxErrs()) );
       return true;
     }
     if( !options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns() )
     {
-      System.out.printf( "\nWarning threshold of %d exceeded; aborting compilation.", options.getMaxWarns() );
+      System.out.println( String.format("Warning threshold of %d exceeded; aborting compilation.", options.getMaxWarns()) );
       return true;
     }
 
     return false;
-  }
-
-  private void compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles ) {
-    // TODO -- Add parallelism back in
-//    gosuFiles
-//            .stream()
-//            .parallel()
-//            .forEach( fileName -> {
-    for (var fileName : gosuFiles) {
-      var file = new File(fileName);
-      var fileDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
-      var context = new GosuCompilerContext(file, fileDriver);
-
-      if ((driver.getErrors().size() > options.getMaxErrs()) ||
-              (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
-        break;
-      }
-
-      if (options.isVerbose()) {
-        System.out.println("gosuc: about to compile file: " + file);
-      }
-
-      context.compile();
-      driver.aggregate(fileDriver);
-    }// );
-  }
-
-  private void compileJavaSources( CommandLineOptions options, ICompilerDriver driver, List<String> javaFiles )
-  {
-    var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
-    var context = new JavaCompilerContext(options, javaFiles, filesDriver);
-
-    context.compile();
-    driver.aggregate(filesDriver);
   }
 
   @Override
@@ -148,20 +115,6 @@ public class GosuCompiler implements IGosuCompiler
     return System.currentTimeMillis() - start;
   }
 
-  private static IFileSystem createFileSystemInstance()
-  {
-    try
-    {
-      var cls = Class.forName( "gw.internal.gosu.module.fs.FileSystemImpl" );
-      var m = cls.getConstructor( IFileSystem.CachingMode.class );
-      return (IFileSystem)m.newInstance( IFileSystem.CachingMode.FULL_CACHING );
-    }
-    catch( Exception e )
-    {
-      throw new RuntimeException( e );
-    }
-  }
-
   @Override
   public void uninitializeGosu()
   {
@@ -180,5 +133,53 @@ public class GosuCompiler implements IGosuCompiler
   public boolean isPathIgnored( String sourceFile )
   {
     return CommonServices.getPlatformHelper().isPathIgnored( sourceFile );
+  }
+
+  private void compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles ) {
+    // TODO -- Add parallelism back in
+//    gosuFiles
+//            .stream()
+//            .parallel()
+//            .forEach( fileName -> {
+    for (var fileName : gosuFiles) {
+      var file = new File(fileName);
+      var fileDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
+      var context = new GosuCompilerContext(file, fileDriver);
+
+      if ((driver.getErrors().size() > options.getMaxErrs()) ||
+              (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
+        break;
+      }
+
+      if (options.isVerbose()) {
+        System.out.println("gosuc: about to compile file: " + file);
+      }
+
+      context.compile();
+      driver.aggregate(fileDriver);
+    }// );
+  }
+
+  private void compileJavaSources( CommandLineOptions options, ICompilerDriver driver, List<String> javaFiles )
+  {
+    var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
+    var context = new JavaCompilerContext(options, javaFiles, filesDriver);
+
+    context.compile();
+    driver.aggregate(filesDriver);
+  }
+
+  private static IFileSystem createFileSystemInstance()
+  {
+    try
+    {
+      var cls = Class.forName( "gw.internal.gosu.module.fs.FileSystemImpl" );
+      var m = cls.getConstructor( IFileSystem.CachingMode.class );
+      return (IFileSystem)m.newInstance( IFileSystem.CachingMode.FULL_CACHING );
+    }
+    catch( Exception e )
+    {
+      throw new RuntimeException( e );
+    }
   }
 }
