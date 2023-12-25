@@ -8,22 +8,22 @@ import gw.lang.parser.StandardCoercionManager;
 import gw.lang.reflect.*;
 import gw.lang.reflect.java.IJavaType;
 import gw.lang.reflect.java.JavaTypes;
+import gw.util.Array;
 import gw.util.concurrent.LockingLazyVar;
 
 import java.io.ObjectStreamException;
-import gw.util.Array;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  */
 public class MetaType extends AbstractType implements IMetaType
 {
-  private static final Lock MEAT_LOCKER = new ReentrantLock();
+  private static final ReentrantReadWriteLock MEAT_LOCKER = new ReentrantReadWriteLock();
+
   public static class RootType{}
 
   /**

@@ -4,67 +4,50 @@
 
 package gw.util.concurrent;
 
-import gw.lang.reflect.TypeSystem;
-
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class LockingLazyVar<T>
 {
-  protected final static Object NULL = new Object();
-  private volatile T _val = null;
-  private final Lock _lock;
+  private boolean _hasValue = false;
+  private T _value = null;
 
-  /**
-   * Constructs a LockingLazyVar that will use itself as the object of synchronization.
-   */
-  public LockingLazyVar()
-  {
-    _lock = TypeSystem.getGlobalLock();
+  private final ReentrantReadWriteLock _lock;
+
+  public LockingLazyVar() {
+    this(new ReentrantReadWriteLock() );
   }
 
-  /**
-   * Constructs a LockingLazyVar that will synchronize on the given object.
-   */
-  protected LockingLazyVar(Lock lock)
-  {
+  public LockingLazyVar(ReentrantReadWriteLock lock) {
     _lock = lock;
   }
 
   /**
    * @return the value of this lazy var, created if necessary
    */
-  public final T get()
-  {
-    T result = _val;
-    if(result == NULL) {
-      return null;
-    }
-    if( result == null )
-    {
-      _lock.lock();
-      try{
+  public final T get() {
+    _lock.readLock().lock();
 
-        result = _val;
-        if(result == NULL) {
-          return null;
-        }
-        if( result == null )
-        {
-          result = init();
-
-          //The extra space makes all the difference
-
-          if (result == null) {
-            _val = (T)NULL;
-          } else {
-            _val = result;
-          }
-        }
-      } finally {
-        _lock.unlock();
+    try {
+      if (_hasValue) {
+        return _value;
       }
+    } finally {
+      _lock.readLock().unlock();
     }
-    return result;
+
+    _lock.writeLock().lock();
+
+    try {
+      if (_hasValue) {
+        return _value;
+      } else {
+        _value = init();
+        _hasValue = true;
+        return _value;
+      }
+    } finally {
+      _lock.writeLock().unlock();
+    }
   }
 
   protected abstract T init();
@@ -75,46 +58,40 @@ public abstract class LockingLazyVar<T>
    */
   public final T clear()
   {
-    T hold;
-    _lock.lock();
-    try
-    {
-      hold = _val;
-      _val = null;
+    _lock.writeLock().lock();
+
+    try {
+      var result = _value;
+      _value = null;
+      _hasValue = false;
+      return result;
     } finally {
-      _lock.unlock();
+      _lock.writeLock().unlock();
     }
-    return hold;
   }
 
   public final void clearNoLock()
   {
-    _val = null;
-  }
-
-  protected void initDirectly( T val )
-  {
-    _lock.lock();
-    try
-    {
-      _val = val;
-    }
-    finally
-    {
-      _lock.unlock();
-    }
+    _value = null;
+    _hasValue = false;
   }
 
   public boolean isLoaded() {
-    return _val != null;
+    _lock.readLock().lock();
+
+    try {
+      return _hasValue;
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   /**
    * A simple init interface to make LockingLazyVar's easier to construct
    * from gosu.
    */
-  public static interface LazyVarInit<Q> {
-    public Q init();
+  public interface LazyVarInit<Q> {
+    Q init();
   }
 
   /**
@@ -129,14 +106,4 @@ public abstract class LockingLazyVar<T>
       }
     };
   }
-
-  public static <Q> LockingLazyVar<Q> make( Lock lock, final LazyVarInit<Q> init ) {
-    return new LockingLazyVar<Q>( lock ) {
-      protected Q init()
-      {
-        return init.init();
-      }
-    };
-  }
-
 }
