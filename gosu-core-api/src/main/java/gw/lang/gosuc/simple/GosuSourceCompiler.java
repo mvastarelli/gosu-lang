@@ -1,7 +1,6 @@
 package gw.lang.gosuc.simple;
 
 import gw.fs.FileFactory;
-import gw.fs.IFile;
 import gw.lang.reflect.IType;
 import gw.lang.reflect.TypeSystem;
 import gw.lang.reflect.gs.IGosuClass;
@@ -12,6 +11,9 @@ import java.io.File;
 import static gw.lang.gosuc.simple.ICompilerDriver.ERROR;
 
 public class GosuSourceCompiler implements ISourceCompiler<GosuCompilationResult> {
+  private final static IType doNotVerifyAnnotation = TypeSystem.getByFullNameIfValid("gw.testharness.DoNotVerifyResource");
+  private final static IModule globalModule = TypeSystem.getGlobalModule();
+
   private final ICompilerDriver _driver;
   private final File _sourceFile;
 
@@ -32,7 +34,6 @@ public class GosuSourceCompiler implements ISourceCompiler<GosuCompilationResult
     if (isCompilable(type)) {
       try {
         if (type.isValid()) {
-          // createGosuOutputFiles((IGosuClass) type);
           return GosuCompilationResult.success(type);
         }
       } catch (CompilerDriverException ex) {
@@ -48,19 +49,18 @@ public class GosuSourceCompiler implements ISourceCompiler<GosuCompilationResult
 
   private IType getType( File file )
   {
-    IFile ifile = FileFactory.instance().getIFile( file );
-    IModule module = TypeSystem.getGlobalModule();
-    String[] typesForFile = TypeSystem.getTypesForFile( module, ifile );
+    var ifile = FileFactory.instance().getIFile( file );
+    var typesForFile = TypeSystem.getTypesForFile( globalModule, ifile );
+
     if( typesForFile.length != 0 )
     {
-      return TypeSystem.getByFullNameIfValid( typesForFile[0], module );
+      return TypeSystem.getByFullNameIfValid( typesForFile[0], globalModule );
     }
     return null;
   }
 
   private boolean isCompilable( IType type )
   {
-    IType doNotVerifyAnnotation = TypeSystem.getByFullNameIfValid( "gw.testharness.DoNotVerifyResource" );
     return type instanceof IGosuClass && !type.getTypeInfo().hasAnnotation( doNotVerifyAnnotation );
   }
 }
