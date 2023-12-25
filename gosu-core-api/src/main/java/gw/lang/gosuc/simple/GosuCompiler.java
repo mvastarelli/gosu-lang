@@ -45,67 +45,12 @@ public class GosuCompiler implements IGosuCompiler
 
     if( !gosuFiles.isEmpty() )
     {
-      if( compileGosuSources( options, driver, gosuFiles ) )
-      {
-        return true;
-      }
+      compileGosuSources( options, driver, gosuFiles );
     }
-
-    if( !javaFiles.isEmpty() )
+    else if( !javaFiles.isEmpty() )
     {
-      return compileJavaSources(options, driver, javaFiles);
+      compileJavaSources( options, driver, javaFiles );
     }
-
-    return false;
-  }
-
-  private boolean compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles )
-  {
-    // TODO -- Add parallelism back in
-//    gosuFiles
-//            .stream()
-//            .parallel()
-//            .forEach( fileName -> {
-    for(var fileName : gosuFiles) {
-              var file = new File( fileName );
-              var fileDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
-              var context = new GosuCompilerContext(file, fileDriver);
-
-              if( (driver.getErrors().size() > options.getMaxErrs()) ||
-                  (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
-                break;
-              }
-
-              if( options.isVerbose() )
-              {
-                System.out.println( "gosuc: about to compile file: " + file );
-              }
-
-              context.compile();
-              driver.aggregate( fileDriver );
-            }// );
-
-      if( driver.getErrors().size() > options.getMaxErrs() )
-      {
-        System.out.printf( "\nError threshold of %d exceeded; aborting compilation.", options.getMaxErrs() );
-        return true;
-      }
-      if( !options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns() )
-      {
-        System.out.printf( "\nWarning threshold of %d exceeded; aborting compilation.", options.getMaxWarns() );
-        return true;
-      }
-
-      return false;
-  }
-
-  private boolean compileJavaSources( CommandLineOptions options, ICompilerDriver driver, List<String> javaFiles )
-  {
-    var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
-    var context = new JavaCompilerContext(options, javaFiles, filesDriver);
-
-    context.compile();
-    driver.aggregate(filesDriver);
 
     if( driver.getErrors().size() > options.getMaxErrs() )
     {
@@ -117,7 +62,42 @@ public class GosuCompiler implements IGosuCompiler
       System.out.printf( "\nWarning threshold of %d exceeded; aborting compilation.", options.getMaxWarns() );
       return true;
     }
+
     return false;
+  }
+
+  private void compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles ) {
+    // TODO -- Add parallelism back in
+//    gosuFiles
+//            .stream()
+//            .parallel()
+//            .forEach( fileName -> {
+    for (var fileName : gosuFiles) {
+      var file = new File(fileName);
+      var fileDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
+      var context = new GosuCompilerContext(file, fileDriver);
+
+      if ((driver.getErrors().size() > options.getMaxErrs()) ||
+              (!options.isNoWarn() && driver.getWarnings().size() > options.getMaxWarns())) {
+        break;
+      }
+
+      if (options.isVerbose()) {
+        System.out.println("gosuc: about to compile file: " + file);
+      }
+
+      context.compile();
+      driver.aggregate(fileDriver);
+    }// );
+  }
+
+  private void compileJavaSources( CommandLineOptions options, ICompilerDriver driver, List<String> javaFiles )
+  {
+    var filesDriver = new FileCompilerDriver(driver.isEcho(), driver.isIncludeWarnings());
+    var context = new JavaCompilerContext(options, javaFiles, filesDriver);
+
+    context.compile();
+    driver.aggregate(filesDriver);
   }
 
   @Override
