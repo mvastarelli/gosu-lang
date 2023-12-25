@@ -1,20 +1,17 @@
 package gw.lang.gosuc.simple;
 
+import gw.util.concurrent.SyncRoot;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class AggregateCompilerDriver implements ICompilerDriver {
+public class AggregateCompilerDriver implements ICompilerDriver, SyncRoot {
   private final boolean _echo;
   private final boolean _includeWarnings;
 
   private final List<String> _errors = new ArrayList<>();
   private final List<String> _warnings = new ArrayList<>();
-
-  private final ReentrantReadWriteLock _lock = new ReentrantReadWriteLock();
-  private final ReentrantReadWriteLock.ReadLock _readLock = _lock.readLock();
-  private final ReentrantReadWriteLock.WriteLock _writeLock = _lock.writeLock();
 
   public AggregateCompilerDriver() {
     this(false, true);
@@ -72,35 +69,5 @@ public class AggregateCompilerDriver implements ICompilerDriver {
       _errors.addAll( other.getErrors() );
       _warnings.addAll( other.getWarnings() );
     });
-  }
-
-  private void acquireWrite( LockAction action ) {
-    _writeLock.lock();
-    try {
-      action.act();
-    }
-    finally {
-      _writeLock.unlock();
-    }
-  }
-
-  private <T> T acquireRead( LockFunc<T> func ) {
-    _readLock.lock();
-    try {
-      return func.func();
-    }
-    finally {
-      _readLock.unlock();
-    }
-  }
-
-  @FunctionalInterface
-  public interface LockAction {
-    void act();
-  }
-
-  @FunctionalInterface
-  public interface LockFunc<T> {
-    T func();
   }
 }
