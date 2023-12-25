@@ -13,38 +13,35 @@ import gw.lang.reflect.IEntityAccess;
 import gw.lang.reflect.TypeSystem;
 import gw.lang.reflect.module.IExecutionEnvironment;
 import gw.lang.reflect.module.IFileSystem;
-import gw.util.PathUtil;
 import manifold.util.NecessaryEvilUtil;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static gw.lang.gosuc.simple.ISourceCollector.SourceType.GOSU;
+import static gw.lang.gosuc.simple.ISourceCollector.SourceType.JAVA;
 
 public class GosuCompiler implements IGosuCompiler
 {
-  private static final String[] SOURCE_EXTS = { ".gs", ".gsx", ".gst", ".java" };
-
   protected GosuInitialization _gosuInitialization;
+  private final ISourceCollectorFactory _sourceCollectorFactory;
+
+  public GosuCompiler() {
+    this(DefaultSourceCollector::new);
+  }
+
+  public GosuCompiler(ISourceCollectorFactory sourceCollectorFactory) {
+    _sourceCollectorFactory = sourceCollectorFactory;
+  }
 
   @Override
   public boolean compile( CommandLineOptions options, ICompilerDriver driver )
   {
-    List<String> gosuFiles = new ArrayList<>();
-    List<String> javaFiles = new ArrayList<>();
-
-    for( String fileName : getSourceFiles( options ) )
-    {
-      if( fileName.toLowerCase().endsWith( ".java" ) )
-      {
-        javaFiles.add( fileName );
-      }
-      else
-      {
-        gosuFiles.add( fileName );
-      }
-    }
+    var collector = _sourceCollectorFactory.create(options);
+    var gosuFiles = collector.getByExtension(GOSU).collect(Collectors.toList());
+    var javaFiles = collector.getByExtension(JAVA).collect(Collectors.toList());
 
     if( !gosuFiles.isEmpty() )
     {
@@ -56,67 +53,10 @@ public class GosuCompiler implements IGosuCompiler
 
     if( !javaFiles.isEmpty() )
     {
-      if( compileJavaSources( options, driver, javaFiles ) )
-      {
-        return true;
-      }
+      return compileJavaSources(options, driver, javaFiles);
     }
 
     return false;
-  }
-
-  private List<String> getSourceFiles( CommandLineOptions options )
-  {
-    List<String> sourceFiles = options.getSourceFiles();
-    if( !sourceFiles.isEmpty() )
-    {
-      return sourceFiles;
-    }
-
-    String sourcepath = options.getSourcepath();
-    if( sourcepath.isEmpty() )
-    {
-      return Collections.emptyList();
-    }
-
-    sourceFiles = new ArrayList<>();
-    for( StringTokenizer tok = new StringTokenizer( File.pathSeparator ); tok.hasMoreTokens(); )
-    {
-      String path = tok.nextToken();
-      Path sourcePath = PathUtil.create( path );
-      addToSources( sourcePath, sourceFiles );
-    }
-
-    return sourceFiles;
-  }
-
-  private void addToSources( Path sourcePath, List<String> sourceFiles )
-  {
-    if( !PathUtil.exists( sourcePath ) )
-    {
-      return;
-    }
-
-    if( Files.isDirectory( sourcePath ) )
-    {
-      for( Path child : PathUtil.listFiles( sourcePath ) )
-      {
-        addToSources( child, sourceFiles );
-      }
-    }
-    else
-    {
-      String absolutePathName = PathUtil.getAbsolutePathName( sourcePath );
-      if( isSourceFile( absolutePathName ) )
-      {
-        sourceFiles.add( absolutePathName );
-      }
-    }
-  }
-
-  private boolean isSourceFile( String absolutePathName )
-  {
-    return Arrays.stream( SOURCE_EXTS ).anyMatch( e -> absolutePathName.toLowerCase().endsWith( e ) );
   }
 
   private boolean compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles )
@@ -232,8 +172,8 @@ public class GosuCompiler implements IGosuCompiler
   {
     try
     {
-      Class<?> cls = Class.forName( "gw.internal.gosu.module.fs.FileSystemImpl" );
-      Constructor m = cls.getConstructor( IFileSystem.CachingMode.class );
+      var cls = Class.forName( "gw.internal.gosu.module.fs.FileSystemImpl" );
+      var m = cls.getConstructor( IFileSystem.CachingMode.class );
       return (IFileSystem)m.newInstance( IFileSystem.CachingMode.FULL_CACHING );
     }
     catch( Exception e )
