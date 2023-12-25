@@ -8,8 +8,8 @@ import javax.tools.Diagnostic;
  * @author dpetrusca
  */
 public interface ICompilerDriver {
-  public static final int ERROR = 0;
-  public static final int WARNING = 1;
+  int ERROR = 0;
+  int WARNING = 1;
 
   void sendCompileIssue(File file, int category, long offset, long line, long column, String message);
 
@@ -18,7 +18,7 @@ public interface ICompilerDriver {
     sendCompileIssue( (File)file, category, offset, line, column, message );
   }
 
-  default void sendCompileIssue( Diagnostic d )
+  default void sendCompileIssue( Diagnostic<?> d )
   {
   }
 
@@ -31,7 +31,7 @@ public interface ICompilerDriver {
 
   default boolean isIncludeWarnings()
   {
-    throw new UnsupportedOperationException("isInlcudeWarnings");
+    throw new UnsupportedOperationException("isIncludeWarnings");
   }
 
   default boolean hasErrors() { throw new UnsupportedOperationException("hasErrors"); }
@@ -48,7 +48,7 @@ public interface ICompilerDriver {
 
   // New Methods
 
-  default void aggregate( ICompilerDriver other ) { throw new ArithmeticException(); } // { throw new UnsupportedOperationException("aggregate"); }
+  default void aggregate( ICompilerDriver other ) { throw new UnsupportedOperationException("aggregate"); }
 
   default boolean isEcho() { throw new UnsupportedOperationException("isEcho"); }
 }
