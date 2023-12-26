@@ -14,7 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>org.gosu-lang.gosu</groupId>
-      <artifactId>gosu-core-api</artifactId>
+      <artifactId>gosu-core</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>

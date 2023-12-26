@@ -14,7 +14,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Specifies that the annotated property method is an extended property, i.e., an extension of
- * {@link gw.lang.reflect.java.IJavaPropertyInfo}. This annotation must be used on classes annotated with {@link gw.internal.gosu.parser.ExtendedType} in order to
+ * {@link IJavaPropertyInfo}. This annotation must be used on classes annotated with {@link ExtendedType} in order to
  * have any effect.
  */
 @Retention(RUNTIME)

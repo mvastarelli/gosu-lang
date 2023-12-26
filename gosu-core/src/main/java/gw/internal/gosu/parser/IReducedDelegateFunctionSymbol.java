@@ -6,7 +6,6 @@ package gw.internal.gosu.parser;
 
 import gw.lang.parser.IReducedSymbol;
 import gw.lang.reflect.IMethodInfo;
-import gw.lang.reflect.IType;
 
 public interface IReducedDelegateFunctionSymbol extends IReducedSymbol {
 

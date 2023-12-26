@@ -1,0 +1,5 @@
+gosu.version.major=1
+gosu.version.minor=0
+gosu.version.incremental=0
+gosu.version.build=0
+gosu.version.qualifier=X-SNAPSHOT

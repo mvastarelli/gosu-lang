@@ -14,11 +14,11 @@
   <description>Generates Javadoc-compatible documentation for Gosu projects</description>
 
   <dependencies>
-    <dependency>
-      <groupId>org.gosu-lang.gosu</groupId>
-      <artifactId>gosu-core-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.gosu-lang.gosu</groupId>-->
+<!--      <artifactId>gosu-core-api</artifactId>-->
+<!--      <version>${project.version}</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.gosu-lang.gosu</groupId>
       <artifactId>gosu-core</artifactId>
@@ -35,6 +35,11 @@
       <artifactId>jsoup</artifactId>
       <version>1.8.2</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>systems.manifold</groupId>
+      <artifactId>manifold-util</artifactId>
+      <version>2022.1.33</version>
     </dependency>
   </dependencies>
 

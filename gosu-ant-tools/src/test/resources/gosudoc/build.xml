@@ -17,7 +17,7 @@
 
     <path id="gosu.classpath">
       <pathelement location="../gosu-core/target/classes"/>
-      <pathelement location="../gosu-core-api/target/classes"/>
+<!--      <pathelement location="../gosu-core-api/target/classes"/>-->
       <!--<pathelement location="../gosu-core-api/target/classes"/> TODO add ref for gosu-doc? --> 
     </path>
 
