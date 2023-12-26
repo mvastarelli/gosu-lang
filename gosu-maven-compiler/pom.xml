@@ -13,11 +13,6 @@
   <description>Gosu Compiler support for the Maven compiler plugin, as a Plexus Compiler component.</description>
 
   <dependencies>
-<!--    <dependency>-->
-<!--      <groupId>org.gosu-lang.gosu</groupId>-->
-<!--      <artifactId>gosu-core-api</artifactId>-->
-<!--      <version>${project.version}</version>-->
-<!--    </dependency>-->
     <dependency>
       <groupId>org.gosu-lang.gosu</groupId>
       <artifactId>gosu-core</artifactId>

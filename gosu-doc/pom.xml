@@ -14,11 +14,6 @@
   <description>Generates Javadoc-compatible documentation for Gosu projects</description>
 
   <dependencies>
-<!--    <dependency>-->
-<!--      <groupId>org.gosu-lang.gosu</groupId>-->
-<!--      <artifactId>gosu-core-api</artifactId>-->
-<!--      <version>${project.version}</version>-->
-<!--    </dependency>-->
     <dependency>
       <groupId>org.gosu-lang.gosu</groupId>
       <artifactId>gosu-core</artifactId>
