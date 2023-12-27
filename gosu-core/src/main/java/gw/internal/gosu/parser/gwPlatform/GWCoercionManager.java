@@ -38,7 +38,7 @@ public class GWCoercionManager extends StandardCoercionManager {
     //=============================================================================
     IType entityType = TypeSystem.getByFullNameIfValid("gw.entity.IEntityType");
     if (entityType != null && entityType.equals(lhsType) &&
-            rhsType instanceof IMetaType && CommonServices.getEntityAccess().isEntityClass(((IMetaType) rhsType).getType())) {
+            rhsType instanceof IMetaType && CommonServices.INSTANCE.getEntityAccess().isEntityClass(((IMetaType) rhsType).getType())) {
       return IdentityCoercer.instance();
     }
 
@@ -73,11 +73,11 @@ public class GWCoercionManager extends StandardCoercionManager {
     }
 
     if (obj instanceof Date) {
-      return CommonServices.getCoercionManager().formatTime((Date) obj, "yyyy-MM-dd");
+      return CommonServices.INSTANCE.getCoercionManager().formatTime((Date) obj, "yyyy-MM-dd");
     }
 
-    if (CommonServices.getEntityAccess().isDomainInstance(obj)) {
-      return CommonServices.getEntityAccess().makeStringFrom(obj);
+    if (CommonServices.INSTANCE.getEntityAccess().isDomainInstance(obj)) {
+      return CommonServices.INSTANCE.getEntityAccess().makeStringFrom(obj);
     }
 
     if (obj instanceof IEnumConstant) {

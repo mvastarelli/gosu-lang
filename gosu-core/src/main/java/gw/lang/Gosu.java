@@ -241,13 +241,13 @@ public class Gosu
             String pathname = cmdLineCP
                               ? s
                               : scriptRoot + File.separatorChar + s;
-            cp.add( CommonServices.getFileSystem().getIDirectory( new File( pathname ) ) );
+            cp.add( CommonServices.INSTANCE.getFileSystem().getIDirectory( new File( pathname ) ) );
           }
         }
         else
         {
           String pathname = cmdLineCP ? s : scriptRoot + File.separatorChar + s;
-          cp.add( CommonServices.getFileSystem().getIDirectory( new File( pathname ) ) );
+          cp.add( CommonServices.INSTANCE.getFileSystem().getIDirectory( new File( pathname ) ) );
         }
       }
     }
@@ -286,7 +286,7 @@ public class Gosu
     _classpath = classpath;
     ClassLoader loader = TypeSystem.getCurrentModule() == null
                          // Can be null if called before the exec environment is setup, so assume the future parent of the module loader is the plugin loader
-                         ? CommonServices.getEntityAccess().getPluginClassLoader()
+                         ? CommonServices.INSTANCE.getEntityAccess().getPluginClassLoader()
                          : TypeSystem.getGosuClassLoader().getActualLoader();
     if( loader instanceof URLClassLoader )
     {
@@ -396,7 +396,7 @@ public class Gosu
         {
           try
           {
-            IDirectory file = CommonServices.getFileSystem().getIDirectory( Paths.get( url.toURI() ) );
+            IDirectory file = CommonServices.INSTANCE.getFileSystem().getIDirectory( Paths.get( url.toURI() ) );
             if( file.exists() )
             {
               ll.add( file );

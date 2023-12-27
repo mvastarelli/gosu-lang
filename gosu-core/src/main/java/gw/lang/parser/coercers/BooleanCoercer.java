@@ -13,7 +13,7 @@ public class BooleanCoercer extends BaseBoxedCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeBooleanFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeBooleanFrom( value );
   }
 
   public static BooleanCoercer instance()

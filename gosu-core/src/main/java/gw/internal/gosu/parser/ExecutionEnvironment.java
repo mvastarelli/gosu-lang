@@ -201,7 +201,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
       setDiscretePackages( discretePackages );
 //      pushModule(singleModule); // Push and leave pushed (in this thread)
       singleModule.initializeTypeLoaders();
-      CommonServices.getCoercionManager().init();
+      CommonServices.INSTANCE.getCoercionManager().init();
 
       startSneakyDebugThread();
     } finally {
@@ -242,7 +242,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
         }
       }
 
-      CommonServices.getCoercionManager().init();
+      CommonServices.INSTANCE.getCoercionManager().init();
 
       FrequentUsedJavaTypeCache.instance( this ).init();
     } finally {
@@ -295,7 +295,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
       _modules = new ArrayList<>(Collections.singletonList(module));
 
       module.initializeTypeLoaders();
-      CommonServices.getEntityAccess().init();
+      CommonServices.INSTANCE.getEntityAccess().init();
 
       FrequentUsedJavaTypeCache.instance( this ).init();
     } finally {
@@ -336,7 +336,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
 
       module.initializeTypeLoaders();
 
-      CommonServices.getCoercionManager().init();
+      CommonServices.INSTANCE.getCoercionManager().init();
     }
     finally {
       _state = TypeSystemState.STARTED;
@@ -439,7 +439,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
   }
 
   public IModule getModule( URL url ) {
-    return getModule( CommonServices.getFileSystem().getIFile( url ) );
+    return getModule( CommonServices.INSTANCE.getFileSystem().getIFile( url ) );
   }
 
   @Override
@@ -651,7 +651,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
                     }
                   }
                 }
-                CommonServices.getEntityAccess().reloadedTypes(types);
+                CommonServices.INSTANCE.getEntityAccess().reloadedTypes(types);
               }
 
               private void runScript( String strScript ) {
@@ -685,7 +685,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
                   Object result = parseResult.getProgram().evaluate( null );
                   if( result != null )
                   {
-                    System.out.println( "Return Value: " + CommonServices.getCoercionManager().convertValue( result, JavaTypes.STRING() ) );
+                    System.out.println( "Return Value: " + CommonServices.INSTANCE.getCoercionManager().convertValue( result, JavaTypes.STRING() ) );
                   }
                 }
                 catch( Exception e )
@@ -707,9 +707,9 @@ public class ExecutionEnvironment implements IExecutionEnvironment
 
   public static List<IDirectory> createDefaultClassPath( ) {
     List<String> vals = new ArrayList<>();
-    vals.add(CommonServices.getEntityAccess().getPluginRepositories().toString());
+    vals.add(CommonServices.INSTANCE.getEntityAccess().getPluginRepositories().toString());
     vals.add( removeAllQuotes( System.getProperty( "java.class.path", "" ) ) );
-    vals.add(CommonServices.getEntityAccess().getWebServerPaths());
+    vals.add(CommonServices.INSTANCE.getEntityAccess().getWebServerPaths());
     vals.addAll(getJarsContainingSpecialClasses());
     if( JreUtil.isJava8() )
     {
@@ -744,7 +744,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
         if( pathElement.length() > 0 )
         {
           Path filePath = Paths.get( pathElement );
-          IDirectory resource = CommonServices.getFileSystem().getIDirectory( filePath );
+          IDirectory resource = CommonServices.INSTANCE.getFileSystem().getIDirectory( filePath );
           expanded.add(resource);
         }
       }

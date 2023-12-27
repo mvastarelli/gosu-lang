@@ -87,19 +87,19 @@ public final class UnaryExpression extends Expression implements IUnaryExpressio
 
       if( type == JavaTypes.BIG_DECIMAL() )
       {
-        value = CommonServices.getCoercionManager().makeBigDecimalFrom( value ).negate();
+        value = CommonServices.INSTANCE.getCoercionManager().makeBigDecimalFrom( value ).negate();
       }
       else if( type == JavaTypes.BIG_INTEGER() )
       {
-        value = CommonServices.getCoercionManager().makeBigIntegerFrom( value ).negate();
+        value = CommonServices.INSTANCE.getCoercionManager().makeBigIntegerFrom( value ).negate();
       }
       else if( type == JavaTypes.INTEGER() || type == JavaTypes.pINT() )
       {
-        value = makeInteger( -CommonServices.getCoercionManager().makeIntegerFrom( value ) );
+        value = makeInteger( -CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value ) );
       }
       else if( type == JavaTypes.LONG() || type == JavaTypes.pLONG() )
       {
-        value = makeLong( -CommonServices.getCoercionManager().makeLongFrom( value ) );
+        value = makeLong( -CommonServices.INSTANCE.getCoercionManager().makeLongFrom( value ) );
       }
       else if( type == JavaTypes.DOUBLE() || type == JavaTypes.pDOUBLE() )
       {
@@ -111,11 +111,11 @@ public final class UnaryExpression extends Expression implements IUnaryExpressio
       }
       else if( type == JavaTypes.SHORT() || type == JavaTypes.pSHORT() )
       {
-        value = makeInteger( -CommonServices.getCoercionManager().makeIntegerFrom( value ) ).shortValue();
+        value = makeInteger( -CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value ) ).shortValue();
       }
       else if( type == JavaTypes.BYTE() || type == JavaTypes.pBYTE() )
       {
-        value = makeInteger( -CommonServices.getCoercionManager().makeIntegerFrom( value ) ).byteValue();
+        value = makeInteger( -CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value ) ).byteValue();
       }
       else
       {

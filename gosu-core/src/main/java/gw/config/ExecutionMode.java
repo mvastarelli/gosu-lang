@@ -33,7 +33,7 @@ public enum ExecutionMode {
   }
 
   public static ExecutionMode get() {
-    return _mode == null ? (_mode = CommonServices.getPlatformHelper().getExecutionMode()) : _mode;
+    return _mode == null ? (_mode = CommonServices.INSTANCE.getPlatformHelper().getExecutionMode()) : _mode;
   }
   public static void clear() {
     _mode = null;

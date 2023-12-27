@@ -13,7 +13,7 @@ public class DoubleCoercer extends BaseBoxedCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeDoubleFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( value );
   }
 
   public static DoubleCoercer instance()

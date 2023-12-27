@@ -56,11 +56,11 @@ public class Gosuc implements IGosuc {
   }
 
   public void initializeGosu() {
-    CommonServices.getKernel().redefineService_Privileged( IGlobalLoaderProvider.class,
+    CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( IGlobalLoaderProvider.class,
             new GosucGlobalLoaderProvider( _project.getGlobalLoaders() ) );
     IMemoryMonitor memoryMonitor = _project.getMemoryMonitor();
     if (memoryMonitor != null) {
-      CommonServices.getKernel().redefineService_Privileged(IMemoryMonitor.class, memoryMonitor);
+      CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged(IMemoryMonitor.class, memoryMonitor);
     }
     IExecutionEnvironment execEnv = TypeSystem.getExecutionEnvironment( _project );
     List<IModule> modules = defineModules( _project );

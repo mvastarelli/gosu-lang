@@ -276,7 +276,7 @@ public class GosuDateUtil {
     if (date == null) {
       throw new NullPointerException( "Null date" );
     }
-    Calendar dateTime = Calendar.getInstance(CommonServices.getEntityAccess().getTimeZone());
+    Calendar dateTime = Calendar.getInstance(CommonServices.INSTANCE.getEntityAccess().getTimeZone());
     dateTime.setTime(date);
     return dateTime;
   }

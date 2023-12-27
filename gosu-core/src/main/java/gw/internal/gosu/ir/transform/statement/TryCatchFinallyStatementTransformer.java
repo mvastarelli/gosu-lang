@@ -118,7 +118,7 @@ public class TryCatchFinallyStatementTransformer extends AbstractStatementTransf
 
   private boolean wrapInEvalException( IType type )
   {
-    return type == null && !CommonServices.getEntityAccess().getLanguageLevel().supportsNakedCatchStatements();
+    return type == null && !CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().supportsNakedCatchStatements();
   }
 
   private IRSymbol createCatchClauseSymbol( Symbol symbol, IType type) {

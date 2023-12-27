@@ -185,7 +185,7 @@ public class ArrayAssignmentStatementTransformer extends AbstractStatementTransf
         IType classObj = TypeLoaderAccess.instance().getIntrinsicTypeFromObject( obj );
         if( classObj.isArray() )
         {
-          value = CommonServices.getCoercionManager().convertValue( value, classObj.getComponentType() );
+          value = CommonServices.INSTANCE.getCoercionManager().convertValue( value, classObj.getComponentType() );
           classObj.setArrayComponent( obj, ((Number)index).intValue(), value );
         }
         else
@@ -232,14 +232,14 @@ public class ArrayAssignmentStatementTransformer extends AbstractStatementTransf
     IType classObj = TypeLoaderAccess.instance().getIntrinsicTypeFromObject( obj );
     if( classObj.isArray() )
     {
-      value = CommonServices.getCoercionManager().convertValue( value, classObj.getComponentType() );
+      value = CommonServices.INSTANCE.getCoercionManager().convertValue( value, classObj.getComponentType() );
       classObj.setArrayComponent( obj, iIndex, value );
       return;
     }
 
     if( obj instanceof StringBuffer )
     {
-      ((StringBuffer)obj).setCharAt( iIndex, ((Character)CommonServices.getCoercionManager().convertValue( value, JavaTypes.CHARACTER() )).charValue() );
+      ((StringBuffer)obj).setCharAt( iIndex, ((Character)CommonServices.INSTANCE.getCoercionManager().convertValue( value, JavaTypes.CHARACTER() )).charValue() );
     }
 
     throw new EvaluationException( "The type, " + classObj.getName() + ", is not coercible to an indexed-writable array." );

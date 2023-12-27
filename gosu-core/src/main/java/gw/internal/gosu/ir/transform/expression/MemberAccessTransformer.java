@@ -177,7 +177,7 @@ public class MemberAccessTransformer extends AbstractExpressionTransformer<Membe
       (_expr().getMemberAccessKind() == MemberAccessKind.NULL_SAFE ||
 
        // Backward compatibility for non-standard Gosu
-       (!CommonServices.getEntityAccess().getLanguageLevel().isStandard() &&
+       (!CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() &&
         (!_expr().getType().isPrimitive() ||
          //## special case: boolean short-circuit to false
          _expr().getType() == JavaTypes.pBOOLEAN() ||
@@ -249,7 +249,7 @@ public class MemberAccessTransformer extends AbstractExpressionTransformer<Membe
         }
         else {
           // TODO dlank - With a bit of work, the following can be replaced by adding @Autocreate annotations to the EntityTypeInfo's properties
-          IEntityAccess ea = CommonServices.getEntityAccess();
+          IEntityAccess ea = CommonServices.INSTANCE.getEntityAccess();
           if( ea.isEntityClass( rootType ) && ea.isEntityClass(pi.getFeatureType()))
           {
             return true;
@@ -604,7 +604,7 @@ public class MemberAccessTransformer extends AbstractExpressionTransformer<Membe
 
     IType entityType = TypeSystem.getByFullName(typeName);
     IPropertyInfo property = entityType.getTypeInfo().getProperty(propertyName);
-    IEntityAccess ea = CommonServices.getEntityAccess();
+    IEntityAccess ea = CommonServices.INSTANCE.getEntityAccess();
 
     List<IAnnotationInfo> annotationInfoList = property.getAnnotationsOfType( GosuTypes.AUTOCREATE() );
     Object value;
@@ -638,7 +638,7 @@ public class MemberAccessTransformer extends AbstractExpressionTransformer<Membe
       throw new EvaluationException( "Property, " + property.getName() + ", on class, " + TypeSystem.getFromObject( rootValue ).getRelativeName() + ", is null and immutable." );
     }
 
-    value = CommonServices.getCoercionManager().convertValue( value, property.getFeatureType() );
+    value = CommonServices.INSTANCE.getCoercionManager().convertValue( value, property.getFeatureType() );
     property.getAccessor().setValue( rootValue, value );
     return usingAutoCreateAnnotation ? property.getAccessor().getValue( rootValue ) : value;
   }

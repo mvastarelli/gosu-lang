@@ -60,7 +60,7 @@ enhancement CoreDateEnhancement : Date {
    * The date and time right now
    */
   static property get Now() : Date {
-    return CommonServices.getEntityAccess().CurrentTime
+    return CommonServices.INSTANCE.getEntityAccess().CurrentTime
   }
   
   /**
@@ -233,7 +233,7 @@ enhancement CoreDateEnhancement : Date {
    * Returns a new Calendar representing this Date in the system TimeZone and Locale.
    */
   function toCalendar() : Calendar {
-    var cal = Calendar.getInstance(CommonServices.getEntityAccess().TimeZone)
+    var cal = Calendar.getInstance(CommonServices.INSTANCE.getEntityAccess().TimeZone)
     cal.setTime(this)
     return cal
   }
@@ -251,7 +251,7 @@ enhancement CoreDateEnhancement : Date {
    * Returns a new Calendar representing this Date in the specified Locale and the system TimeZone.
    */
   function toCalendar(locale : Locale) : Calendar {
-    var cal = Calendar.getInstance(CommonServices.getEntityAccess().TimeZone, locale)
+    var cal = Calendar.getInstance(CommonServices.INSTANCE.getEntityAccess().TimeZone, locale)
     cal.setTime(this)
     return cal
   }

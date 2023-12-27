@@ -13,7 +13,7 @@ public class FloatCoercer extends BaseBoxedCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeFloatFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeFloatFrom( value );
   }
 
   public static FloatCoercer instance()

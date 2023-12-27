@@ -3279,7 +3279,7 @@ public class GosuClass extends InnerClassCapableType implements IGosuClassIntern
     ISourceFileHandle sourceFileHandle = getSourceFileHandle();
     String filePath = sourceFileHandle == null ? null : sourceFileHandle.getFilePath();
     if (filePath != null) {
-      return new IFile[] {CommonServices.getFileSystem().getIFile(new File(filePath))};
+      return new IFile[] {CommonServices.INSTANCE.getFileSystem().getIFile(new File(filePath))};
     } else {
       return IFile.EMPTY_ARRAY;
     }

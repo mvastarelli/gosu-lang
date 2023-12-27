@@ -29,7 +29,7 @@ public class ClassPathUtil {
         continue;
       }
 
-      classpathComponents.add( CommonServices.getFileSystem().getIDirectory( f ) );
+      classpathComponents.add( CommonServices.INSTANCE.getFileSystem().getIDirectory( f ) );
     }
 
     return classpathComponents;

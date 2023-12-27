@@ -42,7 +42,7 @@ public class DateInterval extends IterableInterval<Date, Integer, DateUnit, Date
   }
   private Date add( Date date, int iMultiple )
   {
-    Calendar dateTime = Calendar.getInstance(CommonServices.getEntityAccess().getTimeZone());
+    Calendar dateTime = Calendar.getInstance(CommonServices.INSTANCE.getEntityAccess().getTimeZone());
     dateTime.setTime( date );
 
     dateTime.add( getUnit().getCalendarConst(), getStep() * iMultiple );
@@ -55,7 +55,7 @@ public class DateInterval extends IterableInterval<Date, Integer, DateUnit, Date
   }
   private Date subtract( Date date, int iMultiple )
   {
-    Calendar dateTime = Calendar.getInstance(CommonServices.getEntityAccess().getTimeZone());
+    Calendar dateTime = Calendar.getInstance(CommonServices.INSTANCE.getEntityAccess().getTimeZone());
     dateTime.setTime( date );
 
     dateTime.add( getUnit().getCalendarConst(), -(getStep() * iMultiple) );

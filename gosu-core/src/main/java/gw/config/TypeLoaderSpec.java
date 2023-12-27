@@ -73,7 +73,7 @@ public class TypeLoaderSpec
 
   public static ITypeLoader createTypeLoader( IExecutionEnvironment execEnv, String typeloaderClassName, HashMap additionalArgs )
   {
-    ILogger logger = CommonServices.getEntityAccess().getLogger();
+    ILogger logger = CommonServices.INSTANCE.getEntityAccess().getLogger();
     ITypeLoader additionalTypeLoader = null;
     boolean gosu = false;
     try

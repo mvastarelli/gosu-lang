@@ -14,7 +14,7 @@ public class RationalCoercer extends StandardCoercer
 
   public Rational coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeRationalFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeRationalFrom( value );
   }
 
   public static RationalCoercer instance()

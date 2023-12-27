@@ -53,7 +53,7 @@ public class ClassPath implements IClassPath
     _filter = filter;
 
     // Files are assumed stable outside an IDE
-    _fs = CommonServices.getFileSystem();
+    _fs = CommonServices.INSTANCE.getFileSystem();
     _bStableFiles = _fs instanceof FileSystemImpl;
 
     loadClasspathInfo();
@@ -151,7 +151,7 @@ public class ClassPath implements IClassPath
     {
       List<String> jreJars = getJreJars();
       javaClassPath.addAll( jreJars.stream()
-        .map( uri -> CommonServices.getFileSystem()
+        .map( uri -> CommonServices.INSTANCE.getFileSystem()
           .getIDirectory( Paths.get( URI.create( uri ) ) ) )
         .collect( Collectors.toList() ) );
     }

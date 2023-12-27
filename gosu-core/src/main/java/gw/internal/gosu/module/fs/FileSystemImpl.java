@@ -359,7 +359,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     }
 
     IFile getIResourceFromJavaFile(URL location) {
-      return CommonServices.getFileSystem().getIFile( getFileFromURL(location) );
+      return CommonServices.INSTANCE.getFileSystem().getIFile( getFileFromURL(location) );
     }
 
     @Override
@@ -381,7 +381,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     }
 
     protected IDirectory getIResourceFromJavaFile(URL location) {
-      return CommonServices.getFileSystem().getIDirectory( getFileFromURL(location) );
+      return CommonServices.INSTANCE.getFileSystem().getIDirectory( getFileFromURL(location) );
     }
 
     @Override

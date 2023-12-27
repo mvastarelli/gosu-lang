@@ -123,7 +123,7 @@ public class DefaultEntityAccess extends BaseService implements IEntityAccess
     try
     {
       IType valueType = TypeLoaderAccess.instance().getIntrinsicTypeFromObject(value);
-      CommonServices.getCoercionManager().verifyTypesComparable( type, valueType, false );
+      CommonServices.INSTANCE.getCoercionManager().verifyTypesComparable( type, valueType, false );
     }
     catch( ParseIssue pe )
     {

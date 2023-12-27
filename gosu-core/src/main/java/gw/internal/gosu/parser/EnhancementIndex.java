@@ -328,7 +328,7 @@ public class EnhancementIndex implements IEnhancementIndex
       }
       catch( ClassNotFoundException e )
       {
-        // CommonServices.getEntityAccess().getLogger().warn( "Unable to add enhancement " + possibleEnhancementTypeName + " because the corresponding class was not found." );
+        // CommonServices.INSTANCE.getEntityAccess().getLogger().warn( "Unable to add enhancement " + possibleEnhancementTypeName + " because the corresponding class was not found." );
       }
     }
 

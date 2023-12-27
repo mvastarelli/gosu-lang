@@ -271,7 +271,7 @@ public class Module implements IModule
                   continue;
                 }
                 File dirOrJar = new File( url.toURI() );
-                IDirectory idir = CommonServices.getFileSystem().getIDirectory( dirOrJar );
+                IDirectory idir = CommonServices.INSTANCE.getFileSystem().getIDirectory( dirOrJar );
                 if( !newClasspath.contains( idir ) )
                 {
                   newClasspath.add( idir );
@@ -331,7 +331,7 @@ public class Module implements IModule
   public void initializeTypeLoaders() {
     maybeCreateModuleTypeLoader();
     createStandardTypeLoaders();
-    if( CommonServices.getEntityAccess().getLanguageLevel().isStandard() ) {
+    if( CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() ) {
       createExtensionTypeLoaders();
     }
 
@@ -442,7 +442,7 @@ public class Module implements IModule
     try
     {
       Class loaderClass = getExtensionClassLoader().loadClass( className );
-      CommonServices.getGosuInitializationHooks().beforeTypeLoaderCreation( loaderClass );
+      CommonServices.INSTANCE.getGosuInitializationHooks().beforeTypeLoaderCreation( loaderClass );
 
       Constructor constructor = getConstructor( loaderClass, IModule.class );
       if( constructor != null )
@@ -488,7 +488,7 @@ public class Module implements IModule
     if( typeLoader != null )
     {
       CommonServices.getTypeSystem().pushTypeLoader( this, typeLoader );
-      CommonServices.getGosuInitializationHooks().afterTypeLoaderCreation();
+      CommonServices.INSTANCE.getGosuInitializationHooks().afterTypeLoaderCreation();
     }
     else
     {

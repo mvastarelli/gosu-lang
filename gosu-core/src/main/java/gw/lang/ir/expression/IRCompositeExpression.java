@@ -53,7 +53,7 @@ public class IRCompositeExpression extends IRExpression {
       IRExpression expr = (IRExpression) irElement;
       return expr.getType();
     } else {
-      return CommonServices.getGosuIndustrialPark().getIRTypeResolver().getDescriptor(JavaTypes.pVOID());
+      return CommonServices.INSTANCE.getGosuIndustrialPark().getIRTypeResolver().getDescriptor(JavaTypes.pVOID());
     }
   }
 }

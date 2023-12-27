@@ -328,7 +328,7 @@ public class ForEachStatementTransformer extends AbstractStatementTransformer<Fo
     {
       _iCsr = 0;
       _arrayType = arrayType;
-      _array = CommonServices.getCoercionManager().convertValue(array, _arrayType);
+      _array = CommonServices.INSTANCE.getCoercionManager().convertValue(array, _arrayType);
     }
 
     public boolean hasNext()

@@ -23,10 +23,10 @@ public class DefaultGosuProfilingService extends BaseService implements IGosuPro
    * @param waitTime  any wait times that were consumed during this execution
    */
   public void completed(long startTime, long endTime, String path, String location, int count, long waitTime) {
-   ILogger logger = CommonServices.getEntityAccess().getLogger();
+   ILogger logger = CommonServices.INSTANCE.getEntityAccess().getLogger();
     if (logger.isDebugEnabled()) {
       if (endTime <= 0) {
-        endTime = CommonServices.getEntityAccess().getCurrentTime().getTime();
+        endTime = CommonServices.INSTANCE.getEntityAccess().getCurrentTime().getTime();
       }
       logger.debug("At " + (endTime - _time0)  + " msecs: executed '"
               + path + "' (" + location + ") "
@@ -39,6 +39,6 @@ public class DefaultGosuProfilingService extends BaseService implements IGosuPro
 
   @Override
   protected void doInit() {
-    _time0 = CommonServices.getEntityAccess().getCurrentTime().getTime(); 
+    _time0 = CommonServices.INSTANCE.getEntityAccess().getCurrentTime().getTime();
   }
 }

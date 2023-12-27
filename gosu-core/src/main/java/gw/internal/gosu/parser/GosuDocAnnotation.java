@@ -74,7 +74,7 @@ public class GosuDocAnnotation implements Serializable, IGosuAnnotation
             TypeAsExpression typeAsExpr = new TypeAsExpression();
             typeAsExpr.setLHS( lhs );
             typeAsExpr.setType( JavaTypes.CLASS() );
-            typeAsExpr.setCoercer( CommonServices.getCoercionManager().resolveCoercerStatically( JavaTypes.CLASS(), lhs.getType() ) );
+            typeAsExpr.setCoercer( CommonServices.INSTANCE.getCoercionManager().resolveCoercerStatically( JavaTypes.CLASS(), lhs.getType() ) );
             newExpression.setArgs( exprArray( typeAsExpr, new StringLiteral( _args[1] ) ) );
           }
           else if( _type.getName().equals( Param.class.getName() ) )

@@ -402,7 +402,7 @@ public class GosuRuntimeMethods {
     if( o instanceof Boolean ) {
       return !((Boolean)o).booleanValue();
     }
-    return !CommonServices.getCoercionManager().makePrimitiveBooleanFrom( o );
+    return !CommonServices.INSTANCE.getCoercionManager().makePrimitiveBooleanFrom( o );
   }
 
   public static void invokeUnlockOrDisposeOrCloseMethod( Object o )

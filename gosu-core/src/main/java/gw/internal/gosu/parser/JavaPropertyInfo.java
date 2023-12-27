@@ -156,7 +156,7 @@ public class JavaPropertyInfo extends JavaBaseFeatureInfo implements IJavaProper
           rhs = getFeatureType();
           lhs = TypeSystem.get(field.getType());
         }
-        if(CommonServices.getCoercionManager().canCoerce(lhs, rhs)) {
+        if(CommonServices.INSTANCE.getCoercionManager().canCoerce(lhs, rhs)) {
           _publicField = field;
           break;
         }
@@ -602,7 +602,7 @@ public class JavaPropertyInfo extends JavaBaseFeatureInfo implements IJavaProper
           rVal = _getMethod.invoke( ctx, args );
         } else {
           rVal = ((FieldJavaClassField)_publicField).get(ctx);
-          rVal = CommonServices.getCoercionManager().convertValue(rVal, getFeatureType());
+          rVal = CommonServices.INSTANCE.getCoercionManager().convertValue(rVal, getFeatureType());
         }
         return rVal;
       }
@@ -630,7 +630,7 @@ public class JavaPropertyInfo extends JavaBaseFeatureInfo implements IJavaProper
         if (_setMethod != null) {
           _setMethod.invoke( ctx, args );
         } else {
-          value = CommonServices.getCoercionManager().convertValue(value, TypeSystem.get(_publicField.getType()));
+          value = CommonServices.INSTANCE.getCoercionManager().convertValue(value, TypeSystem.get(_publicField.getType()));
           ((FieldJavaClassField)_publicField).set(ctx, value);
         }
       }

@@ -42,12 +42,12 @@ public class BlockCoercer extends BaseCoercer
         if( IBlockClass.INVOKE_METHOD_NAME.equals( method.getName() ) )
         {
           Object val = finalInvoke.invoke( blk, args );
-          return CommonServices.getCoercionManager().convertValue( val, funType.getReturnType() );
+          return CommonServices.INSTANCE.getCoercionManager().convertValue( val, funType.getReturnType() );
         }
         else if( IBlockClass.INVOKE_WITH_ARGS_METHOD_NAME.equals( method.getName() ) )
         {
           Object val = blk.invokeWithArgs( (Object[]) args[0] );
-          return CommonServices.getCoercionManager().convertValue( val, funType.getReturnType() );
+          return CommonServices.INSTANCE.getCoercionManager().convertValue( val, funType.getReturnType() );
         }
         else
         {

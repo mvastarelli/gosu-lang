@@ -118,7 +118,7 @@ public class FileFactory {
       // Note the entire method should be reduced to these two lines
 
       Path path = Paths.get( uri );
-      return CommonServices.getFileSystem().getIFile( path );
+      return CommonServices.INSTANCE.getFileSystem().getIFile( path );
     }
   }
 

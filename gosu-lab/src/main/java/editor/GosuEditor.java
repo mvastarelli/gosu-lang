@@ -916,7 +916,7 @@ public class GosuEditor extends EditorHost implements IScriptEditor, IGosuPanel,
 //  {
 //    try
 //    {
-//      IEntityAccess entityAccess = CommonServices.getEntityAccess();
+//      IEntityAccess entityAccess = CommonServices.INSTANCE.getEntityAccess();
 //      if( entityAccess instanceof ShellEntityAccess )
 //      {
 //        ShellEntityAccess shellEntityAccess = (ShellEntityAccess)entityAccess;

@@ -32,7 +32,7 @@ public class TypeNameUtil
     }
     if( root == null )
     {
-      IFileSystem fileSystem = CommonServices.getFileSystem();
+      IFileSystem fileSystem = CommonServices.INSTANCE.getFileSystem();
       for( String path: LabFrame.instance().getGosuPanel().getExperiment().getBackingSourcePath() )
       {
         try

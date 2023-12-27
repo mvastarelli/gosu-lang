@@ -624,7 +624,7 @@ public abstract class ParsedElement implements IParsedElement
 
     if( getLocation() == null ||
         getLocation().getEnclosingType() == null ||
-        CommonServices.getEntityAccess().shouldAddWarning( getLocation().getEnclosingType(), warning ) )
+        CommonServices.INSTANCE.getEntityAccess().shouldAddWarning( getLocation().getEnclosingType(), warning ) )
     {
       maybeInitLikelyNullFields();
 
@@ -840,7 +840,7 @@ public abstract class ParsedElement implements IParsedElement
       return null;
     }
 
-    return CommonServices.getCoercionManager().makeIntegerFrom( obj );
+    return CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( obj );
   }
 
   public static Long makeLong( Object obj )
@@ -850,7 +850,7 @@ public abstract class ParsedElement implements IParsedElement
       return null;
     }
 
-    return CommonServices.getCoercionManager().makeLongFrom( obj );
+    return CommonServices.INSTANCE.getCoercionManager().makeLongFrom( obj );
   }
 
   /**
@@ -868,7 +868,7 @@ public abstract class ParsedElement implements IParsedElement
       return Double.NaN;
     }
 
-    return CommonServices.getCoercionManager().makePrimitiveDoubleFrom( obj );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveDoubleFrom( obj );
   }
 
   /**
@@ -886,7 +886,7 @@ public abstract class ParsedElement implements IParsedElement
       return Float.NaN;
     }
 
-    return CommonServices.getCoercionManager().makePrimitiveFloatFrom( obj );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveFloatFrom( obj );
   }
 
   public void compactParseTree() {

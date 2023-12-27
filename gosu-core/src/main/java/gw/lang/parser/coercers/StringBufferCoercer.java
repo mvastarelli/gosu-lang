@@ -13,7 +13,7 @@ public class StringBufferCoercer extends StandardCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return new StringBuffer( CommonServices.getCoercionManager().makeStringFrom( value ) );
+    return new StringBuffer( CommonServices.INSTANCE.getCoercionManager().makeStringFrom( value ) );
   }
 
   public static StringBufferCoercer instance()

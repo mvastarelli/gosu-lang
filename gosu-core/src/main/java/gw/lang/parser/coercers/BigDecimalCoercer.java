@@ -13,7 +13,7 @@ public class BigDecimalCoercer extends StandardCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeBigDecimalFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeBigDecimalFrom( value );
   }
 
   public static BigDecimalCoercer instance()

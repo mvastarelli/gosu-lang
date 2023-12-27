@@ -41,7 +41,7 @@ public class GosucUtil {
   }
 
   public static IDirectory getDirectoryForPath( String uriPath ) {
-    return CommonServices.getFileSystem().getIDirectory( Paths.get( URI.create( uriPath ) ) );
+    return CommonServices.INSTANCE.getFileSystem().getIDirectory( Paths.get( URI.create( uriPath ) ) );
   }
 
   public static List<String> makeStringPaths( List<IDirectory> sourcePaths ) {
@@ -65,7 +65,7 @@ public class GosucUtil {
   public static List<IDirectory> toDirectories(List<String> uriPaths) {
     List<IDirectory> dirs = new ArrayList<>();
     for (String uri : uriPaths) {
-      dirs.add( CommonServices.getFileSystem().getIDirectory( Paths.get( URI.create( uri ) ) ) );
+      dirs.add( CommonServices.INSTANCE.getFileSystem().getIDirectory( Paths.get( URI.create( uri ) ) ) );
     }
     return dirs;
   }

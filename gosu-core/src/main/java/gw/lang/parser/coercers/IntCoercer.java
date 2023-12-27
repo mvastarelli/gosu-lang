@@ -13,7 +13,7 @@ public class IntCoercer extends BaseBoxedCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeIntegerFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value );
   }
 
   public static IntCoercer instance()

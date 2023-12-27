@@ -602,7 +602,7 @@ public class GosuClassTypeInfo extends BaseTypeInfo implements IGosuClassTypeInf
 
       for( IType parentType : parentTypes )
       {
-        CommonServices.getEntityAccess().addEnhancementMethods(parentType, privateMethods );
+        CommonServices.INSTANCE.getEntityAccess().addEnhancementMethods(parentType, privateMethods );
       }
     }
 
@@ -624,17 +624,17 @@ public class GosuClassTypeInfo extends BaseTypeInfo implements IGosuClassTypeInf
 
       for( IType parentType : parentTypes )
       {
-        CommonServices.getEntityAccess().addEnhancementProperties( parentType, privateProps, true );
+        CommonServices.INSTANCE.getEntityAccess().addEnhancementProperties( parentType, privateProps, true );
         IType[] list = parentType.getInterfaces();
         for( IType ifaceType : list )
         {
-          CommonServices.getEntityAccess().addEnhancementProperties( ifaceType, privateProps, true );
+          CommonServices.INSTANCE.getEntityAccess().addEnhancementProperties( ifaceType, privateProps, true );
         }
       }
 
       if( !(_gsClass instanceof IGosuEnhancement) )
       {
-        CommonServices.getEntityAccess().addEnhancementProperties( JavaTypes.OBJECT(), privateProps, true );
+        CommonServices.INSTANCE.getEntityAccess().addEnhancementProperties( JavaTypes.OBJECT(), privateProps, true );
       }
     }
   }

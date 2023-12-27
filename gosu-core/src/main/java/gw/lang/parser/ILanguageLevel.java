@@ -19,7 +19,7 @@ public interface ILanguageLevel
     public static boolean STANDARD_GOSU()
     {
       return g_standardGosu == null
-             ? g_standardGosu = CommonServices.getEntityAccess().getLanguageLevel().isStandard()
+             ? g_standardGosu = CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard()
              : g_standardGosu;
     }
 

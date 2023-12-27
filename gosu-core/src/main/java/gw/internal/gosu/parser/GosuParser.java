@@ -222,7 +222,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
 
   GosuParser( ISymbolTable symTable, IScriptabilityModifier scriptabilityConstraint )
   {
-    this(symTable, scriptabilityConstraint, CommonServices.getEntityAccess().getDefaultTypeUses());
+    this(symTable, scriptabilityConstraint, CommonServices.INSTANCE.getEntityAccess().getDefaultTypeUses());
   }
 
   GosuParser( ISymbolTable symTable, IScriptabilityModifier scriptabilityConstraint, ITypeUsesMap tuMap )
@@ -614,7 +614,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
               previousStatement == null ||
                       currentStatement.isNoOp() ||
                       previousStatement.getLeastSignificantTerminalStatement( bAbsolute ) == null || !bAbsolute[0],
-              !CommonServices.getEntityAccess().isUnreachableCodeDetectionOn(), Res.MSG_UNREACHABLE_STMT );
+              !CommonServices.INSTANCE.getEntityAccess().isUnreachableCodeDetectionOn(), Res.MSG_UNREACHABLE_STMT );
     }
 
     if( isParsingFunction() && !isParsingBlock() )
@@ -1526,7 +1526,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
     return first instanceof ILiteralExpression &&
            !(second instanceof ILiteralExpression) &&
            JavaTypes.STRING().equals(first.getType()) &&
-           CommonServices.getCoercionManager().canCoerce( second.getType(), JavaTypes.STRING() );
+           CommonServices.INSTANCE.getCoercionManager().canCoerce( second.getType(), JavaTypes.STRING() );
   }
 
   private Expression wrapExpressionIfNeeded( Expression first, Expression second )
@@ -2084,7 +2084,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
   {
     if( !lhs.hasParseExceptions() && !rhs.hasParseExceptions() )
     {
-      ICoercionManager cocerionManager = CommonServices.getCoercionManager();
+      ICoercionManager cocerionManager = CommonServices.INSTANCE.getCoercionManager();
       boolean bDontWarn =
               ((lhs.getType() != JavaTypes.OBJECT() && rhs.getType() != JavaTypes.OBJECT()) || // neither side is Object, or
                       (lhs.getType() == JavaTypes.pVOID() || rhs.getType() == JavaTypes.pVOID()) ||   // one side is "null", or
@@ -2669,7 +2669,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
           IType rhsType = ((TypeLiteral)rhs).getType().getType();
           checkComparableAndCastable( lhs, rhs );
           e.setType( rhsType );
-          e.setCoercer( CommonServices.getCoercionManager().resolveCoercerStatically( rhsType, lhs.getType() ) );
+          e.setCoercer( CommonServices.INSTANCE.getCoercionManager().resolveCoercerStatically( rhsType, lhs.getType() ) );
           verifyTypeVarAreReified( rhs, rhsType );
 
           warn( lhs, lhs.getType() instanceof IErrorType ||
@@ -8608,7 +8608,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
     {
       IType expressionType = expression.getType();
 
-      ICoercer iCoercer = CommonServices.getCoercionManager().resolveCoercerStatically( boundContextType, expressionType );
+      ICoercer iCoercer = CommonServices.INSTANCE.getCoercionManager().resolveCoercerStatically( boundContextType, expressionType );
       if( iCoercer instanceof IResolvingCoercer )
       {
         IType resolvedType = ((IResolvingCoercer)iCoercer).resolveType( rawContextType, expressionType );
@@ -10564,7 +10564,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
       _bAreUsingStatementsAllowedInStatementLists=
         getGosuClass() == null ||
         (getGosuClass() instanceof IGosuProgramInternal && ((IGosuProgramInternal)getGosuClass()).allowsUses()) ||
-        CommonServices.getEntityAccess().areUsesStatementsAllowedInStatementLists( getGosuClass() );
+        CommonServices.INSTANCE.getEntityAccess().areUsesStatementsAllowedInStatementLists( getGosuClass() );
     }
     return _bAreUsingStatementsAllowedInStatementLists;
   }
@@ -11778,7 +11778,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
         }
         else
         {
-          if( !CommonServices.getEntityAccess().getLanguageLevel().supportsNakedCatchStatements() )
+          if( !CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().supportsNakedCatchStatements() )
           {
             warn( localVarDecl, false, Res.MSG_EXPLICIT_TYPE_RECOMMENDED_FOR_CATCH_STMTS );
           }
@@ -13803,7 +13803,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
         if( lastStatement != null && !lastStatement.hasParseExceptions() )
         {
           verifyOrWarn( functionStmt, isTerminal( lastStatement, dfsDecl.getReturnType() ),
-                        !CommonServices.getEntityAccess().isUnreachableCodeDetectionOn(),
+                        !CommonServices.INSTANCE.getEntityAccess().isUnreachableCodeDetectionOn(),
                         Res.MSG_MISSING_RETURN );
         }
       }
@@ -15534,7 +15534,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
       if( otherSide instanceof NumericLiteral )
       {
         NumericLiteral nl = (NumericLiteral)otherSide;
-        boolean repsAreIdentical = new BigDecimal( nl.getStrValue() ).equals( CommonServices.getCoercionManager().makeBigDecimalFrom( nl.getValue() ) );
+        boolean repsAreIdentical = new BigDecimal( nl.getStrValue() ).equals( CommonServices.INSTANCE.getCoercionManager().makeBigDecimalFrom( nl.getValue() ) );
         verify( (ParsedElement)otherSide, repsAreIdentical, Res.MSG_LOSS_OF_PRECISION_IN_NUMERIC_LITERAL, nl.getStrValue() + "bd" );
       }
     }
@@ -16165,7 +16165,7 @@ public final class GosuParser extends ParserBase implements IGosuParser
       {
         IType argType = argTypes[i];
         IType boundArgType = TypeLord.boundTypes( paramType, getCurrentlyInferringFunctionTypeVars() );
-        ICoercer coercer = CommonServices.getCoercionManager().resolveCoercerStatically( boundArgType, argType );
+        ICoercer coercer = CommonServices.INSTANCE.getCoercionManager().resolveCoercerStatically( boundArgType, argType );
         if( coercer instanceof IResolvingCoercer )
         {
           argTypes[i] = ((IResolvingCoercer)coercer).resolveType( paramType, argType );

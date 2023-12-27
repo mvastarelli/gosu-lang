@@ -72,33 +72,33 @@ public final class UnaryNotPlusMinusExpression extends Expression implements IUn
 
     if( isNot() )
     {
-      return CommonServices.getCoercionManager().makePrimitiveBooleanFrom( value ) ? Boolean.FALSE : Boolean.TRUE;
+      return CommonServices.INSTANCE.getCoercionManager().makePrimitiveBooleanFrom( value ) ? Boolean.FALSE : Boolean.TRUE;
     }
     else if( isBitNot() )
     {
       IType type = getExpression().getType();
       if( type == JavaTypes.pBOOLEAN() )
       {
-        Object obj = !CommonServices.getCoercionManager().makeBooleanFrom( value );
-        return CommonServices.getCoercionManager().makePrimitiveBooleanFrom( obj );
+        Object obj = !CommonServices.INSTANCE.getCoercionManager().makeBooleanFrom( value );
+        return CommonServices.INSTANCE.getCoercionManager().makePrimitiveBooleanFrom( obj );
       }
       if( type == JavaTypes.pINT() )
       {
-        int d = ~CommonServices.getCoercionManager().makeIntegerFrom( value );
+        int d = ~CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value );
         return Integer.valueOf( d );
       }
       if( type == JavaTypes.pLONG() )
       {
-        return makeLong( ~CommonServices.getCoercionManager().makeLongFrom( value ) );
+        return makeLong( ~CommonServices.INSTANCE.getCoercionManager().makeLongFrom( value ) );
       }
       if( type == JavaTypes.pSHORT() )
       {
-        int d = ~CommonServices.getCoercionManager().makeIntegerFrom( value );
+        int d = ~CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value );
         return Integer.valueOf( d ).shortValue();
       }
       if( type == JavaTypes.pBYTE() )
       {
-        return (byte)( ~(CommonServices.getCoercionManager().makeIntegerFrom( value ).intValue()) );
+        return (byte)( ~(CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( value ).intValue()) );
       }
       if( type == JavaTypes.pDOUBLE() )
       {

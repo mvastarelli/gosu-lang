@@ -14,7 +14,7 @@ public class TypeVariableCoercer implements ICoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().convertValue( value, typeToCoerceTo );
+    return CommonServices.INSTANCE.getCoercionManager().convertValue( value, typeToCoerceTo );
   }
 
   public boolean isExplicitCoercion()

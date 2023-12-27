@@ -13,7 +13,7 @@ public class BigIntegerCoercer extends StandardCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeBigIntegerFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeBigIntegerFrom( value );
   }
 
   public static BigIntegerCoercer instance()

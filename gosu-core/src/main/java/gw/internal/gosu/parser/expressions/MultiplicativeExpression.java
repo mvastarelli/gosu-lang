@@ -109,7 +109,7 @@ public final class MultiplicativeExpression extends ArithmeticExpression impleme
     }
 
     Object retValue;
-    ICoercionManager cm = CommonServices.getCoercionManager();
+    ICoercionManager cm = CommonServices.INSTANCE.getCoercionManager();
     switch( iOperator )
     {
       case '*':

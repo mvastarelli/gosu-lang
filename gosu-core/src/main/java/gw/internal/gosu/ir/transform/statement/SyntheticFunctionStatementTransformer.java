@@ -204,7 +204,7 @@ public class SyntheticFunctionStatementTransformer extends AbstractStatementTran
   {
     ImplicitTypeAsExpression cast = new ImplicitTypeAsExpression();
     cast.setLHS( expr );
-    cast.setCoercer( CommonServices.getCoercionManager().resolveCoercerStatically( JavaTypes.OBJECT(), expr.getType() ) );
+    cast.setCoercer( CommonServices.INSTANCE.getCoercionManager().resolveCoercerStatically( JavaTypes.OBJECT(), expr.getType() ) );
     cast.setType( TypeSystem.getBoxType( expr.getType() ) );
     return cast;
   }

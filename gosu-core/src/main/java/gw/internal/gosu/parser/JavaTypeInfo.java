@@ -455,7 +455,7 @@ public class JavaTypeInfo extends JavaBaseFeatureInfo implements IJavaTypeInfo
   @Override
   public String getDisplayName()
   {
-    return CommonServices.getEntityAccess().getLocalizedTypeInfoName(_type);
+    return CommonServices.INSTANCE.getEntityAccess().getLocalizedTypeInfoName(_type);
   }
 
   @Override

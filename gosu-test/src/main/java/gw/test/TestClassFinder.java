@@ -91,7 +91,7 @@ class TestClassFinder {
           }
         } catch (Exception e) {
           //Log rather than warn, because invalid resources can exist
-          ILogger logger = CommonServices.getEntityAccess().getLogger();
+          ILogger logger = CommonServices.INSTANCE.getEntityAccess().getLogger();
           logger.warn("Could not load type " + typeName);
 
           // TODO - AHK

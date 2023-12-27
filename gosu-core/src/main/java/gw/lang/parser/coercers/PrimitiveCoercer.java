@@ -20,7 +20,7 @@ public class PrimitiveCoercer extends BaseCoercer
   {
     if( value == null )
     {
-      return CommonServices.getCoercionManager().convertNullAsPrimitive( typeToCoerceTo, false );
+      return CommonServices.INSTANCE.getCoercionManager().convertNullAsPrimitive( typeToCoerceTo, false );
     }
     else
     {

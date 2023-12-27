@@ -230,7 +230,7 @@ public class ReflectUtil
 
   public static Object coerce( Object value, IType iType )
   {
-    return CommonServices.getCoercionManager().convertValue(value, iType );
+    return CommonServices.INSTANCE.getCoercionManager().convertValue(value, iType );
   }
 
   public static IGosuObject getEnclosingClassInstance( IGosuObject obj )

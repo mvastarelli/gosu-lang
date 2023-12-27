@@ -156,7 +156,7 @@ public class ContextSensitiveCodeRunner
     else
     {
       ISymbolTable compileTimeLocalContextSymbols = ctxClass == null ? new StandardSymbolTable( true ) : findCompileTimeSymbols( (IGosuClassInternal)ctxClass, offset ); // ContextSymbolTableUtil.getSymbolTableAtOffset( ctxClass, offset );
-      String strSource = CommonServices.getCoercionManager().makeStringFrom( source );
+      String strSource = CommonServices.INSTANCE.getCoercionManager().makeStringFrom( source );
       IGosuProgramParser parser = GosuParserFactory.createProgramParser();
       //debugInfo( compileTimeLocalContextSymbols );
 

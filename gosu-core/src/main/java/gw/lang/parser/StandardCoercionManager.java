@@ -1375,10 +1375,10 @@ public class StandardCoercionManager extends BaseService implements ICoercionMan
     {
       return (double) ((Character) obj).charValue();
     }
-    else if( CommonServices.getCoercionManager().canCoerce( JavaTypes.NUMBER(),
+    else if( CommonServices.INSTANCE.getCoercionManager().canCoerce( JavaTypes.NUMBER(),
                                                             TypeSystem.getFromObject( obj ) ) )
     {
-      Number num = (Number)CommonServices.getCoercionManager().convertValue( obj, JavaTypes.NUMBER() );
+      Number num = (Number)CommonServices.INSTANCE.getCoercionManager().convertValue( obj, JavaTypes.NUMBER() );
       return num.doubleValue();
     }
     else
@@ -1446,10 +1446,10 @@ public class StandardCoercionManager extends BaseService implements ICoercionMan
     {
       return (int) ((Character) obj).charValue();
     }
-    else if( CommonServices.getCoercionManager().canCoerce( JavaTypes.NUMBER(),
+    else if( CommonServices.INSTANCE.getCoercionManager().canCoerce( JavaTypes.NUMBER(),
                                                             TypeSystem.getFromObject( obj ) ) )
     {
-      Number num = (Number)CommonServices.getCoercionManager().convertValue( obj, JavaTypes.NUMBER() );
+      Number num = (Number)CommonServices.INSTANCE.getCoercionManager().convertValue( obj, JavaTypes.NUMBER() );
       return num.intValue();
     }
     else
@@ -1506,10 +1506,10 @@ public class StandardCoercionManager extends BaseService implements ICoercionMan
     {
       return (long)((Character)obj).charValue();
     }
-    else if( CommonServices.getCoercionManager().canCoerce( JavaTypes.NUMBER(),
+    else if( CommonServices.INSTANCE.getCoercionManager().canCoerce( JavaTypes.NUMBER(),
                                                             TypeSystem.getFromObject( obj ) ) )
     {
-      Number num = (Number)CommonServices.getCoercionManager().convertValue( obj , JavaTypes.NUMBER() );
+      Number num = (Number)CommonServices.INSTANCE.getCoercionManager().convertValue( obj , JavaTypes.NUMBER() );
       return num.longValue();
     }
     else
@@ -1592,9 +1592,9 @@ public class StandardCoercionManager extends BaseService implements ICoercionMan
     {
       return new BigDecimal( ((Date)obj).getTime() );
     }
-    else if( CommonServices.getCoercionManager().canCoerce( JavaTypes.NUMBER(), TypeSystem.getFromObject( obj ) ) )
+    else if( CommonServices.INSTANCE.getCoercionManager().canCoerce( JavaTypes.NUMBER(), TypeSystem.getFromObject( obj ) ) )
     {
-      Number num = (Number)CommonServices.getCoercionManager().convertValue( obj, JavaTypes.NUMBER() );
+      Number num = (Number)CommonServices.INSTANCE.getCoercionManager().convertValue( obj, JavaTypes.NUMBER() );
       return makeBigDecimalFrom( num );
     }
     else

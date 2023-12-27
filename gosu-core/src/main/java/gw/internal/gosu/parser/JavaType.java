@@ -316,7 +316,7 @@ class JavaType extends InnerClassCapableType implements IJavaTypeInternal
 
   public String getDisplayName()
   {
-    return CommonServices.getEntityAccess().getLocalizedTypeName(thisRef());
+    return CommonServices.INSTANCE.getEntityAccess().getLocalizedTypeName(thisRef());
   }
 
   public String getRelativeName()
@@ -1296,7 +1296,7 @@ class JavaType extends InnerClassCapableType implements IJavaTypeInternal
       return null;
     }
 
-    if( CommonServices.getEntityAccess().getLanguageLevel().isStandard() )
+    if( CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() )
     {
       // Don't lookup explicit beaninfo in standard Gosu
       _bDoesNotHaveExplicitTypeInfo = true;
@@ -1314,7 +1314,7 @@ class JavaType extends InnerClassCapableType implements IJavaTypeInternal
       {
         if( _explicitTypeInfoClass == null )
         {
-          _explicitTypeInfoClass = CommonServices.getEntityAccess().getPluginClassLoader().loadClass(name + "TypeInfo");
+          _explicitTypeInfoClass = CommonServices.INSTANCE.getEntityAccess().getPluginClassLoader().loadClass(name + "TypeInfo");
         }
         return (ITypeInfo)_explicitTypeInfoClass.newInstance();
       }

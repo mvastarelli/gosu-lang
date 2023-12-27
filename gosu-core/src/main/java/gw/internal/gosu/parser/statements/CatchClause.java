@@ -116,7 +116,7 @@ public final class CatchClause extends Statement implements ICatchClause
   public static IType getNakedCatchExceptionType()
   {
     IType type;
-    if( CommonServices.getEntityAccess().getLanguageLevel().supportsNakedCatchStatements() )
+    if( CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().supportsNakedCatchStatements() )
     {
       type = JavaTypes.EXCEPTION();
     }

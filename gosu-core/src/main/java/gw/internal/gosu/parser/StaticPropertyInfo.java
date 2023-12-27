@@ -150,7 +150,7 @@ public class StaticPropertyInfo extends BaseFeatureInfo implements IPropertyInfo
 
       try
       {
-        value = CommonServices.getCoercionManager().convertValue(value, getFeatureType());
+        value = CommonServices.INSTANCE.getCoercionManager().convertValue(value, getFeatureType());
         _setter.invoke( _type, new Object[]{value} );
       }
       catch( Exception e )

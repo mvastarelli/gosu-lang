@@ -49,7 +49,7 @@ public class ArrayAccessTransformer extends AbstractExpressionTransformer<ArrayA
     IRSymbol tempRoot = null;
     IRExpression root;
     boolean needsAutoinsert = ArrayAccess.needsAutoinsert( getParsedElement() );
-    boolean bStandardGosu = CommonServices.getEntityAccess().getLanguageLevel().isStandard();
+    boolean bStandardGosu = CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard();
     boolean bNullSafe = _expr().isNullSafe() ||
                         (!bStandardGosu && !_expr().getType().isPrimitive()) ||
                         (needsAutoinsert && !_expr().getType().isPrimitive());

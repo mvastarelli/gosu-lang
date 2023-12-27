@@ -19,7 +19,7 @@ public class CharCoercer extends BaseBoxedCoercer
     }
     else
     {
-      Double aDouble = CommonServices.getCoercionManager().makeDoubleFrom( value );
+      Double aDouble = CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( value );
       return (char)aDouble.intValue();
     }
   }

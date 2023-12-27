@@ -319,7 +319,7 @@ public class GosuClassLoader implements IGosuClassLoader
   }
 
   private boolean shouldUseSingleServingLoader(ICompilableTypeInternal gsClass) {
-    List<IGosuClassLoadingObserver> observers = CommonServices.getEntityAccess().getGosuClassLoadingObservers();
+    List<IGosuClassLoadingObserver> observers = CommonServices.INSTANCE.getEntityAccess().getGosuClassLoadingObservers();
     if (observers != null) {
       for (IGosuClassLoadingObserver observer : observers) {
         if (observer.shouldUseSingleServingLoader(gsClass)) {

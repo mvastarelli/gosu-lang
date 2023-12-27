@@ -38,13 +38,13 @@ public class StandardCoercionManagerTest extends TestClass
   // because coercionRequiresWarningIfImplicit had lhs and rhs swapped in one of its checks.
   //
   public void testCoercionFromObjectToStringIsNotImplicit() {
-    StandardCoercionManager cm = (StandardCoercionManager) CommonServices.getCoercionManager();
+    StandardCoercionManager cm = (StandardCoercionManager) CommonServices.INSTANCE.getCoercionManager();
     Assert.assertTrue(cm.canCoerce(JavaTypes.STRING(), JavaTypes.OBJECT()));
     Assert.assertTrue(cm.notCoercibleOrRequiresExplicitCoercion( JavaTypes.STRING(), JavaTypes.OBJECT() ));
   }
 
   public void testCoercionFromPrimitiveIntToComparableDoesNotHaveWarning() {
-    StandardCoercionManager cm = (StandardCoercionManager) CommonServices.getCoercionManager();
+    StandardCoercionManager cm = (StandardCoercionManager) CommonServices.INSTANCE.getCoercionManager();
     Assert.assertFalse( cm.notCoercibleOrRequiresExplicitCoercion( JavaTypes.COMPARABLE(), JavaTypes.pINT() ) );
   }
 

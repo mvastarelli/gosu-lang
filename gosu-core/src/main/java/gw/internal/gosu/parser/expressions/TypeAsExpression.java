@@ -94,15 +94,15 @@ public class TypeAsExpression extends Expression implements ITypeAsExpression
     //============================================================================
     if( argType == GosuParserTypes.NUMBER_TYPE() )
     {
-      return CommonServices.getCoercionManager().makeDoubleFrom( value );
+      return CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( value );
     }
     else if( argType == GosuParserTypes.STRING_TYPE() )
     {
-      return CommonServices.getCoercionManager().makeStringFrom( value );
+      return CommonServices.INSTANCE.getCoercionManager().makeStringFrom( value );
     }
     else if( argType == GosuParserTypes.DATETIME_TYPE() )
     {
-      Date date = CommonServices.getCoercionManager().makeDateFrom( value );
+      Date date = CommonServices.INSTANCE.getCoercionManager().makeDateFrom( value );
       if ( date != null ) {
         return date;
       }

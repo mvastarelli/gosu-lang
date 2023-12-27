@@ -162,7 +162,7 @@ public class GosucProject implements IProject {
   }
 
   private void assignGlobalLoadersFromProvider() {
-    List<Class<? extends ITypeLoader>> loaderClasses = CommonServices.getGlobalLoaderProvider().getGlobalLoaderTypes();
+    List<Class<? extends ITypeLoader>> loaderClasses = CommonServices.INSTANCE.getGlobalLoaderProvider().getGlobalLoaderTypes();
     List<String> globalLoaders = new ArrayList<String>();
     for( Class<? extends ITypeLoader> cls: loaderClasses ) {
       globalLoaders.add( cls.getName() );
@@ -337,7 +337,7 @@ public class GosucProject implements IProject {
         addTypesForFile( types, f );
       }
       else {
-        IFile file = CommonServices.getFileSystem().getIFile( f );
+        IFile file = CommonServices.INSTANCE.getFileSystem().getIFile( f );
         String[] typesForFile = TypeSystem.getTypesForFile( TypeSystem.getGlobalModule(), file );
         if( typesForFile.length > 0 ) {
           for( String type: typesForFile ) {

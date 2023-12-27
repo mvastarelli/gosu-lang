@@ -171,7 +171,7 @@ public abstract class TypeLoaderBase extends BaseService implements ITypeLoader 
   }
 
   protected void deleteIndexFile() {
-    File indexFile = CommonServices.getPlatformHelper().getIndexFile(getId());
+    File indexFile = CommonServices.INSTANCE.getPlatformHelper().getIndexFile(getId());
     try {
       indexFile.delete();
     } catch (Exception e) {
@@ -180,13 +180,13 @@ public abstract class TypeLoaderBase extends BaseService implements ITypeLoader 
   }
 
   public void saveTypeNames() {
-    final File ideaCorruptionMarkerFile = CommonServices.getPlatformHelper().getIDEACorruptionMarkerFile();
+    final File ideaCorruptionMarkerFile = CommonServices.INSTANCE.getPlatformHelper().getIDEACorruptionMarkerFile();
     if (ideaCorruptionMarkerFile.exists()) { // clean typenames cache
       deleteIndexFile();
       return;
     }
 
-    File indexFile = CommonServices.getPlatformHelper().getIndexFile(getId());
+    File indexFile = CommonServices.INSTANCE.getPlatformHelper().getIndexFile(getId());
 
     PrintWriter writer = null;
     try {
@@ -206,7 +206,7 @@ public abstract class TypeLoaderBase extends BaseService implements ITypeLoader 
   }
 
   public Set<String> loadTypeNames() {
-    File indexFile = CommonServices.getPlatformHelper().getIndexFile(getId());
+    File indexFile = CommonServices.INSTANCE.getPlatformHelper().getIndexFile(getId());
     if (indexFile.exists()) {
       LineNumberReader reader = null;
       try {
@@ -242,6 +242,6 @@ public abstract class TypeLoaderBase extends BaseService implements ITypeLoader 
   }
 
   protected boolean shouldCacheTypeNames() {
-    return CommonServices.getPlatformHelper().shouldCacheTypeNames();
+    return CommonServices.INSTANCE.getPlatformHelper().shouldCacheTypeNames();
   }
 }

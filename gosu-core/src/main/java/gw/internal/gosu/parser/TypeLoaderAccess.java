@@ -477,7 +477,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
         module.getModuleTypeLoader().refreshed();
       }
 
-      CommonServices.getPlatformHelper().refresh(null);
+      CommonServices.INSTANCE.getPlatformHelper().refresh(null);
 
       fireRefreshed();
 
@@ -532,7 +532,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     try {
       ++_iSingleRefreshChecksum;
 
-      CommonServices.getMemoryMonitor().reclaimMemory(request);
+      CommonServices.INSTANCE.getMemoryMonitor().reclaimMemory(request);
 
       // Step 1: Find all top-level types that need to be refreshed
       Set<IType> typesToRefresh = new HashSet<IType>(10);
@@ -957,7 +957,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   }
 
   public IType getByRelativeName(String relativeName) throws ClassNotFoundException {
-    return getByRelativeName(relativeName, CommonServices.getEntityAccess().getDefaultTypeUses());
+    return getByRelativeName(relativeName, CommonServices.INSTANCE.getEntityAccess().getDefaultTypeUses());
   }
 
   /**
@@ -1099,7 +1099,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
 
       ((Module)module).getModuleTypeLoader().refreshed();
 
-      CommonServices.getPlatformHelper().refresh(module);
+      CommonServices.INSTANCE.getPlatformHelper().refresh(module);
 
       fireRefreshed();
 

@@ -25,60 +25,60 @@ public class FileSystemImplTest extends TestClass {
 
   public void testGetDirectoryNormalizesDirIfPathIsNotAbsolute() {
     File f = new File("foobar");
-    IDirectory dir = CommonServices.getFileSystem().getIDirectory(f);
+    IDirectory dir = CommonServices.INSTANCE.getFileSystem().getIDirectory(f);
     assertEquals(f.getAbsolutePath(), dir.toJavaFile().getPath());
   }
 
   public void testGetDirectoryNormalizesDirIfPathEndsWithSlash() {
     File f = new File("foobar/");
-    IDirectory dir = CommonServices.getFileSystem().getIDirectory(f);
+    IDirectory dir = CommonServices.INSTANCE.getFileSystem().getIDirectory(f);
     assertEquals(f.getAbsolutePath(), dir.toJavaFile().getPath());
   }
 
   public void testGetDirectoryNormalizesDirIfPathContainsSingleDot() throws IOException {
     File f = new File(new File("."), "foobar");
-    IDirectory dir = CommonServices.getFileSystem().getIDirectory(f);
+    IDirectory dir = CommonServices.INSTANCE.getFileSystem().getIDirectory(f);
     assertEquals(f.getCanonicalFile().getAbsolutePath(), dir.toJavaFile().getPath());
   }
 
   public void testGetDirectoryNormalizesDirIfPathContainsTwoDots() throws IOException {
     File f = new File(new File(".."), "foobar");
-    IDirectory dir = CommonServices.getFileSystem().getIDirectory(f);
+    IDirectory dir = CommonServices.INSTANCE.getFileSystem().getIDirectory(f);
     assertEquals(f.getCanonicalFile().getAbsolutePath(), dir.toJavaFile().getPath());
   }
 
   public void testGetFileNormalizesDirIfPathIsNotAbsolute() {
     File f = new File("foobar.txt");
-    IFile iFile = CommonServices.getFileSystem().getIFile(f);
+    IFile iFile = CommonServices.INSTANCE.getFileSystem().getIFile(f);
     assertEquals(f.getAbsolutePath(), iFile.toJavaFile().getPath());
   }
 
   public void testGetFileNormalizesDirIfPathContainsSingleDot() throws IOException {
     File f = new File(new File("."), "foobar.txt");
-    IFile iFile = CommonServices.getFileSystem().getIFile(f);
+    IFile iFile = CommonServices.INSTANCE.getFileSystem().getIFile(f);
     assertEquals(f.getCanonicalFile().getAbsolutePath(), iFile.toJavaFile().getPath());
   }
 
   public void testGetFileNormalizesDirIfPathContainsTwoDots() throws IOException {
     File f = new File(new File(".."), "foobar.txt");
-    IFile iFile = CommonServices.getFileSystem().getIFile(f);
+    IFile iFile = CommonServices.INSTANCE.getFileSystem().getIFile(f);
     assertEquals(f.getCanonicalFile().getAbsolutePath(), iFile.toJavaFile().getPath());
   }
 
   public void testGetFileFromJarURLexists() throws MalformedURLException {
-    assertTrue(CommonServices.getFileSystem().getIFile(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/rootfile.txt")).exists());
+    assertTrue(CommonServices.INSTANCE.getFileSystem().getIFile(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/rootfile.txt")).exists());
   }
 
   public void testGetChildFileFromJarURLexists() throws MalformedURLException {
-    assertTrue(CommonServices.getFileSystem().getIFile(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/childdir/subdir/subdirfile.txt")).exists());
+    assertTrue(CommonServices.INSTANCE.getFileSystem().getIFile(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/childdir/subdir/subdirfile.txt")).exists());
   }
 
   public void testGetNonEmptyDirectoryFromJarURLexists() throws MalformedURLException {
-    assertTrue(CommonServices.getFileSystem().getIDirectory(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/childdir")).exists());
+    assertTrue(CommonServices.INSTANCE.getFileSystem().getIDirectory(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/childdir")).exists());
   }
 
   public void testGetEmptyDirectoryFromJarURLexists() throws MalformedURLException {
-    assertTrue(CommonServices.getFileSystem().getIDirectory(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/emptydir")).exists());
+    assertTrue(CommonServices.INSTANCE.getFileSystem().getIDirectory(new URL("jar:" + getTestJar().toURI().toASCIIString() + "!/emptydir")).exists());
   }
 
   private File getTestJar() {

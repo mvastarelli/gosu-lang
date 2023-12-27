@@ -479,11 +479,11 @@ public class FeatureManager<T extends CharSequence> {
   }
 
   protected void addEnhancementMethods(List<IMethodInfo> privateMethods) {
-    CommonServices.getEntityAccess().addEnhancementMethods( _typeInfo.getOwnersType(), privateMethods );
+    CommonServices.INSTANCE.getEntityAccess().addEnhancementMethods( _typeInfo.getOwnersType(), privateMethods );
   }
 
   protected void addEnhancementProperties(PropertyNameMap<T> privateProps, boolean caseSensitive) {
-    CommonServices.getEntityAccess().addEnhancementProperties(_typeInfo.getOwnersType(), privateProps, caseSensitive );
+    CommonServices.INSTANCE.getEntityAccess().addEnhancementProperties(_typeInfo.getOwnersType(), privateProps, caseSensitive );
   }
 
   public void setSuperPropertyPrefix( String superPropertyPrefix ) {

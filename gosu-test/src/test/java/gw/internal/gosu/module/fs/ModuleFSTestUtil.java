@@ -22,7 +22,7 @@ public class ModuleFSTestUtil {
 
     // Try to load resource from classpath first
     URL url = ModuleFSTestUtil.class.getResource("/module-tests");
-    IDirectory moduleTestsDir = CommonServices.getFileSystem().getIDirectory(url);
+    IDirectory moduleTestsDir = CommonServices.INSTANCE.getFileSystem().getIDirectory(url);
     if (moduleTestsDir.isJavaFile()) {
       return moduleTestsDir.toJavaFile();
     }

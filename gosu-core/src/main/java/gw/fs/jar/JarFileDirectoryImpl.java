@@ -167,7 +167,7 @@ public class JarFileDirectoryImpl implements IJarFileDirectory {
   public IDirectory getParent() {
     File parentFile = _file.getParentFile();
     if (parentFile != null) {
-      return CommonServices.getFileSystem().getIDirectory(parentFile);
+      return CommonServices.INSTANCE.getFileSystem().getIDirectory(parentFile);
     } else {
       return null;
     }

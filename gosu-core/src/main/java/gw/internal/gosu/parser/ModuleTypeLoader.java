@@ -148,13 +148,13 @@ public class ModuleTypeLoader implements ITypeLoaderStackInternal {
         String handledPrefix = handledPrefixes.get( i );
         _loadersByPrefix.put( handledPrefix, typeLoader );
       }
-      CommonServices.getEntityAccess().getLogger().debug("TypeLoader added: " + GosuClassUtil.getShortClassName(typeLoader.getClass()));
+      CommonServices.INSTANCE.getEntityAccess().getLogger().debug("TypeLoader added: " + GosuClassUtil.getShortClassName(typeLoader.getClass()));
     }
     finally
     {
       TypeSystem.unlock();
     }
-    CommonServices.getEntityAccess().getLogger().debug( "TypeLoader added: " + GosuClassUtil.getShortClassName( typeLoader.getClass() ) );
+    CommonServices.INSTANCE.getEntityAccess().getLogger().debug( "TypeLoader added: " + GosuClassUtil.getShortClassName( typeLoader.getClass() ) );
   }
 
   @Override
@@ -224,7 +224,7 @@ public class ModuleTypeLoader implements ITypeLoaderStackInternal {
         {
           _loadersByPrefix.remove( handledPrefix );
         }
-        CommonServices.getEntityAccess().getLogger().debug("TypeLoader removed: " + GosuClassUtil.getShortClassName(typeLoader.getClass()));
+        CommonServices.INSTANCE.getEntityAccess().getLogger().debug("TypeLoader removed: " + GosuClassUtil.getShortClassName(typeLoader.getClass()));
       }
     }
     finally

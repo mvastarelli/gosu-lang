@@ -132,7 +132,7 @@ public interface IAnnotatedFeatureInfo extends IFeatureInfo
       {
         if( annotation.getType().equals( annotationInfo.getType() ) )
         {
-          return CommonServices.getGosuIndustrialPark().isAnnotationAllowedMultipleTimes( fi, annotationInfo );
+          return CommonServices.INSTANCE.getGosuIndustrialPark().isAnnotationAllowedMultipleTimes( fi, annotationInfo );
         }
       }
       return true;

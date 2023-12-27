@@ -92,7 +92,7 @@ class JavaTypeExtensions {
       // Studio case
       extendedType = javaType.getBackingClassInfo().getAnnotation(ExtendedType.class) != null;
     }
-    return extendedType ? CommonServices.getEntityAccess().getExtendedTypeDataFactory(javaType.getName()) : null;
+    return extendedType ? CommonServices.INSTANCE.getEntityAccess().getExtendedTypeDataFactory(javaType.getName()) : null;
   }
 
   static IJavaTypeInternal newExtendedType(Class<?> secondaryInterface, IJavaTypeInternal originalType, Object secondaryObject) {

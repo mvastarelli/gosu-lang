@@ -50,7 +50,7 @@ public class RunMe
 
   public static void reinitializeGosu( Experiment experiment )
   {
-    CommonServices.getKernel().redefineService_Privileged( IPlatformHelper.class, new GosuEditorPlatformHelper() );
+    CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( IPlatformHelper.class, new GosuEditorPlatformHelper() );
 
     IExecutionEnvironment execEnv = TypeSystem.getExecutionEnvironment();
     GosuInitialization gosuInitialization = GosuInitialization.instance( execEnv );

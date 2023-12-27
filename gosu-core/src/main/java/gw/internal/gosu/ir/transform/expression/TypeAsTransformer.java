@@ -632,15 +632,15 @@ public class TypeAsTransformer extends AbstractExpressionTransformer<ITypeAsExpr
     Object retValue = value;
     if( type == GosuParserTypes.NUMBER_TYPE() )
     {
-      retValue = CommonServices.getCoercionManager().makeDoubleFrom( value );
+      retValue = CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( value );
     }
     else if( type == GosuParserTypes.STRING_TYPE() )
     {
-      retValue = CommonServices.getCoercionManager().makeStringFrom( value );
+      retValue = CommonServices.INSTANCE.getCoercionManager().makeStringFrom( value );
     }
     else if( type == GosuParserTypes.DATETIME_TYPE() )
     {
-      retValue = CommonServices.getCoercionManager().makeDateFrom( value );
+      retValue = CommonServices.INSTANCE.getCoercionManager().makeDateFrom( value );
     }
     else if( coercer != null && (value != null || coercer.handlesNull()) )
     {
@@ -665,27 +665,27 @@ public class TypeAsTransformer extends AbstractExpressionTransformer<ITypeAsExpr
   }
 
   public static boolean convertToPrimitiveFromBoxOrString_boolean( Object value ) {
-    return CommonServices.getCoercionManager().makePrimitiveBooleanFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveBooleanFrom( value );
   }
   public static byte convertToPrimitiveFromBoxOrString_byte( Object value ) {
-    return (byte)CommonServices.getCoercionManager().makePrimitiveIntegerFrom( value );
+    return (byte)CommonServices.INSTANCE.getCoercionManager().makePrimitiveIntegerFrom( value );
   }
   public static char convertToPrimitiveFromBoxOrString_char( Object value ) {
-    return (char)CommonServices.getCoercionManager().makePrimitiveIntegerFrom( value );
+    return (char)CommonServices.INSTANCE.getCoercionManager().makePrimitiveIntegerFrom( value );
   }
   public static short convertToPrimitiveFromBoxOrString_short( Object value ) {
-    return (short)CommonServices.getCoercionManager().makePrimitiveIntegerFrom( value );
+    return (short)CommonServices.INSTANCE.getCoercionManager().makePrimitiveIntegerFrom( value );
   }
   public static int convertToPrimitiveFromBoxOrString_int( Object value ) {
-    return CommonServices.getCoercionManager().makePrimitiveIntegerFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveIntegerFrom( value );
   }
   public static long convertToPrimitiveFromBoxOrString_long( Object value ) {
-    return CommonServices.getCoercionManager().makePrimitiveLongFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveLongFrom( value );
   }
   public static float convertToPrimitiveFromBoxOrString_float( Object value ) {
-    return CommonServices.getCoercionManager().makePrimitiveFloatFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveFloatFrom( value );
   }
   public static double convertToPrimitiveFromBoxOrString_double( Object value ) {
-    return CommonServices.getCoercionManager().makePrimitiveDoubleFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makePrimitiveDoubleFrom( value );
   }
 }

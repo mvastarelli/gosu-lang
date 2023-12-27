@@ -13,7 +13,7 @@ public class ShortCoercer extends BaseBoxedCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    Integer integer = CommonServices.getCoercionManager().makeIntegerFrom(value );
+    Integer integer = CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom(value );
     return integer.shortValue();
   }
 

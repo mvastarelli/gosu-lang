@@ -24,7 +24,7 @@ public class IDirectoryUtil {
   private static void allContainedFilesExcludingIgnored(IDirectory root, IDirectory dir, DynamicArray<IFile> files) {
     files.addAll(dir.listFiles());
     for (IDirectory subDir : dir.listDirs()) {
-      if (!CommonServices.getPlatformHelper().isPathIgnored(root.relativePath(subDir))) {
+      if (!CommonServices.INSTANCE.getPlatformHelper().isPathIgnored(root.relativePath(subDir))) {
         allContainedFilesExcludingIgnored(root, subDir, files);
       }
     }

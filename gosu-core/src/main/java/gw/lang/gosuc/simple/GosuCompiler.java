@@ -75,9 +75,9 @@ public class GosuCompiler implements IGosuCompiler
 
     final long start = System.currentTimeMillis();
 
-    CommonServices.getKernel().redefineService_Privileged( IFileSystem.class, createFileSystemInstance() );
-    CommonServices.getKernel().redefineService_Privileged( IMemoryMonitor.class, new CompilerMemoryMonitor() );
-    CommonServices.getKernel().redefineService_Privileged( IPlatformHelper.class, new CompilerPlatformHelper() );
+    CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( IFileSystem.class, createFileSystemInstance() );
+    CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( IMemoryMonitor.class, new CompilerMemoryMonitor() );
+    CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( IPlatformHelper.class, new CompilerPlatformHelper() );
 
     if( "gw".equals( System.getProperty( "compiler.type" ) ) )
     {
@@ -85,8 +85,8 @@ public class GosuCompiler implements IGosuCompiler
       {
         IEntityAccess access = (IEntityAccess)Class.forName( "gw.internal.gosu.parser.gwPlatform.GWEntityAccess" ).newInstance();
         ICoercionManager coercionManager = (ICoercionManager)Class.forName( "gw.internal.gosu.parser.gwPlatform.GWCoercionManager" ).newInstance();
-        CommonServices.getKernel().redefineService_Privileged( IEntityAccess.class, access );
-        CommonServices.getKernel().redefineService_Privileged( ICoercionManager.class, coercionManager );
+        CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( IEntityAccess.class, access );
+        CommonServices.INSTANCE.getUnderlyingKernel().redefineService_Privileged( ICoercionManager.class, coercionManager );
         Registry.instance().setAllowEntityQueires( true );
       }
       catch( Exception e )
@@ -126,7 +126,7 @@ public class GosuCompiler implements IGosuCompiler
   @Override
   public boolean isPathIgnored( String sourceFile )
   {
-    return CommonServices.getPlatformHelper().isPathIgnored( sourceFile );
+    return CommonServices.INSTANCE.getPlatformHelper().isPathIgnored( sourceFile );
   }
 
   private void compileGosuSources( CommandLineOptions options, ICompilerDriver driver, List<String> gosuFiles ) {

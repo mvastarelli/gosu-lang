@@ -13,7 +13,7 @@ public class DateCoercer extends StandardCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeDateFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeDateFrom( value );
   }
 
   public static DateCoercer instance()

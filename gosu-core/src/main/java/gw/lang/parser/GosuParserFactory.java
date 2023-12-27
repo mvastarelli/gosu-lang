@@ -21,7 +21,7 @@ public class GosuParserFactory
    */
   public static IGosuParser createParser( String strSource, ISymbolTable symTable, IScriptabilityModifier scriptabilityConstraint )
   {
-    return CommonServices.getGosuParserFactory().createParser( strSource, symTable, scriptabilityConstraint );
+    return CommonServices.INSTANCE.getGosuParserFactory().createParser( strSource, symTable, scriptabilityConstraint );
   }
 
   /**
@@ -35,7 +35,7 @@ public class GosuParserFactory
    */
   public static IGosuParser createParser( String strSource, ISymbolTable symTable, IScriptabilityModifier scriptabilityConstraint, ITypeUsesMap tuMap)
   {
-    return CommonServices.getGosuParserFactory().createParser( strSource, symTable, scriptabilityConstraint, tuMap );
+    return CommonServices.INSTANCE.getGosuParserFactory().createParser( strSource, symTable, scriptabilityConstraint, tuMap );
   }
 
   /**
@@ -47,7 +47,7 @@ public class GosuParserFactory
    */
   public static IGosuParser createParser( ISymbolTable symTable, IScriptabilityModifier scriptabilityConstraint )
   {
-    return CommonServices.getGosuParserFactory().createParser( symTable, scriptabilityConstraint );
+    return CommonServices.INSTANCE.getGosuParserFactory().createParser( symTable, scriptabilityConstraint );
   }
 
   /**
@@ -60,30 +60,30 @@ public class GosuParserFactory
    */
   public static IGosuParser createParser( String strSource, ISymbolTable symTable )
   {
-    return CommonServices.getGosuParserFactory().createParser( strSource, symTable );
+    return CommonServices.INSTANCE.getGosuParserFactory().createParser( strSource, symTable );
   }
 
   public static IGosuParser createParser( String strSource )
   {
-    return CommonServices.getGosuParserFactory().createParser( strSource );
+    return CommonServices.INSTANCE.getGosuParserFactory().createParser( strSource );
   }
 
   public static IGosuClassParser createClassParser( IGosuParser parser )
   {
-    return CommonServices.getGosuParserFactory().createClassParser( parser );
+    return CommonServices.INSTANCE.getGosuParserFactory().createClassParser( parser );
   }
 
   public static IGosuProgramParser createProgramParser()
   {
-    return CommonServices.getGosuParserFactory().createProgramParser();
+    return CommonServices.INSTANCE.getGosuParserFactory().createProgramParser();
   }
 
   public static IGosuFragmentParser createFragmentParser() {
-    return CommonServices.getGosuParserFactory().createFragmentParser();
+    return CommonServices.INSTANCE.getGosuParserFactory().createFragmentParser();
   }
 
   public static <T> T getInterface( Class<T> apiClass )
   {
-    return CommonServices.getGosuParserFactory().getInterface( apiClass );
+    return CommonServices.INSTANCE.getGosuParserFactory().getInterface( apiClass );
   }
 }

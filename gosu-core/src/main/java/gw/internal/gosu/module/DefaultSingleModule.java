@@ -28,7 +28,7 @@ public class DefaultSingleModule extends GlobalModule
   }
 
   protected List<IDirectory> getAdditionalSourceRoots() {
-    return CommonServices.getEntityAccess().getAdditionalSourceRoots();
+    return CommonServices.INSTANCE.getEntityAccess().getAdditionalSourceRoots();
   }
 
   @Override

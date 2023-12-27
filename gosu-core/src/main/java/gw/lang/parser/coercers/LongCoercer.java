@@ -13,7 +13,7 @@ public class LongCoercer extends BaseBoxedCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return CommonServices.getCoercionManager().makeLongFrom( value );
+    return CommonServices.INSTANCE.getCoercionManager().makeLongFrom( value );
   }
 
   public static LongCoercer instance()

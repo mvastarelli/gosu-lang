@@ -122,7 +122,7 @@ public class GWEntityAccess extends DefaultEntityAccess
     } else {
       try {
         IType valueType = TypeSystem.getFromObject(value);
-        CommonServices.getCoercionManager().verifyTypesComparable(type, valueType, false);
+        CommonServices.INSTANCE.getCoercionManager().verifyTypesComparable(type, valueType, false);
       } catch (ParseIssue pe) {
         throw new IncompatibleTypeException("Value of type: " + TypeSystem.getFromObject(value).getName() +
                 " is not compatible with symbol type: " + type.getName());

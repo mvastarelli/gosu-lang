@@ -65,46 +65,46 @@ public abstract class ConditionalExpression extends BinaryExpression implements 
 
       if( lhsType == JavaTypes.BIG_DECIMAL() )
       {
-        return CommonServices.getCoercionManager().makeBigDecimalFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeBigDecimalFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeBigDecimalFrom( lhsValue ).compareTo(CommonServices.INSTANCE.getCoercionManager().makeBigDecimalFrom( rhsValue ) );
       }
 
       if( lhsType == JavaTypes.BIG_INTEGER() )
       {
-        return CommonServices.getCoercionManager().makeBigIntegerFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeBigIntegerFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeBigIntegerFrom( lhsValue ).compareTo(CommonServices.INSTANCE.getCoercionManager().makeBigIntegerFrom( rhsValue ) );
       }
 
       if( lhsType == JavaTypes.INTEGER() || lhsType == JavaTypes.pINT() )
       {
-        return CommonServices.getCoercionManager().makeIntegerFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeIntegerFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( lhsValue ).compareTo( CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( rhsValue ) );
       }
       if( lhsType == JavaTypes.LONG() || lhsType == JavaTypes.pLONG() )
       {
-        return CommonServices.getCoercionManager().makeLongFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeLongFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeLongFrom( lhsValue ).compareTo( CommonServices.INSTANCE.getCoercionManager().makeLongFrom( rhsValue ) );
       }
       if( lhsType == JavaTypes.DOUBLE() || lhsType == JavaTypes.pDOUBLE() )
       {
-        return CommonServices.getCoercionManager().makeDoubleFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeDoubleFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( lhsValue ).compareTo( CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( rhsValue ) );
       }
       if( lhsType == JavaTypes.FLOAT() || lhsType == JavaTypes.pFLOAT() )
       {
-        float f1 = CommonServices.getCoercionManager().makePrimitiveFloatFrom( lhsValue );
-        float f2 = CommonServices.getCoercionManager().makePrimitiveFloatFrom( rhsValue );
+        float f1 = CommonServices.INSTANCE.getCoercionManager().makePrimitiveFloatFrom( lhsValue );
+        float f2 = CommonServices.INSTANCE.getCoercionManager().makePrimitiveFloatFrom( rhsValue );
         return f1 > f2 ? 1 : f1 < f2 ? -1 : 0;
       }
       if( lhsType == JavaTypes.SHORT() || lhsType == JavaTypes.pSHORT() )
       {
-        return CommonServices.getCoercionManager().makeIntegerFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeIntegerFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( lhsValue ).compareTo( CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( rhsValue ) );
       }
       if( lhsType == JavaTypes.BYTE() || lhsType == JavaTypes.pBYTE() )
       {
-        return CommonServices.getCoercionManager().makeIntegerFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeIntegerFrom( rhsValue ) );
+        return CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( lhsValue ).compareTo( CommonServices.INSTANCE.getCoercionManager().makeIntegerFrom( rhsValue ) );
       }
     }
     catch( NumberFormatException nfe )
     {
       rhsValue = IGosuParser.ZERO;
     }
-    return CommonServices.getCoercionManager().makeDoubleFrom( lhsValue ).compareTo( CommonServices.getCoercionManager().makeDoubleFrom( rhsValue ) );
+    return CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( lhsValue ).compareTo( CommonServices.INSTANCE.getCoercionManager().makeDoubleFrom( rhsValue ) );
   }
 
   @Override

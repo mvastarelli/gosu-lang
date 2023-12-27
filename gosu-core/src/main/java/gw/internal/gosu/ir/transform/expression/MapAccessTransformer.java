@@ -38,7 +38,7 @@ public class MapAccessTransformer extends AbstractExpressionTransformer<MapAcces
     // temp = root
     // (temp == null ? null : temp.get(key))
 
-    boolean bStandardGosu = CommonServices.getEntityAccess().getLanguageLevel().isStandard();
+    boolean bStandardGosu = CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard();
     boolean bNullSafe = _expr().isNullSafe() || !bStandardGosu;
 
     IRExpression root = ExpressionTransformer.compile( _expr().getRootExpression(), _cc() );

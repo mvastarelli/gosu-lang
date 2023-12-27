@@ -59,7 +59,7 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
   public IDirectory dir(String relativePath) {
 //    try {
       File subDir = new File(this._file, relativePath)/*.getCanonicalFile()*/;
-    return CommonServices.getFileSystem().getIDirectory(subDir);
+    return CommonServices.INSTANCE.getFileSystem().getIDirectory(subDir);
 //    } catch (IOException e) {
 //      throw new RuntimeException(e);
 //    }
@@ -69,7 +69,7 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
   public IFile file(String path) {
 //    try {
       File subFile = new File(this._file, path)/*.getCanonicalFile()*/;
-    return CommonServices.getFileSystem().getIFile(subFile);
+    return CommonServices.INSTANCE.getFileSystem().getIFile(subFile);
 //    } catch (IOException e) {
 //      throw new RuntimeException(e);
 //    }
@@ -126,7 +126,7 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
       if (files != null) {
         for (File f : _file.listFiles()) {
           if (FileSystemImpl.isDirectory(f)) {
-            results.add(CommonServices.getFileSystem().getIDirectory(f));
+            results.add(CommonServices.INSTANCE.getFileSystem().getIDirectory(f));
           }
         }
       }
@@ -140,7 +140,7 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
       if (files != null) {
         for (File f : files) {
           if (!FileSystemImpl.isDirectory(f)) {
-            results.add(CommonServices.getFileSystem().getIFile(f));
+            results.add(CommonServices.INSTANCE.getFileSystem().getIFile(f));
           }
         }
       }
@@ -190,9 +190,9 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
       if (files != null) {
         for (File f : files) {
           if (FileSystemImpl.isDirectory(f)) {
-            _directories.add(CommonServices.getFileSystem().getIDirectory(f));
+            _directories.add(CommonServices.INSTANCE.getFileSystem().getIDirectory(f));
           } else {
-            _files.add(CommonServices.getFileSystem().getIFile(f));
+            _files.add(CommonServices.INSTANCE.getFileSystem().getIFile(f));
           }
         }
       }

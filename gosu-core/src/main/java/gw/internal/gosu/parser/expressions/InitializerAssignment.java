@@ -162,7 +162,7 @@ final public class InitializerAssignment extends Statement implements IInitializ
     {
       throw GosuExceptionUtil.forceThrow( e );
     }
-    value = CommonServices.getCoercionManager().convertValue( value, pi.getFeatureType() );
+    value = CommonServices.INSTANCE.getCoercionManager().convertValue( value, pi.getFeatureType() );
     return value;
   }
 

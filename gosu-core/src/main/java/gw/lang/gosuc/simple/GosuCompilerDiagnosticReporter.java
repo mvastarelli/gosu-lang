@@ -29,7 +29,7 @@ public class GosuCompilerDiagnosticReporter implements ICompilationDiagnosticRep
       IParsedElement classElement = ((IGosuClass)type).getClassStatement();
       IClassFileStatement classFileStatement = ((IClassStatement)classElement).getClassFileStatement();
       classElement = classFileStatement == null ? classElement : classFileStatement;
-      ExecutionMode mode = CommonServices.getPlatformHelper().getExecutionMode();
+      ExecutionMode mode = CommonServices.INSTANCE.getPlatformHelper().getExecutionMode();
 
       for( IParseIssue issue : classElement.getParseIssues() )
       {

@@ -467,7 +467,7 @@ public class TypeSystem
 
   public static IType getKeyType()
   {
-    return CommonServices.getEntityAccess().getKeyType();
+    return CommonServices.INSTANCE.getEntityAccess().getKeyType();
   }
 
   public static void pushIncludeAll()
@@ -485,7 +485,7 @@ public class TypeSystem
 
   public static ITypeUsesMap getDefaultTypeUsesMap()
   {
-    return CommonServices.getEntityAccess().getDefaultTypeUses();
+    return CommonServices.INSTANCE.getEntityAccess().getDefaultTypeUses();
   }
 
   public static IType getCurrentCompilingType() {
@@ -582,15 +582,15 @@ public class TypeSystem
 
   public static IPropertyInfo getPropertyInfo( IType classBean, String strProperty, IFeatureFilter filter, IParserPart parserBase, IScriptabilityModifier scriptabilityConstraint) throws ParseException
   {
-    return CommonServices.getGosuIndustrialPark().getPropertyInfo(classBean, strProperty, filter, parserBase, scriptabilityConstraint);
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getPropertyInfo(classBean, strProperty, filter, parserBase, scriptabilityConstraint);
   }
   public static List<? extends IPropertyInfo> getProperties( ITypeInfo beanInfo, IType classSource )
   {
-    return CommonServices.getGosuIndustrialPark().getProperties(beanInfo, classSource);
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getProperties(beanInfo, classSource);
   }
   public static List<? extends IMethodInfo> getMethods( ITypeInfo beanInfo, IType ownersIntrinsicType )
   {
-    return CommonServices.getGosuIndustrialPark().getMethods(beanInfo, ownersIntrinsicType);
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getMethods(beanInfo, ownersIntrinsicType);
   }
 
   @Deprecated // calls TypeSystem.get( javaClass )
@@ -753,7 +753,7 @@ public class TypeSystem
 
   public static Method[] getDeclaredMethods( Class cls )
   {
-    return CommonServices.getGosuIndustrialPark().getDeclaredMethods( cls );
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getDeclaredMethods( cls );
   }
 
   public static boolean isBytecodeType( IType type )
@@ -899,7 +899,7 @@ public class TypeSystem
    */
   public static void refreshedFiles(String[] filePaths) {
     for (String filePath : filePaths) {
-      IFile file = CommonServices.getFileSystem().getIFile(new File(filePath));
+      IFile file = CommonServices.INSTANCE.getFileSystem().getIFile(new File(filePath));
       if (file != null) {
         TypeSystem.refreshed(file);
       }

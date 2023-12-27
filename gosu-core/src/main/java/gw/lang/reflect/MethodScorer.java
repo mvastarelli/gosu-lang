@@ -215,7 +215,7 @@ public class MethodScorer {
           score = Byte.MAX_VALUE - 2;
         }
         else {
-          ICoercer iCoercer = CommonServices.getCoercionManager().findCoercer( paramType, argType, false );
+          ICoercer iCoercer = CommonServices.INSTANCE.getCoercionManager().findCoercer( paramType, argType, false );
           if( iCoercer != null ) {
             if( iCoercer instanceof BasePrimitiveCoercer ) {
               // Coercible (non-standard primitive)  +24 + primitive-coercion-score  (0 is best score for primitive coercer)

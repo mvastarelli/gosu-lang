@@ -18,7 +18,7 @@ public class MethodCallValidatorTest extends TestClass
 {
   public void testCatchesInvalidCallAndPassesValidCall()
   {
-    if( CommonServices.getEntityAccess().getLanguageLevel().isStandard() )
+    if( CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() )
     {
       // no validation stuff in os gosu
       return;
@@ -33,7 +33,7 @@ public class MethodCallValidatorTest extends TestClass
 
   public void testCatchesInvalidCallAndPassesValidCallForGosu()
   {
-    if( CommonServices.getEntityAccess().getLanguageLevel().isStandard() )
+    if( CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() )
     {
       // no validation stuff in os gosu
       return;

@@ -169,6 +169,6 @@ public class ClasspathToGosuPathEntryUtilTest extends TestClass {
 
   private IDirectory toDir( File dir )
   {
-    return CommonServices.getFileSystem().getIDirectory( dir );
+    return CommonServices.INSTANCE.getFileSystem().getIDirectory( dir );
   }
 }

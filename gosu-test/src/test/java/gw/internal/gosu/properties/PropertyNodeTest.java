@@ -118,7 +118,7 @@ public class PropertyNodeTest extends TestClass {
   }
 
   public void testUseOnlyFirstOfMultipleNamesThatDifferOnlyInCase() {
-    if( gw.config.CommonServices.getEntityAccess().getLanguageLevel().isStandard() ) {
+    if( gw.config.CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() ) {
       // OS Gosu is case sensitive :)
       return;
     }

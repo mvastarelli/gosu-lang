@@ -229,7 +229,7 @@ public class RelationalExpressionTransformer extends AbstractExpressionTransform
     IType lhsType = TypeSystem.getFromObject( lhsValue );
     IType rhsType = TypeSystem.getFromObject( rhsValue );
 
-    final ICoercionManager coercionMgr = CommonServices.getCoercionManager();
+    final ICoercionManager coercionMgr = CommonServices.INSTANCE.getCoercionManager();
 
     switch( strOperator )
     {

@@ -95,7 +95,7 @@ public class BasePrimitiveCoercer extends StandardCoercer implements IResolvingC
   {
     if( value == null )
     {
-      return CommonServices.getCoercionManager().convertNullAsPrimitive( _primitiveType, false );
+      return CommonServices.INSTANCE.getCoercionManager().convertNullAsPrimitive( _primitiveType, false );
     }
     else
     {

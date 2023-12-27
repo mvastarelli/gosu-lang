@@ -48,7 +48,7 @@ public class GlobalModule extends Module implements IGlobalModule
   public void createGlobalTypeloaders() {
     ModuleTypeLoader _moduleTypeLoader = getModuleTypeLoader();
 
-    List<Class<? extends ITypeLoader>> globalLoaderTypes = CommonServices.getGlobalLoaderProvider().getGlobalLoaderTypes();
+    List<Class<? extends ITypeLoader>> globalLoaderTypes = CommonServices.INSTANCE.getGlobalLoaderProvider().getGlobalLoaderTypes();
     if( globalLoaderTypes != null ) {
       Collections.reverse(globalLoaderTypes);
     }
@@ -87,7 +87,7 @@ public class GlobalModule extends Module implements IGlobalModule
         loaders.get(i).init();
       }
 
-      CommonServices.getGosuInitializationHooks().afterTypeLoaderCreation();
+      CommonServices.INSTANCE.getGosuInitializationHooks().afterTypeLoaderCreation();
     } finally {
       TypeSystem.popModule(this);
     }
@@ -124,7 +124,7 @@ public class GlobalModule extends Module implements IGlobalModule
 
     try {
     ITypeLoader typeLoader;
-    CommonServices.getGosuInitializationHooks().beforeTypeLoaderCreation(loaderClass);
+    CommonServices.INSTANCE.getGosuInitializationHooks().beforeTypeLoaderCreation(loaderClass);
     Constructor[] constructors = loaderClass.getConstructors();
     typeLoader = null;
     for (Constructor cons : constructors) {

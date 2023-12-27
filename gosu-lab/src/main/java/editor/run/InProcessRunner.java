@@ -152,7 +152,7 @@ public class InProcessRunner implements IProcessRunner<FqnRunConfig>
     if( gsType instanceof IGosuProgram )
     {
       Object result = ((IGosuProgram)gsType).evaluate( null );
-      return (String)CommonServices.getCoercionManager().convertValue( result, JavaTypes.STRING() );
+      return (String)CommonServices.INSTANCE.getCoercionManager().convertValue( result, JavaTypes.STRING() );
     }
     else
     {

@@ -335,7 +335,7 @@ public class JavaFieldPropertyInfo extends JavaBaseFeatureInfo implements IJavaF
 
       try
       {
-        value = CommonServices.getCoercionManager().convertValue( value, getFeatureType() );
+        value = CommonServices.INSTANCE.getCoercionManager().convertValue( value, getFeatureType() );
         ((FieldJavaClassField)_field).set( null, value );
       }
       catch( IllegalAccessException e )
@@ -370,7 +370,7 @@ public class JavaFieldPropertyInfo extends JavaBaseFeatureInfo implements IJavaF
 
       try
       {
-        value = CommonServices.getCoercionManager().convertValue( value, getFeatureType() );
+        value = CommonServices.INSTANCE.getCoercionManager().convertValue( value, getFeatureType() );
         ((FieldJavaClassField)_field).set( ctx, value );
       }
       catch( IllegalAccessException e )

@@ -1105,7 +1105,7 @@ public abstract class ParserBase implements IParserPart
   protected ISymbol resolveSymbol( ParsedElement e, String strName, boolean ignoreFunctionSymbols )
   {
     boolean b = getSymbolTable() != null;
-    assert b : CommonServices.getGosuLocalizationService().localize( Res.MSG_NULL_SYMBOL_TABLE );
+    assert b : CommonServices.INSTANCE.getGosuLocalizationService().localize( Res.MSG_NULL_SYMBOL_TABLE );
 
     ISymbol sym;
 
@@ -1538,7 +1538,7 @@ public abstract class ParserBase implements IParserPart
           {
             try
             {
-              CommonServices.getCoercionManager().isDateTime( str );
+              CommonServices.INSTANCE.getCoercionManager().isDateTime( str );
             }
             catch( java.text.ParseException e )
             {
@@ -1561,7 +1561,7 @@ public abstract class ParserBase implements IParserPart
   {
     try
     {
-      final ICoercionManager coercionManager = CommonServices.getCoercionManager();
+      final ICoercionManager coercionManager = CommonServices.INSTANCE.getCoercionManager();
       coercionManager.verifyTypesComparable( lhsType, rhsType, bBiDirectional );
 
       if( bErrorIfCoercion )
@@ -2308,7 +2308,7 @@ public abstract class ParserBase implements IParserPart
     }
 
     IType typeToCoerceFrom = expressionToCoerce.getType();
-    ICoercionManager cocerionManager = CommonServices.getCoercionManager();
+    ICoercionManager cocerionManager = CommonServices.INSTANCE.getCoercionManager();
     ICoercer coercer = cocerionManager.resolveCoercerStatically( resolvedTypeToCoerceTo, typeToCoerceFrom );
 
     if( coercer == null )

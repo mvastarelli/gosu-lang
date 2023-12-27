@@ -128,7 +128,7 @@ public class TypeSystemLockHelper {
           // ok, only wait if this thread owns the monitor, otherwise keep rolling
         }
       } else {
-        ILogger logger = CommonServices.getEntityAccess().getLogger();
+        ILogger logger = CommonServices.INSTANCE.getEntityAccess().getLogger();
         if(logger.isDebugEnabled() && isMonitorOwner(Thread.currentThread(), ctxLoader)) {
           logger.debug("Holds context monitor, but not waiting on context loader " +
                   ctxLoader.getClass().getSimpleName() + ctxLoader.hashCode());

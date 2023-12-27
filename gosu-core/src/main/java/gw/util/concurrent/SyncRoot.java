@@ -49,6 +49,22 @@ public interface SyncRoot {
     }
   }
 
+  public interface Mutex {
+    Object _sync = new Object();
+
+    default void acquire(LockAction action ) {
+      synchronized(_sync) {
+        action.act();
+      }
+    }
+
+    default <T> T acquire( LockFunc<T> func ) {
+      synchronized(_sync) {
+        return func.func();
+      }
+    }
+  }
+
   @FunctionalInterface
   public interface LockAction {
     void act();

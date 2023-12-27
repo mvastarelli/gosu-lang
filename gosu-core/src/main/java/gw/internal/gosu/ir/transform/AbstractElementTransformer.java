@@ -2073,7 +2073,7 @@ public abstract class AbstractElementTransformer<T extends IParsedElement>
   {
     return type != JavaTypes.pBOOLEAN() &&
            type != JavaTypes.BOOLEAN() &&
-           CommonServices.getCoercionManager().isPrimitiveOrBoxed( type );
+           CommonServices.INSTANCE.getCoercionManager().isPrimitiveOrBoxed( type );
   }
 
   // The symbol is considered to be on an enclosing type if the symbol is defined on a class that encloses this
@@ -3633,7 +3633,7 @@ public abstract class AbstractElementTransformer<T extends IParsedElement>
       operandType == JavaTypes.DATE() ||
       operandType == JavaTypes.OBJECT() ||
       TypeSystem.get( IEnumConstant.class ).isAssignableFrom( operandType ) ||
-      CommonServices.getEntityAccess().isEntityClass( operandType );
+      CommonServices.INSTANCE.getEntityAccess().isEntityClass( operandType );
   }
 
   public static IType findDimensionType( IType type ) {

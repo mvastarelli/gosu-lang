@@ -133,7 +133,7 @@ public abstract class ParseIssue extends Exception implements IParseIssue
   {
     if( key != null )
     {
-      return CommonServices.getGosuLocalizationService().localize( key, msgArgs );
+      return CommonServices.INSTANCE.getGosuLocalizationService().localize( key, msgArgs );
     }
     else
     {

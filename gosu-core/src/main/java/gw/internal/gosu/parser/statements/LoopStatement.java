@@ -195,7 +195,7 @@ public abstract class LoopStatement extends Statement implements ILoopStatement
   public boolean isConditionLiteralTrue() {
     return getExpression() instanceof Literal &&
            getExpression().isCompileTimeConstant() &&
-           CommonServices.getCoercionManager().makePrimitiveBooleanFrom( getExpression().evaluate() );
+           CommonServices.INSTANCE.getCoercionManager().makePrimitiveBooleanFrom( getExpression().evaluate() );
   }
 
   static class ArrayIterator implements Iterator
@@ -208,7 +208,7 @@ public abstract class LoopStatement extends Statement implements ILoopStatement
     {
       _iCsr = 0;
       _arrayType = arrayType;
-      _array = CommonServices.getCoercionManager().convertValue(array, _arrayType);
+      _array = CommonServices.INSTANCE.getCoercionManager().convertValue(array, _arrayType);
     }
 
     public boolean hasNext()

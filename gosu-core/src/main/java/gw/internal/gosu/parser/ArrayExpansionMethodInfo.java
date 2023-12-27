@@ -221,7 +221,7 @@ public class ArrayExpansionMethodInfo implements IMethodInfo
           if( value != null && bArray )
           {
             //noinspection unchecked
-            results.addAll( (Collection)CommonServices.getCoercionManager().convertValue( value, JavaTypes.ARRAY_LIST() ) );
+            results.addAll( (Collection)CommonServices.INSTANCE.getCoercionManager().convertValue( value, JavaTypes.ARRAY_LIST() ) );
           }
           else
           {
@@ -242,7 +242,7 @@ public class ArrayExpansionMethodInfo implements IMethodInfo
       int i = 0;
       for( Object val : list )
       {
-        typeToCoerceTo.setArrayComponent( returnArray, i++, CommonServices.getCoercionManager().convertValue( val, typeToCoerceTo.getComponentType() ) );
+        typeToCoerceTo.setArrayComponent( returnArray, i++, CommonServices.INSTANCE.getCoercionManager().convertValue( val, typeToCoerceTo.getComponentType() ) );
       }
       return returnArray;
     }

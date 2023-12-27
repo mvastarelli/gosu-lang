@@ -82,7 +82,7 @@ public class DiscreteLoadingTest {
     var program = parseResult.getProgram()
     var result = program.evaluate( null )
     if( result != null ) {
-      print( "Return Value: " + CommonServices.getCoercionManager().convertValue( result, JavaTypes.STRING() ) )
+      print( "Return Value: " + CommonServices.INSTANCE.getCoercionManager().convertValue( result, JavaTypes.STRING() ) )
     }
     //assertSame( program.ProgramInstance.Class, program.BackingClass )
     print( program.BackingClass.Name )

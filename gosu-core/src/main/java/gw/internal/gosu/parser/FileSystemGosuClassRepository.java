@@ -384,7 +384,7 @@ public class FileSystemGosuClassRepository implements IFileSystemGosuClassReposi
       return;
     }
     IDirectory entryPath = entry.getPath();
-    if (entryPath.equals(path) || !CommonServices.getPlatformHelper().isPathIgnored(entryPath.relativePath(path))) {
+    if (entryPath.equals(path) || !CommonServices.INSTANCE.getPlatformHelper().isPathIgnored(entryPath.relativePath(path))) {
       List<? extends IDirectory> dirs = path.listDirs();
       for (IDirectory dir : dirs) {
         if (isValidDirectory(dir)) {

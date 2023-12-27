@@ -15,86 +15,32 @@ import gw.lang.parser.StandardCoercionManager;
 import gw.lang.reflect.IEntityAccess;
 import gw.lang.reflect.ITypeSystem;
 import gw.lang.reflect.module.IFileSystem;
-import gw.util.concurrent.SyncRoot;
 
 import static gw.lang.reflect.gs.BytecodeOptions.JDWP_ENABLED;
 import static java.lang.Boolean.TRUE;
 
-public class CommonServices extends ServiceKernel implements SyncRoot.ReaderWriter
+public class CommonServices implements ICommonServices
 {
   // These must come first!
   private static ITypeSystem _typeSystem = new TypeLoaderAccess();  // maintained outside the kernel for perf reasons
   private static final IFileSystem _fileSystem = getDefaultFileSystemInstance(); // Currently not technically a service, since it needs to be available all the time
+  private final HotSwappable<IServiceKernel> _kernel = new HotSwappable<>(CommonServices::resetKernel);
 
-  private static CommonServices _kernel = new CommonServices();
+  // Order is important.  Define this last.
+  public static final ICommonServices INSTANCE = new CommonServices();
 
-  static {
-    Registry.addLocationListener(e -> resetKernel());
-  }
-
-  private static synchronized void resetKernel() {
-    _kernel = new CommonServices();
-  }
-
-  private CommonServices() { }
-
-  @Override
-  protected void defineServices()
-  {
-    try
-    {
-      defineService( IFileSystem.class, getDefaultFileSystemInstance() );
-      defineService( IGosuInitializationHooks.class, new DefaultGosuInitializationHooks());
-      defineService( IGlobalLoaderProvider.class, new DefaultGlobalLoaderProvider());
-      defineService( IGosuProfilingService.class, new DefaultGosuProfilingService() );
-
-      // These originally came from core-api.
-      defineService( IEntityAccess.class, new DefaultEntityAccess() );
-      defineService( ICoercionManager.class, new StandardCoercionManager() );
-      defineService( IGosuParserFactory.class, new GosuParserFactoryImpl() );
-      defineService( IGosuShop.class, new GosuIndustrialParkImpl() );
-      defineService( IGosuLocalizationService.class, new DefaultLocalizationService() );
-      defineService( IXmlSchemaCompatibilityConfig.class, new DefaultXmlSchemaCompatibilityConfig() );
-      defineService( IPlatformHelper.class, new DefaultPlatformHelper() );
-      defineService( IExtensionFolderLocator.class, new DefaultExtensionFolderLocator() );
-      defineService( IMemoryMonitor.class, new DefaultMemoryMonitor() );
-    }
-    catch( Exception e )
-    {
-      throw new RuntimeException( e );
-    }
-    catch( NoClassDefFoundError e)  {
-      e.printStackTrace();
-      throw e;
-    }
+  private CommonServices() {
+    Registry.addLocationListener(e -> _kernel.reset());
   }
 
   @Override
-  protected void redefineServices()
-  {
-    redefineServicesWithClass( Registry.instance().getCommonServiceInit() );
+  public IServiceKernel getUnderlyingKernel() {
+    return _kernel.get();
   }
 
-  private static IFileSystem getDefaultFileSystemInstance() {
-    return TRUE.equals(JDWP_ENABLED.get()) ?
-            new FileSystemImpl(IFileSystem.CachingMode.NO_CACHING) :
-            new FileSystemImpl(IFileSystem.CachingMode.FULL_CACHING);
-  }
-
-  public static IEntityAccess getEntityAccess()
-  {
-    return _kernel.getService( IEntityAccess.class );
-  }
-
-  public static ICoercionManager getCoercionManager()
-  {
-    return _kernel.getService( ICoercionManager.class );
-  }
-
-  @SuppressWarnings("UnusedDeclaration")
-  public static IGosuProfilingService getGosuProfilingService()
-  {
-    return _kernel.getService( IGosuProfilingService.class );
+  @Override
+  public <T extends IService> T getService(Class<? extends T> service) {
+    return _kernel.get().getService(service);
   }
 
   public static ITypeSystem getTypeSystem()
@@ -106,50 +52,49 @@ public class CommonServices extends ServiceKernel implements SyncRoot.ReaderWrit
     _typeSystem = typeSystem;
   }
 
-  public static IGosuParserFactory getGosuParserFactory()
-  {
-    return _kernel.getService( IGosuParserFactory.class );
+  public static IServiceKernel getKernel() {
+    return INSTANCE.getUnderlyingKernel();
   }
 
-  public static IGosuShop getGosuIndustrialPark()
-  {
-    return _kernel.getService( IGosuShop.class );
+  @SuppressWarnings("CallToPrintStackTrace")
+  private static IServiceKernel resetKernel() {
+    var kernel = new ServiceKernel();
+
+    try
+    {
+      kernel.defineService( IFileSystem.class, getDefaultFileSystemInstance() );
+      kernel.defineService( IGosuInitializationHooks.class, new DefaultGosuInitializationHooks());
+      kernel.defineService( IGlobalLoaderProvider.class, new DefaultGlobalLoaderProvider());
+      kernel.defineService( IGosuProfilingService.class, new DefaultGosuProfilingService() );
+
+      // These originally came from core-api.
+      kernel.defineService( IEntityAccess.class, new DefaultEntityAccess() );
+      kernel.defineService( ICoercionManager.class, new StandardCoercionManager() );
+      kernel.defineService( IGosuParserFactory.class, new GosuParserFactoryImpl() );
+      kernel.defineService( IGosuShop.class, new GosuIndustrialParkImpl() );
+      kernel.defineService( IGosuLocalizationService.class, new DefaultLocalizationService() );
+      kernel.defineService( IXmlSchemaCompatibilityConfig.class, new DefaultXmlSchemaCompatibilityConfig() );
+      kernel.defineService( IPlatformHelper.class, new DefaultPlatformHelper() );
+      kernel.defineService( IExtensionFolderLocator.class, new DefaultExtensionFolderLocator() );
+      kernel.defineService( IMemoryMonitor.class, new DefaultMemoryMonitor() );
+
+      kernel.redefineServicesWithClass( Registry.instance().getCommonServiceInit() );
+    }
+    catch( Exception e )
+    {
+      throw new RuntimeException( e );
+    }
+    catch( NoClassDefFoundError e)  {
+      e.printStackTrace();
+      throw e;
+    }
+
+    return kernel;
   }
 
-  public static IGosuLocalizationService getGosuLocalizationService()
-  {
-    return _kernel.getService( IGosuLocalizationService.class );
-  }
-
-  public static IXmlSchemaCompatibilityConfig getXmlSchemaCompatibilityConfig() {
-    return _kernel.getService( IXmlSchemaCompatibilityConfig.class );
-  }
-
-  public static IPlatformHelper getPlatformHelper() {
-    return _kernel.getService( IPlatformHelper.class );
-  }
-
-  public static IGosuInitializationHooks getGosuInitializationHooks() {
-    return _kernel.getService( IGosuInitializationHooks.class );
-  }
-
-  public static IGlobalLoaderProvider getGlobalLoaderProvider() {
-    return _kernel.getService(IGlobalLoaderProvider.class);
-  }
-
-  public static IExtensionFolderLocator getExtensionFolderLocator() {
-    return _kernel.getService(IExtensionFolderLocator.class);
-  }
-
-  public static IFileSystem getFileSystem() {
-    return _kernel.getService(IFileSystem.class);
-  }
-
-  public static IMemoryMonitor getMemoryMonitor() {
-    return _kernel.getService(IMemoryMonitor.class);
-  }
-
-  public static CommonServices getKernel() {
-    return _kernel;
+  private static IFileSystem getDefaultFileSystemInstance() {
+    return TRUE.equals(JDWP_ENABLED.get()) ?
+            new FileSystemImpl(IFileSystem.CachingMode.NO_CACHING) :
+            new FileSystemImpl(IFileSystem.CachingMode.FULL_CACHING);
   }
 }

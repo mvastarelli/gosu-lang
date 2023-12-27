@@ -572,7 +572,7 @@ public class GosuClassParseInfo {
   }
 
   public void updateSource( String source ) {
-    _sourceFingerprint = CommonServices.getPlatformHelper().getExecutionMode() == ExecutionMode.IDE
+    _sourceFingerprint = CommonServices.INSTANCE.getPlatformHelper().getExecutionMode() == ExecutionMode.IDE
                          ? new FP64(source).getRawFingerprint() // only really matters inside an IDE
                          : source.length();
   }

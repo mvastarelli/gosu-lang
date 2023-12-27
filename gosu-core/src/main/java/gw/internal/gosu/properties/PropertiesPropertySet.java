@@ -72,7 +72,7 @@ public class PropertiesPropertySet implements PropertySet {
       if ( excludedPath.contains( dir )) {
         return;
       }
-      if (!CommonServices.getPlatformHelper().isPathIgnored(relativePath)) {
+      if (!CommonServices.INSTANCE.getPlatformHelper().isPathIgnored(relativePath)) {
         for (IFile file : dir.listFiles()) {
           if (file.getName().endsWith(extension)) {
             String path = appendResourceNameToPath(relativePath, file.getName());
@@ -140,7 +140,7 @@ public class PropertiesPropertySet implements PropertySet {
             closeSafely(propertiesStream);
           }
         } catch (IOException e) {
-          CommonServices.getEntityAccess().getLogger().error(String.format("Could not read property file %s", file), e);
+          CommonServices.INSTANCE.getEntityAccess().getLogger().error(String.format("Could not read property file %s", file), e);
         }
       }
       return result;

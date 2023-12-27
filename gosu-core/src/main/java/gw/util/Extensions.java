@@ -49,7 +49,7 @@ public final class Extensions {
       // FIXME: For some reason, WebSphere changes JARs in WEB-INF/lib, breaking signatures. So ignore errors.
       ResourcePath path = dir.getPath();
       String str = path != null ? path.getFileSystemPathString() : dir.toString();
-      CommonServices.getEntityAccess().getLogger().warn("Cannot read manifest from jar " + str + ", ignoring");
+      CommonServices.INSTANCE.getEntityAccess().getLogger().warn("Cannot read manifest from jar " + str + ", ignoring");
     } finally {
       if (in != null) {
         try {

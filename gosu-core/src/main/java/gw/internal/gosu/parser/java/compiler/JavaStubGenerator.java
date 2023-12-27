@@ -463,7 +463,7 @@ public class JavaStubGenerator
 
   private String makeDefaultPrimitiveValue( IType returnType )
   {
-    return genCompileTimeConstantExpression( returnType, CommonServices.getCoercionManager().convertNullAsPrimitive( returnType, false ) );
+    return genCompileTimeConstantExpression( returnType, CommonServices.INSTANCE.getCoercionManager().convertNullAsPrimitive( returnType, false ) );
   }
 
   private void genParameters( StringBuilder sb, DynamicFunctionSymbol dfs )

@@ -16,7 +16,7 @@ public class GosuExceptionUtil
   private static final LockingLazyVar<IForceThrower> FORCE_THROWER = new LockingLazyVar<IForceThrower>() {
     @Override
     protected IForceThrower init() {
-      return CommonServices.getGosuIndustrialPark().getForceThrower();
+      return CommonServices.INSTANCE.getGosuIndustrialPark().getForceThrower();
     }
   };
 

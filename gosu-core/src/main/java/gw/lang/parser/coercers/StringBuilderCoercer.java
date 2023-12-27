@@ -13,7 +13,7 @@ public class StringBuilderCoercer extends StandardCoercer
 
   public Object coerceValue( IType typeToCoerceTo, Object value )
   {
-    return new StringBuilder( CommonServices.getCoercionManager().makeStringFrom( value ) );
+    return new StringBuilder( CommonServices.INSTANCE.getCoercionManager().makeStringFrom( value ) );
   }
 
   public static StringBuilderCoercer instance()

@@ -22,6 +22,6 @@ public class ResourceKey
 
   @Override
   public String toString() {
-    return CommonServices.getGosuLocalizationService().localize(this);
+    return CommonServices.INSTANCE.getGosuLocalizationService().localize(this);
   }
 }

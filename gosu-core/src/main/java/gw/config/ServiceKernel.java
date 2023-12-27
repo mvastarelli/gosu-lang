@@ -4,49 +4,21 @@
 
 package gw.config;
 
-
 import gw.lang.parser.ILanguageLevel;
 import gw.util.Stack;
 import manifold.util.ReflectUtil;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ServiceKernel
+public class ServiceKernel implements IServiceKernel
 {
+  private final Map<Class<? extends IService>, IService> _services = new HashMap<>();
+  private final Stack<IService> _initServices = new Stack<>();
 
-  private final Map<Class<? extends IService>, IService> _services;
-  private final Stack<IService> _initingServices = new Stack<>();
-
-  protected ServiceKernel() {
-    _services = new HashMap<>();
-    defineServices();
-    redefineServices();
-  }
-
-  /**
-   * Contains all the definitions of the services provided by this kernel
-   */
-  protected abstract void defineServices();
-
-  /**
-   * Contains the redefinition logic for this kernel
-   */
-  protected abstract void redefineServices();
-
-  /**
-   * @param service
-   * @return
-   */
   public <T extends IService> T getService( Class<? extends T> service )
   {
-//    if( _definingServices )
-//    {
-//      throw new IllegalStateException( "Service definition in progress, access to " + service.getName() + " is not " +
-//                                       "allowed.  Move this access to the init() method of the offending service." );
-//    }
     IService serviceImpl = _services.get( service );
 
     if( serviceImpl == null )
@@ -54,23 +26,12 @@ public abstract class ServiceKernel
       throw new IllegalStateException( "The service " + service.getName() + " is not provided by this ServiceKernel." );
     }
 
+    //noinspection unchecked
     return (T)serviceImpl;
   }
 
-  /**
-   * Overrides the default implemenation of the service with a different provider.  Note that the current
-   * provider cannot have been accessed (all services must be consistent during runtime.)
-   *
-   * @param service - the service to provide
-   * @param newProvider - the new provider of this service
-   */
   public <T extends IService, Q extends T> void redefineService(Class<? extends T> service, Q newProvider)
   {
-//    if( _definingServices )
-//    {
-//      throw new IllegalStateException( "Service definition in progress, so service redefinition is not allowed.  Please " +
-//                                       "move redefinitions to the redefineServices method." );
-//    }
     IService existingServiceImpl = _services.get( service );
 
     if( existingServiceImpl == null )
@@ -100,23 +61,14 @@ public abstract class ServiceKernel
     _services.put( service, newProvider );
   }
 
-  protected <T extends IService> void defineService(Class<? extends T> serviceClass, Class<? extends T> implClass ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException
+  public <T extends IService> void defineService(Class<? extends T> serviceClass, Class<? extends T> implClass ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException
   {
     T serviceImpl = (T)ReflectUtil.constructor( implClass ).newInstance();
     defineService( serviceClass, serviceImpl );
   }
-  /**
-   * Defines a service provided by this ServiceKernel
-   *
-   * @param service - the service to provide
-   * @param defaultImplementation - the default implementation of this service
-   */
-  protected <T extends IService, Q extends T> void defineService(Class<? extends T> service, Q defaultImplementation)
+
+  public <T extends IService, Q extends T> void defineService(Class<? extends T> service, Q defaultImplementation)
   {
-//    if( !_definingServices )
-//    {
-//      throw new IllegalStateException( "Service definition must be done only in the defineServices() method." );
-//    }
     if( !service.isInterface() )
     {
       throw new IllegalArgumentException( "Services may only be defined as interfaces, and " +
@@ -136,11 +88,8 @@ public abstract class ServiceKernel
     _services.put( service, defaultImplementation );
   }
 
-  /**
-   * @param initClassName a class name of a class that implements {@link ServiceKernelInit) and that will be created
-   * and given a chance to redefine the service implementations in this kernel.
-   */
-  protected void redefineServicesWithClass( String initClassName )
+  @SuppressWarnings("CallToPrintStackTrace")
+  public void redefineServicesWithClass(String initClassName )
   {
     try
     {
@@ -168,13 +117,13 @@ public abstract class ServiceKernel
 
   private <T extends IService> void detectCircularInitializationDependencies( IService service )
   {
-    if( _initingServices.contains( service ) )
+    if( _initServices.contains( service ) )
     {
       StringBuilder sb = new StringBuilder( "Circular service initialization dependency detected : " );
 
-      for( IService initingService : _initingServices )
+      for( IService initService : _initServices)
       {
-        sb.append( "\n\t" ).append( initingService );
+        sb.append( "\n\t" ).append( initService );
       }
 
       throw new IllegalStateException( sb.toString() );

@@ -95,12 +95,12 @@ public class ModuleClassLoader extends URLClassLoader implements IModuleClassLoa
     if (ExecutionMode.isRuntime()) {
       // XXX-isd: we need discardable classloader for JRE module, so we can use it for defining throw-away proxy classes.
       urls = Collections.emptyList();
-      //return CommonServices.getEntityAccess().getPluginClassLoader();
+      //return CommonServices.INSTANCE.getEntityAccess().getPluginClassLoader();
     }
 
     // JRE module delegates to plugin classloader, all other modules delegate to JRE module first.
     ClassLoader parent = (module == environment.getJreModule()) ?
-            CommonServices.getEntityAccess().getPluginClassLoader() :
+            CommonServices.INSTANCE.getEntityAccess().getPluginClassLoader() :
             null; //environment.getJreModule().getModuleClassLoader();
 
     return new ModuleClassLoader(urls.toArray(new URL[urls.size()]), parent, module);

@@ -610,7 +610,7 @@ public class GosuClassProxyFactory
                 : "    return " +
                   (!returnType.isPrimitive()
                    ? "null"
-                   : CommonServices.getCoercionManager().convertNullAsPrimitive( returnType, false ))) );
+                   : CommonServices.INSTANCE.getCoercionManager().convertNullAsPrimitive( returnType, false ))) );
     sb.append( "}\n" );
   }
 

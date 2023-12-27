@@ -100,7 +100,7 @@ public final class AdditiveExpression extends ArithmeticExpression implements IA
       bNumericType = BeanAccess.isNumericType( type );
     }
 
-    ICoercionManager cm = CommonServices.getCoercionManager();
+    ICoercionManager cm = CommonServices.INSTANCE.getCoercionManager();
     if( bNumericType )
     {
       // Only evaluate as null if this is a numeric expression.

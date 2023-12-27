@@ -228,14 +228,14 @@ public class ArrayExpansionPropertyInfo implements IExpansionPropertyInfo
         Object value = elem == null ? null : accessor.getValue( elem );
         if( value != null && bArray )
         {
-          results.addAll( (Collection)CommonServices.getCoercionManager().convertValue( value, JavaTypes.ARRAY_LIST() ) );
+          results.addAll( (Collection)CommonServices.INSTANCE.getCoercionManager().convertValue( value, JavaTypes.ARRAY_LIST() ) );
         }
         else
         {
           results.add( value );
         }
       }
-      return CommonServices.getCoercionManager().convertValue( results, getFeatureType() );
+      return CommonServices.INSTANCE.getCoercionManager().convertValue( results, getFeatureType() );
     }
 
     public void setValue( Object ctx, Object value )
