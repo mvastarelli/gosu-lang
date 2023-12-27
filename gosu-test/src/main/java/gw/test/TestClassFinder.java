@@ -5,10 +5,10 @@
 package gw.test;
 
 import gw.config.CommonServices;
-import gw.lang.reflect.IType;
-import gw.lang.reflect.TypeSystem;
 import gw.fs.IDirectory;
 import gw.fs.IFile;
+import gw.lang.reflect.IType;
+import gw.lang.reflect.TypeSystem;
 import gw.util.GosuClassUtil;
 import gw.util.ILogger;
 import gw.util.Predicate;

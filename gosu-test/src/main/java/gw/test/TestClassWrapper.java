@@ -4,31 +4,16 @@
 
 package gw.test;
 
-import gw.lang.reflect.java.JavaTypes;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-import junit.framework.AssertionFailedError;
-import gw.lang.reflect.IType;
-import gw.lang.reflect.IMethodInfo;
 import gw.lang.reflect.IAnnotationInfo;
-import gw.lang.reflect.ITypeInfo;
 import gw.lang.reflect.IConstructorInfo;
-import gw.lang.reflect.java.IJavaType;
-import gw.lang.reflect.java.JavaTypes;
+import gw.lang.reflect.IType;
+import gw.lang.reflect.ITypeInfo;
 import gw.lang.reflect.gs.IGosuClass;
+import gw.lang.reflect.java.JavaTypes;
 import gw.testharness.IncludeInTestResults;
+import junit.framework.*;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.Set;
-import java.util.HashSet;
-import java.lang.annotation.Annotation;
+import java.util.concurrent.*;
 
 public class TestClassWrapper extends TestSuite {
   private IType _type;

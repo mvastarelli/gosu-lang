@@ -9,7 +9,6 @@ import gw.lang.init.ClasspathToGosuPathEntryUtil;
 import gw.lang.init.GosuInitialization;
 import gw.lang.reflect.TypeSystem;
 
-import java.io.File;
 import java.util.List;
 
 public class TestEnvironment {

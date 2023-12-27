@@ -4,8 +4,6 @@
 
 package gw.test;
 
-import junit.framework.Test;
-
 import java.util.Collections;
 import java.util.List;
 

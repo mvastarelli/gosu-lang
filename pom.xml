@@ -29,7 +29,6 @@
     <module>gosu-maven-compiler</module>
     <module>gosu-parent</module>
     <module>gosu-test</module>
-    <module>gosu-test-api</module>
   </modules>
 
   <build>
