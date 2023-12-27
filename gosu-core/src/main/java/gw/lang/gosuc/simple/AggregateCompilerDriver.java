@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AggregateCompilerDriver implements ICompilerDriver, SyncRoot {
+public class AggregateCompilerDriver implements ICompilerDriver, SyncRoot.ReaderWriter {
   private final boolean _echo;
   private final boolean _includeWarnings;
 

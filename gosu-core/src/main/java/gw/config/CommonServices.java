@@ -20,7 +20,7 @@ import gw.util.concurrent.SyncRoot;
 import static gw.lang.reflect.gs.BytecodeOptions.JDWP_ENABLED;
 import static java.lang.Boolean.TRUE;
 
-public class CommonServices extends ServiceKernel implements SyncRoot.Mutex
+public class CommonServices extends ServiceKernel implements SyncRoot.ReaderWriter
 {
   // These must come first!
   private static ITypeSystem _typeSystem = new TypeLoaderAccess();  // maintained outside the kernel for perf reasons

@@ -3,47 +3,49 @@ package gw.util.concurrent;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public interface SyncRoot {
-  ReentrantReadWriteLock _lock = new ReentrantReadWriteLock();
-  ReentrantReadWriteLock.ReadLock _readLock = _lock.readLock();
-  ReentrantReadWriteLock.WriteLock _writeLock = _lock.writeLock();
+  public interface ReaderWriter {
+    ReentrantReadWriteLock _lock = new ReentrantReadWriteLock();
+    ReentrantReadWriteLock.ReadLock _readLock = _lock.readLock();
+    ReentrantReadWriteLock.WriteLock _writeLock = _lock.writeLock();
 
-  default void acquireWrite( LockAction action ) {
-    _writeLock.lock();
-    try {
-      action.act();
+    default void acquireWrite( LockAction action ) {
+      _writeLock.lock();
+      try {
+        action.act();
+      }
+      finally {
+        _writeLock.unlock();
+      }
     }
-    finally {
-      _writeLock.unlock();
-    }
-  }
 
-  default <T> T acquireWrite( LockFunc<T> func ) {
-    _writeLock.lock();
-    try {
-      return func.func();
+    default <T> T acquireWrite( LockFunc<T> func ) {
+      _writeLock.lock();
+      try {
+        return func.func();
+      }
+      finally {
+        _writeLock.unlock();
+      }
     }
-    finally {
-      _writeLock.unlock();
-    }
-  }
 
-  default void acquireRead( LockAction action ) {
-    _readLock.lock();
-    try {
-      action.act();
+    default void acquireRead( LockAction action ) {
+      _readLock.lock();
+      try {
+        action.act();
+      }
+      finally {
+        _readLock.unlock();
+      }
     }
-    finally {
-      _readLock.unlock();
-    }
-  }
 
-  default <T> T acquireRead( LockFunc<T> func ) {
-    _readLock.lock();
-    try {
-      return func.func();
-    }
-    finally {
-      _readLock.unlock();
+    default <T> T acquireRead( LockFunc<T> func ) {
+      _readLock.lock();
+      try {
+        return func.func();
+      }
+      finally {
+        _readLock.unlock();
+      }
     }
   }
 
