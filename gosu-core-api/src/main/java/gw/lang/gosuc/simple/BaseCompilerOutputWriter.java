@@ -5,7 +5,7 @@ import gw.lang.reflect.TypeSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.StringTokenizer;
+import java.nio.file.Paths;
 
 import static gw.lang.gosuc.simple.ICompilerDriver.ERROR;
 
@@ -25,15 +25,16 @@ public abstract class BaseCompilerOutputWriter<TCompilationUnit, TResult extends
     }
 
     for (var unit : result.getTypes()) {
-      try {
-        var outRelativePath = getRelativePath(unit);
-        var classFullPath = getClassFullPath(moduleOutputDirectory, outRelativePath);
+      var outRelativePath = getRelativePath(unit);
+      var classFullPath = getClassFullPath(moduleOutputDirectory, outRelativePath);
 
+      try {
+        makeClassFullPath(classFullPath);
         populateClassFile(classFullPath, unit);
         onClassFilePopulated(classFullPath.getParentFile(), unit);
       } catch (Throwable e) {
         _driver.sendCompileIssue(
-                null,
+                classFullPath,
                 ERROR,
                 0,
                 0,
@@ -43,25 +44,19 @@ public abstract class BaseCompilerOutputWriter<TCompilationUnit, TResult extends
     }
   }
 
+  private static File getClassFullPath(IDirectory moduleOutputDirectory, String outRelativePath) {
+    return Paths.get(moduleOutputDirectory.getPath().getFileSystemPathString(), outRelativePath).toFile();
+  }
+
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  private static File getClassFullPath(IDirectory moduleOutputDirectory, String outRelativePath) throws IOException {
-    var modulePath = new File(moduleOutputDirectory.getPath().getFileSystemPathString());
-    modulePath.mkdirs();
+  private static void makeClassFullPath(File modulePath) throws IOException {
+    var parent = modulePath.getParentFile();
 
-    for (var tokenizer = new StringTokenizer(outRelativePath, File.separator + "/"); tokenizer.hasMoreTokens(); ) {
-      var token = tokenizer.nextToken();
-      modulePath = new File(modulePath, token);
-
-      if (!modulePath.exists()) {
-        if (token.endsWith(".class")) {
-          modulePath.createNewFile();
-        } else {
-          modulePath.mkdir();
-        }
-      }
+    if (!parent.exists()) {
+      parent.mkdirs();
     }
 
-    return modulePath;
+    modulePath.createNewFile();
   }
 
   protected abstract String getRelativePath(TCompilationUnit unit);
