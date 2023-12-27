@@ -14,11 +14,6 @@
   <dependencies>
     <dependency>
       <groupId>org.gosu-lang.gosu</groupId>
-      <artifactId>gosu-core-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gosu-lang.gosu</groupId>
       <artifactId>gosu-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -38,7 +33,7 @@
             </goals>
             <configuration>
               <sources>
-                <source>../gosu-core-api/src/main/gosu</source>
+                <source>../gosu-core/src/main/gosu</source>
               </sources>
             </configuration>
           </execution>
