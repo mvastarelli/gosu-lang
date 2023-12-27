@@ -17,12 +17,6 @@
       <artifactId>gosu-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.gosu-lang.gosu</groupId>
-      <artifactId>gosu-core-api</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
     <!--suppress VulnerableLibrariesLocal -->
     <dependency>
       <groupId>junit</groupId>
