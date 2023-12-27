@@ -17,27 +17,12 @@ import java.util.Map;
 public abstract class ServiceKernel
 {
 
-  private Map<Class<? extends IService>, IService> _services;
-  private Stack<IService> _initingServices = new Stack<>();
-  private boolean _definingServices = false;
+  private final Map<Class<? extends IService>, IService> _services;
+  private final Stack<IService> _initingServices = new Stack<>();
 
-  protected ServiceKernel()
-  {
-    resetKernel();
-  }
-
-  protected void resetKernel()
-  {
-    _services = new HashMap<Class<? extends IService>, IService>();
-    _definingServices = true;
-    try
-    {
-      defineServices();
-    }
-    finally
-    {
-      _definingServices = false;
-    }
+  protected ServiceKernel() {
+    _services = new HashMap<>();
+    defineServices();
     redefineServices();
   }
 
@@ -57,16 +42,18 @@ public abstract class ServiceKernel
    */
   public <T extends IService> T getService( Class<? extends T> service )
   {
-    if( _definingServices )
-    {
-      throw new IllegalStateException( "Service definition in progress, access to " + service.getName() + " is not " +
-                                       "allowed.  Move this access to the init() method of the offending service." );
-    }
+//    if( _definingServices )
+//    {
+//      throw new IllegalStateException( "Service definition in progress, access to " + service.getName() + " is not " +
+//                                       "allowed.  Move this access to the init() method of the offending service." );
+//    }
     IService serviceImpl = _services.get( service );
+
     if( serviceImpl == null )
     {
       throw new IllegalStateException( "The service " + service.getName() + " is not provided by this ServiceKernel." );
     }
+
     return (T)serviceImpl;
   }
 
@@ -79,32 +66,37 @@ public abstract class ServiceKernel
    */
   public <T extends IService, Q extends T> void redefineService(Class<? extends T> service, Q newProvider)
   {
-    if( _definingServices )
-    {
-      throw new IllegalStateException( "Service definition in progress, so service redefinition is not allowed.  Please " +
-                                       "move redefinitions to the redefineServices method." );
-    }
+//    if( _definingServices )
+//    {
+//      throw new IllegalStateException( "Service definition in progress, so service redefinition is not allowed.  Please " +
+//                                       "move redefinitions to the redefineServices method." );
+//    }
     IService existingServiceImpl = _services.get( service );
+
     if( existingServiceImpl == null )
     {
       throw new IllegalArgumentException( "Service " + service.getName() + " is not defined in this ServiceKernel.");
     }
+
     if( existingServiceImpl.isInited() )
     {
       throw new IllegalStateException( "Service " + service.getName() + " has already been " +
                                        "initialized with the " + existingServiceImpl.getClass().getName() +
                                        " implementation");
     }
+
     _services.put( service, newProvider );
   }
 
   public <T extends IService, Q extends T> void redefineService_Privileged(Class<? extends T> service, Q newProvider)
   {
     IService existingServiceImpl = _services.get( service );
+
     if( existingServiceImpl == null )
     {
       throw new IllegalArgumentException( "Service " + service.getName() + " is not defined in this ServiceKernel.");
     }
+
     _services.put( service, newProvider );
   }
 
@@ -121,23 +113,26 @@ public abstract class ServiceKernel
    */
   protected <T extends IService, Q extends T> void defineService(Class<? extends T> service, Q defaultImplementation)
   {
-    if( !_definingServices )
-    {
-      throw new IllegalStateException( "Service definition must be done only in the defineServices() method." );
-    }
+//    if( !_definingServices )
+//    {
+//      throw new IllegalStateException( "Service definition must be done only in the defineServices() method." );
+//    }
     if( !service.isInterface() )
     {
       throw new IllegalArgumentException( "Services may only be defined as interfaces, and " +
                                           service.getName() +
                                           " is not an interface" );
     }
+
     IService existingServiceImpl = _services.get( service );
+
     if( existingServiceImpl != null )
     {
       throw new IllegalStateException( "Service " + service.getName() + " has already been " +
                                        "defined with the " + existingServiceImpl.getClass().getName() +
                                        " default implementation");
     }
+
     _services.put( service, defaultImplementation );
   }
 
@@ -171,18 +166,18 @@ public abstract class ServiceKernel
     }
   }
 
-
   private <T extends IService> void detectCircularInitializationDependencies( IService service )
   {
     if( _initingServices.contains( service ) )
     {
       StringBuilder sb = new StringBuilder( "Circular service initialization dependency detected : " );
+
       for( IService initingService : _initingServices )
       {
         sb.append( "\n\t" ).append( initingService );
       }
+
       throw new IllegalStateException( sb.toString() );
     }
   }
-
 }

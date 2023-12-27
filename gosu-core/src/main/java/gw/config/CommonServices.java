@@ -4,56 +4,60 @@
 
 package gw.config;
 
+import gw.internal.gosu.DefaultLocalizationService;
+import gw.internal.gosu.memory.DefaultMemoryMonitor;
+import gw.internal.gosu.module.fs.FileSystemImpl;
+import gw.internal.gosu.parser.*;
 import gw.lang.IGosuShop;
 import gw.lang.parser.ICoercionManager;
 import gw.lang.parser.IGosuParserFactory;
+import gw.lang.parser.StandardCoercionManager;
 import gw.lang.reflect.IEntityAccess;
 import gw.lang.reflect.ITypeSystem;
-import gw.lang.reflect.gs.BytecodeOptions;
 import gw.lang.reflect.module.IFileSystem;
+import gw.util.concurrent.SyncRoot;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.lang.reflect.Constructor;
+import static gw.lang.reflect.gs.BytecodeOptions.JDWP_ENABLED;
+import static java.lang.Boolean.TRUE;
 
-public class CommonServices extends ServiceKernel
+public class CommonServices extends ServiceKernel implements SyncRoot.Mutex
 {
-  private static CommonServices _kernel = new CommonServices();
-  private static ITypeSystem _typeSystem;  //maintained outside the kernel for perf reasons
-  private static IFileSystem _fileSystem = getDefaultFileSystemInstance(); // Currently not technically a service, since it needs to be available all the time
+  // These must come first!
+  private static ITypeSystem _typeSystem = new TypeLoaderAccess();  // maintained outside the kernel for perf reasons
+  private static final IFileSystem _fileSystem = getDefaultFileSystemInstance(); // Currently not technically a service, since it needs to be available all the time
 
-  private CommonServices()
-  {
-    Registry.addLocationListener( new ChangeListener()
-    {
-      public void stateChanged( ChangeEvent e )
-      {
-        _kernel.resetKernel();
-      }
-    } );
+  private static CommonServices _kernel = new CommonServices();
+
+  static {
+    Registry.addLocationListener(e -> resetKernel());
   }
 
+  private static synchronized void resetKernel() {
+    _kernel = new CommonServices();
+  }
+
+  private CommonServices() { }
+
+  @Override
   protected void defineServices()
   {
-    _kernel = this;
-    
     try
     {
       defineService( IFileSystem.class, getDefaultFileSystemInstance() );
-      defineService( IEntityAccess.class, (IEntityAccess)Class.forName( "gw.internal.gosu.parser.DefaultEntityAccess" ).newInstance() );
-      _typeSystem = (ITypeSystem)Class.forName( "gw.internal.gosu.parser.TypeLoaderAccess" ).newInstance();
-      //noinspection unchecked
-      defineService( ICoercionManager.class, (ICoercionManager)Class.forName( "gw.lang.parser.StandardCoercionManager" ).newInstance() );
-      defineService( IGosuParserFactory.class, (IGosuParserFactory)Class.forName( "gw.internal.gosu.parser.GosuParserFactoryImpl" ).newInstance() );
-      defineService( IGosuShop.class, (IGosuShop)Class.forName( "gw.internal.gosu.parser.GosuIndustrialParkImpl" ).newInstance() );
-      defineService( IGosuLocalizationService.class, (IGosuLocalizationService)Class.forName("gw.internal.gosu.DefaultLocalizationService").newInstance());
-      defineService( IXmlSchemaCompatibilityConfig.class, (IXmlSchemaCompatibilityConfig)Class.forName( "gw.config.DefaultXmlSchemaCompatibilityConfig" ).newInstance() );
-      defineService( IPlatformHelper.class, (IPlatformHelper)Class.forName( "gw.internal.gosu.parser.DefaultPlatformHelper" ).newInstance() );
-      defineService( IExtensionFolderLocator.class, (IExtensionFolderLocator)Class.forName( "gw.config.DefaultExtensionFolderLocator" ).newInstance() );
-      defineService( IMemoryMonitor.class, (IMemoryMonitor)Class.forName( "gw.internal.gosu.memory.DefaultMemoryMonitor" ).newInstance() );
       defineService( IGosuInitializationHooks.class, new DefaultGosuInitializationHooks());
       defineService( IGlobalLoaderProvider.class, new DefaultGlobalLoaderProvider());
       defineService( IGosuProfilingService.class, new DefaultGosuProfilingService() );
+
+      // These originally came from core-api.
+      defineService( IEntityAccess.class, new DefaultEntityAccess() );
+      defineService( ICoercionManager.class, new StandardCoercionManager() );
+      defineService( IGosuParserFactory.class, new GosuParserFactoryImpl() );
+      defineService( IGosuShop.class, new GosuIndustrialParkImpl() );
+      defineService( IGosuLocalizationService.class, new DefaultLocalizationService() );
+      defineService( IXmlSchemaCompatibilityConfig.class, new DefaultXmlSchemaCompatibilityConfig() );
+      defineService( IPlatformHelper.class, new DefaultPlatformHelper() );
+      defineService( IExtensionFolderLocator.class, new DefaultExtensionFolderLocator() );
+      defineService( IMemoryMonitor.class, new DefaultMemoryMonitor() );
     }
     catch( Exception e )
     {
@@ -65,23 +69,16 @@ public class CommonServices extends ServiceKernel
     }
   }
 
-  private static IFileSystem getDefaultFileSystemInstance() {
-    try {
-      Class cls = Class.forName("gw.internal.gosu.module.fs.FileSystemImpl");
-      Constructor m = cls.getConstructor(IFileSystem.CachingMode.class);
-      if( BytecodeOptions.JDWP_ENABLED.get() )
-      {
-        return (IFileSystem) m.newInstance(IFileSystem.CachingMode.NO_CACHING);
-      }
-      return (IFileSystem) m.newInstance(IFileSystem.CachingMode.FULL_CACHING);
-    } catch ( Exception e ) {
-      throw new RuntimeException( e );
-    }
-  }
-
+  @Override
   protected void redefineServices()
   {
     redefineServicesWithClass( Registry.instance().getCommonServiceInit() );
+  }
+
+  private static IFileSystem getDefaultFileSystemInstance() {
+    return TRUE.equals(JDWP_ENABLED.get()) ?
+            new FileSystemImpl(IFileSystem.CachingMode.NO_CACHING) :
+            new FileSystemImpl(IFileSystem.CachingMode.FULL_CACHING);
   }
 
   public static IEntityAccess getEntityAccess()
