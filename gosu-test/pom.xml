@@ -14,13 +14,13 @@
   <dependencies>
     <dependency>
       <groupId>org.gosu-lang.gosu</groupId>
-      <artifactId>gosu-test-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gosu-lang.gosu</groupId>
       <artifactId>gosu-core</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <!--suppress VulnerableLibrariesLocal -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
@@ -42,6 +42,13 @@
         </configuration>
         <executions>
           <execution>
+            <id>Compile Gosu sources</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
             <id>Compile Gosu test sources</id>
             <phase>test-compile</phase>
             <goals>
@@ -54,11 +61,6 @@
               <maxmem>2048m</maxmem>
               <compilerArgs>
                 <arg>-DcheckedArithmetic=true</arg>
-                <!--<arg>-Xdebug</arg>-->
-                <!-- windows -->
-                <!--<arg>-Xrunjdwp:transport=dt_shmem,address=gosuc,server=y,suspend=y</arg> -->
-                <!-- linux/OS X -->
-                <!--<arg>-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y</arg>-->
               </compilerArgs>
               <showWarnings>false</showWarnings>
               <useIncrementalCompilation>true</useIncrementalCompilation> <!-- this must be true or else we cannot pick up files with multiple extensions -->

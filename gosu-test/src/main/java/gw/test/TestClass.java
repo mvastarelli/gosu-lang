@@ -5,37 +5,20 @@
 package gw.test;
 
 import gw.lang.GosuShop;
-import gw.lang.reflect.IAnnotationInfo;
-import gw.lang.reflect.IConstructorInfo;
-import gw.lang.reflect.IHasJavaClass;
-import gw.lang.reflect.IMethodInfo;
-import gw.lang.reflect.IType;
-import gw.lang.reflect.Modifier;
-import gw.lang.reflect.TypeSystem;
+import gw.lang.reflect.*;
 import gw.lang.reflect.java.IJavaType;
 import gw.lang.reflect.java.JavaTypes;
 import gw.testharness.IncludeInTestResults;
 import gw.testharness.KnownBreak;
 import gw.testharness.KnownBreakQualifier;
-import gw.util.GosuExceptionUtil;
-import gw.util.GosuObjectUtil;
-import gw.util.GosuStringUtil;
-import gw.util.Predicate;
+import gw.util.*;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 import java.lang.annotation.Annotation;
-import gw.util.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class TestClass extends TestCase implements ITestWithMetadata {
   private String _pkgName;

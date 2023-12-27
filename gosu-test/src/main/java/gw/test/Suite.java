@@ -21,20 +21,14 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * This Suite class streamlines and simplifies the standard JUnit TestSuite.  It can be used in one of two ways:
  * you can add individual tests to the Suite via the withTest() methods, or you can use the filter methods to
  * pare down the tests that are found on the current classpath.
  */
-public class Suite<T extends Suite> extends junit.framework.TestSuite {
+public class Suite<T extends Suite> extends TestSuite {
 
   //suite status
   private boolean _testClassWrappersCreated;
@@ -128,8 +122,8 @@ public class Suite<T extends Suite> extends junit.framework.TestSuite {
 
   /**
    * Adds a type filter to this suite, allowing certain tests to be excluded.  Note
-   * that this is a significantly slower option than {@link #withIFileFilter(gw.util.Predicate)}
-   * or {@link #withPackageFilter(gw.util.Predicate)} If
+   * that this is a significantly slower option than {@link #withIFileFilter(Predicate)}
+   * or {@link #withPackageFilter(Predicate)} If
    * possible, it is advisable to use a file filter instead.
    */
   public final T withTestTypeFilter(Predicate<IType> filter) {
@@ -142,7 +136,7 @@ public class Suite<T extends Suite> extends junit.framework.TestSuite {
 
   /**
    * Adds a file filter to this suite, allowing certain tests to be excluded.  Consider
-   * using {@link #withPackageFilter(gw.util.Predicate)} if you wish to more easily apply a package
+   * using {@link #withPackageFilter(Predicate)} if you wish to more easily apply a package
    * filter of tests without dealing with ugly file paths.  Package filters are just as fast as
    * file filters, both of which are much faster than test type filters.
    */

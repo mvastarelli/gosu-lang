@@ -4,33 +4,19 @@
 
 package gw.util;
 
-import gw.lang.parser.GosuParserFactory;
-import gw.lang.parser.IExpression;
-import gw.lang.parser.IGosuParser;
-import gw.lang.parser.ISymbolTable;
-import gw.lang.parser.exceptions.ParseResultsException;
-import gw.lang.parser.ScriptabilityModifiers;
-import gw.lang.parser.StandardSymbolTable;
-import gw.lang.parser.IParseIssue;
-import gw.lang.parser.ParserOptions;
-import gw.lang.parser.ExternalSymbolMapSymbolTableWrapper;
-import gw.lang.parser.resources.ResourceKey;
 import gw.lang.GosuShop;
+import gw.lang.parser.*;
+import gw.lang.parser.exceptions.ParseResultsException;
 import gw.lang.parser.expressions.IProgram;
+import gw.lang.parser.resources.ResourceKey;
 import gw.lang.reflect.IType;
 import gw.lang.reflect.TypeSystem;
 import gw.lang.reflect.gs.IGosuClass;
 import gw.lang.reflect.gs.IGosuProgram;
-import gw.lang.reflect.gs.BytecodeOptions;
 import gw.test.TestClass;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.junit.Assert;
+
+import java.util.*;
 
 /**
  */

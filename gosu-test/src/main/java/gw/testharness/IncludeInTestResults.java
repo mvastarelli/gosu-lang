@@ -4,11 +4,7 @@
 
 package gw.testharness;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Annotations which have this annotation will be added to the JUnit test results XML file.

@@ -2,13 +2,17 @@
  * Copyright 2014 Guidewire Software, Inc.
  */
 
-package gw.test;
+package gw.testharness;
 
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Inherited;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface AnnotationTestJavaAnnotation {
+@DoNotRunTest
+@IncludeInTestResults
+public @interface   Disabled {
+  String assignee();
+  String reason();
 }

@@ -4,10 +4,10 @@
 
 package gw.util;
 
-import gw.lang.reflect.gs.IGosuClass;
 import gw.lang.parser.IDynamicFunctionSymbol;
 import gw.lang.parser.exceptions.ParseResultsException;
 import gw.lang.reflect.IType;
+import gw.lang.reflect.gs.IGosuClass;
 
 import java.util.List;
 

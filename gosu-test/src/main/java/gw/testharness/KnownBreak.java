@@ -6,7 +6,8 @@ package gw.testharness;
 
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.*;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * See http://wiki/index.php/KnownBreak for detailed document

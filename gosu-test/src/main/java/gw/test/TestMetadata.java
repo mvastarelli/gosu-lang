@@ -8,14 +8,10 @@ import gw.lang.reflect.IAnnotationInfo;
 import gw.lang.reflect.IMethodInfo;
 import gw.lang.reflect.IRelativeTypeInfo;
 import gw.lang.reflect.IType;
-import gw.lang.reflect.TypeSystem;
-import gw.util.GosuObjectUtil;
 import gw.testharness.DoNotRunTest;
+import gw.util.GosuObjectUtil;
 import gw.xml.simple.SimpleXmlNode;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
