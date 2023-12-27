@@ -11,11 +11,32 @@
 
   <name>Gosu :: Core Impl</name>
 
+  <properties>
+    <generated.version.dir>${project.build.directory}/generated-sources/version</generated.version.dir>
+    <gosu.version.properties>${generated.version.dir}/gw/lang/gosu-version.properties</gosu.version.properties>
+  </properties>
+
   <dependencies>
+    <!--suppress VulnerableLibrariesLocal -->
     <dependency>
-      <groupId>org.gosu-lang.gosu</groupId>
-      <artifactId>gosu-core-api</artifactId>
-      <version>${project.version}</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gosu-lang.gosu.managed</groupId>
+      <artifactId>gw-asm-all</artifactId>
+      <version>9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.gosu-lang.gosu.managed</groupId>
+      <artifactId>gw-jcommander</artifactId>
+      <version>1.72</version>
+    </dependency>
+    <dependency>
+      <groupId>systems.manifold</groupId>
+      <artifactId>manifold</artifactId>
+      <version>2022.1.33</version>
     </dependency>
   </dependencies>
 
@@ -35,6 +56,59 @@
             <arg>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
             <arg>--add-exports=java.base/sun.reflect.annotation=ALL-UNNAMED</arg>
           </compilerArgs>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>parse-version</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>parse-version</goal>
+            </goals>
+            <configuration>
+              <propertyPrefix>gosu</propertyPrefix>
+              <versionString>${project.version}</versionString>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>generate-gosu-version</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <echo message="writing POM version to ${gosu.version.properties}" />
+                <echo message="gosu.version.major=${gosu.majorVersion}${line.separator}" file="${gosu.version.properties}" />
+                <echo message="gosu.version.minor=${gosu.minorVersion}${line.separator}" file="${gosu.version.properties}" append="true" />
+                <echo message="gosu.version.incremental=${gosu.incrementalVersion}${line.separator}" file="${gosu.version.properties}" append="true" />
+                <echo message="gosu.version.build=${gosu.buildNumber}${line.separator}" file="${gosu.version.properties}" append="true" />
+                <echo message="gosu.version.qualifier=${gosu.qualifier}${line.separator}" file="${gosu.version.properties}" append="true" />
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Contains-Sources>gs,gsx</Contains-Sources>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>
