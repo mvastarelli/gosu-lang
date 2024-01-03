@@ -6,6 +6,7 @@ package gw.internal.gosu.module.fs;
 
 import gw.fs.IFile;
 import gw.fs.IFileUtil;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -15,9 +16,8 @@ import java.io.FileOutputStream;
 import java.io.File;
 
 public class JavaFileImpl extends JavaResourceImpl implements IFile {
-
-  public JavaFileImpl(File file) {
-    super(file);
+  public JavaFileImpl(IFileSystem fileSystem, File file) {
+    super(fileSystem, file);
   }
 
   @Override

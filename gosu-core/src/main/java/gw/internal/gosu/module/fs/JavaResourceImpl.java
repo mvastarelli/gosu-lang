@@ -8,6 +8,7 @@ import gw.fs.IResource;
 import gw.fs.ResourcePath;
 import gw.fs.IDirectory;
 import gw.config.CommonServices;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.IOException;
 import java.io.File;
@@ -15,10 +16,11 @@ import java.io.Serializable;
 import java.net.URI;
 
 public abstract class JavaResourceImpl implements IResource, Serializable {
-
+  protected final IFileSystem _fileSystem;
   protected File _file;
 
-  protected JavaResourceImpl(File file) {
+  protected JavaResourceImpl(IFileSystem fileSystem, File file) {
+    _fileSystem = fileSystem;
     _file = file.getAbsoluteFile();
   }
 
@@ -28,7 +30,7 @@ public abstract class JavaResourceImpl implements IResource, Serializable {
     if (parentFile == null) {
       return null;
     } else {
-      return CommonServices.INSTANCE.getFileSystem().getIDirectory(parentFile);
+      return _fileSystem.getIDirectory(parentFile);
     }
   }
 

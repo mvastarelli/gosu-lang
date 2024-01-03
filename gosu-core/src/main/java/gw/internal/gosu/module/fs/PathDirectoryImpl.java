@@ -11,25 +11,27 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+
+import gw.lang.reflect.module.IFileSystem;
 import manifold.util.ManExceptionUtil;
 
 public class PathDirectoryImpl extends PathResourceImpl implements IDirectory
 {
-  PathDirectoryImpl( Path path )
+  PathDirectoryImpl(IFileSystem fileSystem, Path path )
   {
-    super( path );
+    super(fileSystem, path );
   }
 
   @Override
   public IDirectory dir( String relativePath )
   {
-    return new PathDirectoryImpl( get_Path().resolve( relativePath ) );
+    return new PathDirectoryImpl(_fileSystem, get_Path().resolve( relativePath ) );
   }
 
   @Override
   public IFile file( String path )
   {
-    return new PathFileImpl( get_Path().resolve( path ) );
+    return new PathFileImpl(_fileSystem, get_Path().resolve( path ) );
   }
 
   @Override
@@ -39,19 +41,17 @@ public class PathDirectoryImpl extends PathResourceImpl implements IDirectory
   }
 
   @Override
-  public List<? extends IDirectory> listDirs()
-  {
-    return list( e -> Files.isDirectory( e ), PathDirectoryImpl::new );
+  public List<? extends IDirectory> listDirs() {
+    return list(Files::isDirectory, p -> new PathDirectoryImpl(_fileSystem, p));
   }
 
   @Override
   public List<? extends IFile> listFiles()
   {
-    return list( e -> !Files.isDirectory( e ), PathFileImpl::new );
+    return list( e -> !Files.isDirectory( e ), p -> new PathFileImpl(_fileSystem, p));
   }
 
-  private <E extends PathResourceImpl> List<E> list( DirectoryStream.Filter<Path> filter, Function<Path, E> creator )
-  {
+  private <E extends PathResourceImpl> List<E> list( DirectoryStream.Filter<Path> filter, Function<Path, E> creator ) {
     try( DirectoryStream<Path> stream = Files.newDirectoryStream( get_Path(), filter ) )
     {
       List<E> dirs = new ArrayList<>();
@@ -74,10 +74,7 @@ public class PathDirectoryImpl extends PathResourceImpl implements IDirectory
   }
 
   @Override
-  public void clearCaches()
-  {
-
-  }
+  public void clearCaches() {}
 
   @Override
   public boolean hasChildFile( String path )

@@ -22,8 +22,8 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
 
   private FileRetrievalStrategy _fileRetrievalStrategy;
 
-  public JavaDirectoryImpl(File file, IFileSystem.CachingMode cachingMode) {
-    super(file);
+  public JavaDirectoryImpl(IFileSystem fileSystem, File file, IFileSystem.CachingMode cachingMode) {
+    super(fileSystem, file);
     setCachingMode(cachingMode);
   }
 

@@ -84,8 +84,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   }
 
   @Override
-  public IDirectory getIDirectory( Path dir )
-  {
+  public IDirectory getIDirectory( Path dir ) {
     if( dir.getFileSystem() == FileSystems.getDefault() )
     {
       // for the case where the path is a JAR file, which is a "directory"
@@ -98,7 +97,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
               "'" + dir + "' is not a directory of the '" + dir.getFileSystem() + "' file system" );
     }
 
-    return new PathDirectoryImpl( dir );
+    return new PathDirectoryImpl(this,  dir );
   }
 
   @Override
@@ -115,8 +114,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   }
 
   @Override
-  public IFile getIFile( Path path )
-  {
+  public IFile getIFile( Path path ) {
     if( path.getFileSystem() == FileSystems.getDefault() )
     {
       // for the case where the path is a normal file
@@ -129,7 +127,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
               "'" + path + "' is not a file of the '" + path.getFileSystem() + "' file system" );
     }
 
-    return new PathFileImpl( path );
+    return new PathFileImpl(this, path );
   }
 
   @Override
@@ -140,7 +138,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
 
     return file == null ?
             null :
-            new JavaFileImpl(normalizeFile(file));
+            new JavaFileImpl(this, normalizeFile(file));
   }
 
   @Override
@@ -272,7 +270,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
             dir.isFile()) {
       return new JarFileDirectoryImpl( dir );
     } else {
-      return new JavaDirectoryImpl( dir, _cachingMode );
+      return new JavaDirectoryImpl(this, dir, _cachingMode );
     }
   }
 
@@ -392,7 +390,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     @Override
     protected IFile fromPath(Path path )
     {
-      return new PathFileImpl( path );
+      return new PathFileImpl(_fileSystem, path );
     }
   }
 
@@ -421,7 +419,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     @Override
     protected IDirectory fromPath(Path path )
     {
-      return new PathDirectoryImpl( path );
+      return new PathDirectoryImpl( _fileSystem, path );
     }
   }
 }
