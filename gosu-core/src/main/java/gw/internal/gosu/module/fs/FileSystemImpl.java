@@ -72,7 +72,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   @Override
   public IDirectory getDirectory(File dir) {
     if (USE_NEW_API) {
-      return FileFactory.instance().getIDirectory(dir);
+      return FileFactory.instance().getDirectory(dir);
     }
 
     if (dir == null) {
@@ -117,7 +117,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   @Override
   public IFile getFile(File file) {
     if (USE_NEW_API) {
-      return FileFactory.instance().getIFile(file);
+      return FileFactory.instance().getFile(file);
     }
 
     return file == null ?
@@ -138,7 +138,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     }
 
     if (USE_NEW_API) {
-      return FileFactory.instance().getIFile(url);
+      return FileFactory.instance().getFile(url);
     }
 
     return _fileResourceExtractor.getClassResource(url);

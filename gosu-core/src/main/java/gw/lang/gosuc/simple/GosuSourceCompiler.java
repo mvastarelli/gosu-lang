@@ -49,7 +49,7 @@ public class GosuSourceCompiler implements ISourceCompiler<GosuCompilationResult
 
   private IType getType( File file )
   {
-    var ifile = FileFactory.instance().getIFile( file );
+    var ifile = FileFactory.instance().getFile( file );
     var typesForFile = TypeSystem.getTypesForFile( globalModule, ifile );
 
     if( typesForFile.length != 0 )

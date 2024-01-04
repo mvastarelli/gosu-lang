@@ -282,7 +282,7 @@ public class AsmClassTest extends TestClass {
     try {
       if( location.getFile().toLowerCase().endsWith( ".jar" ) ) {
         fileLocation = "jar:" + location.toExternalForm() + "!/" + cls.getPackage().getName().replace( '.', '/' ) + '/' + getSimpleName( cls ) + ".class";
-        IFile classFile = FileFactory.instance().getIFile( new URL( fileLocation ), false );
+        IFile classFile = FileFactory.instance().getFile( new URL( fileLocation ), false );
         return _asmClassLoader.findClass( cls.getName(), classFile );
       }
       else {
