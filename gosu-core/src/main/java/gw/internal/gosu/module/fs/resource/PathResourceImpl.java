@@ -2,9 +2,8 @@
  * Copyright 2014 Guidewire Software, Inc.
  */
 
-package gw.internal.gosu.module.fs;
+package gw.internal.gosu.module.fs.resource;
 
-import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.IResource;
 import gw.fs.ResourcePath;

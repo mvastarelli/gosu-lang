@@ -4,11 +4,10 @@
 
 package gw.lang.init;
 
-import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.internal.gosu.module.fs.FileSystemImpl;
 import gw.test.TestClass;
-import gw.internal.gosu.module.fs.JavaDirectoryImpl;
+import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
 import gw.lang.reflect.module.IFileSystem;
 
 import java.util.Collections;

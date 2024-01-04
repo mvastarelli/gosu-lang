@@ -1,4 +1,4 @@
-package gw.internal.gosu.module.fs;
+package gw.internal.gosu.module.fs.resource;
 
 import gw.fs.IDirectory;
 import gw.fs.IDirectoryUtil;
@@ -17,7 +17,7 @@ import manifold.util.ManExceptionUtil;
 
 public class PathDirectoryImpl extends PathResourceImpl implements IDirectory
 {
-  PathDirectoryImpl(IFileSystem fileSystem, Path path )
+  public PathDirectoryImpl(IFileSystem fileSystem, Path path )
   {
     super(fileSystem, path );
   }

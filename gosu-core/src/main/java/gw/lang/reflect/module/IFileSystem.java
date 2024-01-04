@@ -18,11 +18,11 @@ public interface IFileSystem extends IService {
 
   IDirectory getIDirectory(File dir);
 
-  IDirectory getIDirectory( Path dir );
+  IDirectory getIDirectory(Path dir );
 
   IFile getIFile(File file);
 
-  IFile getIFile( Path file );
+  IFile getIFile(Path file );
 
   void setCachingMode(CachingMode cachingMode);
 
@@ -34,7 +34,9 @@ public interface IFileSystem extends IService {
 
   IFile getFakeFile(URL url, IModule module);
 
-  public enum CachingMode {
+  IDirectory createDir(File dir);
+
+  enum CachingMode {
     NO_CACHING,
     CHECK_TIMESTAMPS,
     FUZZY_TIMESTAMPS,
