@@ -271,7 +271,7 @@ public class Module implements IModule
                   continue;
                 }
                 File dirOrJar = new File( url.toURI() );
-                IDirectory idir = CommonServices.INSTANCE.getFileSystem().getIDirectory( dirOrJar );
+                IDirectory idir = CommonServices.INSTANCE.getFileSystem().getDirectory( dirOrJar );
                 if( !newClasspath.contains( idir ) )
                 {
                   newClasspath.add( idir );

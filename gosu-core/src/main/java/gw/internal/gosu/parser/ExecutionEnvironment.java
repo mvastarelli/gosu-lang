@@ -439,7 +439,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
   }
 
   public IModule getModule( URL url ) {
-    return getModule( CommonServices.INSTANCE.getFileSystem().getIFile( url ) );
+    return getModule( CommonServices.INSTANCE.getFileSystem().getFile( url ) );
   }
 
   @Override
@@ -744,7 +744,7 @@ public class ExecutionEnvironment implements IExecutionEnvironment
         if( pathElement.length() > 0 )
         {
           Path filePath = Paths.get( pathElement );
-          IDirectory resource = CommonServices.INSTANCE.getFileSystem().getIDirectory( filePath );
+          IDirectory resource = CommonServices.INSTANCE.getFileSystem().getDirectory( filePath );
           expanded.add(resource);
         }
       }

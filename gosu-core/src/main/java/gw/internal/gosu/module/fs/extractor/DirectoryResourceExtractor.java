@@ -19,7 +19,7 @@ public class DirectoryResourceExtractor extends ResourceExtractor<IDirectory> {
 
   @Override
   protected IDirectory fromFile(URL location) {
-    return getFileSystem().getIDirectory( getFileFromURL(location) );
+    return getFileSystem().getDirectory( getFileFromURL(location) );
   }
 
   @Override

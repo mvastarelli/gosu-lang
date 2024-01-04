@@ -37,7 +37,7 @@ public abstract class JavaResourceImpl implements IResource, Serializable {
     if (parentFile == null) {
       return null;
     } else {
-      return _fileSystem.getIDirectory(parentFile);
+      return _fileSystem.getDirectory(parentFile);
     }
   }
 

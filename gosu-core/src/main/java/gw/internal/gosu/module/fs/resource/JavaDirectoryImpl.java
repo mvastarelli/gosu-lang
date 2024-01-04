@@ -56,13 +56,13 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
   @Override
   public IDirectory dir(String relativePath) {
       File subDir = new File(this.getFile(), relativePath);
-    return CommonServices.INSTANCE.getFileSystem().getIDirectory(subDir);
+    return CommonServices.INSTANCE.getFileSystem().getDirectory(subDir);
   }
 
   @Override
   public IFile file(String path) {
       File subFile = new File(this.getFile(), path)/*.getCanonicalFile()*/;
-    return CommonServices.INSTANCE.getFileSystem().getIFile(subFile);
+    return CommonServices.INSTANCE.getFileSystem().getFile(subFile);
   }
 
   @Override

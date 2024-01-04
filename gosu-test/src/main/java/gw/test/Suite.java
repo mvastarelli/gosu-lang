@@ -207,8 +207,8 @@ public class Suite<T extends Suite> extends TestSuite {
   // TODO - AHK - Differentiate between Gosu and Java at this level?
   // TODO - AHK - Change this to just take an IDirectory instead?
   public T withClasspathEntry(File srcDir) {
-    _gosuClassSearchPath.add(CommonServices.INSTANCE.getFileSystem().getIDirectory(srcDir));
-    _javaClassSearchPath.add(CommonServices.INSTANCE.getFileSystem().getIDirectory(srcDir));
+    _gosuClassSearchPath.add(CommonServices.INSTANCE.getFileSystem().getDirectory(srcDir));
+    _javaClassSearchPath.add(CommonServices.INSTANCE.getFileSystem().getDirectory(srcDir));
     return thisAsT();
   }
 

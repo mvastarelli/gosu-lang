@@ -29,30 +29,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileSystemImpl extends BaseService implements IFileSystem {
-  private static final Set<String> FILE_SUFFIXES = new HashSet<>(Arrays.asList(
-          "class",
-          "eti",
-          "etx",
-          "gif",
-          "gr",
-          "grs",
-          "gs",
-          "gst",
-          "gsx",
-          "gti",
-          "gx",
-          "jar",
-          "java",
-          "pcf",
-          "png",
-          "properties",
-          "tti",
-          "ttx",
-          "txt",
-          "wsdl",
-          "xml",
-          "xsd"));
-
   private static final Map<String, IProtocolAdapter> _protocolAdapters = new HashMap<>();
   public static boolean USE_NEW_API = false;
 
@@ -82,11 +58,11 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   }
 
   @Override
-  public IDirectory getIDirectory( Path dir ) {
+  public IDirectory getDirectory(Path dir ) {
     if( dir.getFileSystem() == FileSystems.getDefault() )
     {
       // for the case where the path is a JAR file, which is a "directory"
-      return getIDirectory( dir.toFile() );
+      return getDirectory( dir.toFile() );
     }
 
     if( !Files.isDirectory( dir ) )
@@ -99,7 +75,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   }
 
   @Override
-  public IDirectory getIDirectory(File dir) {
+  public IDirectory getDirectory(File dir) {
     if (USE_NEW_API) {
       return FileFactory.instance().getIDirectory(dir);
     }
@@ -112,35 +88,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   }
 
   @Override
-  public IFile getIFile( Path path ) {
-    if( path.getFileSystem() == FileSystems.getDefault() )
-    {
-      // for the case where the path is a normal file
-      return getIFile( path.toFile() );
-    }
-
-    if( Files.isDirectory( path ) )
-    {
-      throw new IllegalArgumentException(
-              "'" + path + "' is not a file of the '" + path.getFileSystem() + "' file system" );
-    }
-
-    return new PathFileImpl(this, path );
-  }
-
-  @Override
-  public IFile getIFile(File file) {
-    if (USE_NEW_API) {
-      return FileFactory.instance().getIFile(file);
-    }
-
-    return file == null ?
-            null :
-            new JavaFileImpl(this, normalizeFile(file));
-  }
-
-  @Override
-  public IDirectory getIDirectory(URL url) {
+  public IDirectory getDirectory(URL url) {
     if (url == null) {
       return null;
     }
@@ -155,7 +103,35 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   }
 
   @Override
-  public IFile getIFile( URL url ) {
+  public IFile getFile(Path path ) {
+    if( path.getFileSystem() == FileSystems.getDefault() )
+    {
+      // for the case where the path is a normal file
+      return getFile( path.toFile() );
+    }
+
+    if( Files.isDirectory( path ) )
+    {
+      throw new IllegalArgumentException(
+              "'" + path + "' is not a file of the '" + path.getFileSystem() + "' file system" );
+    }
+
+    return new PathFileImpl(this, path );
+  }
+
+  @Override
+  public IFile getFile(File file) {
+    if (USE_NEW_API) {
+      return FileFactory.instance().getIFile(file);
+    }
+
+    return file == null ?
+            null :
+            new JavaFileImpl(this, normalizeFile(file));
+  }
+
+  @Override
+  public IFile getFile(URL url ) {
     if (url == null) {
       return null;
     }
@@ -189,6 +165,7 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     });
   }
 
+  @Override
   public void clearAllCaches() {
     if (USE_NEW_API) {
       FileFactory.instance().getDefaultPhysicalFileSystem().clearAllCaches();
@@ -198,7 +175,20 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     _cache.forEachValue(1, IDirectory::clearCaches);
   }
 
-  public static File normalizeFile(File file) {
+  @Override
+  public IDirectory createDir( File dir ) {
+    // PL-21817 in OSGi/Equinox JAR could be named as "bundlefile"
+    if ( (dir.getName().toLowerCase().endsWith(".jar") ||
+            dir.getName().toLowerCase().endsWith(".zip") ||
+            dir.getName().equals("bundlefile")) &&
+            dir.isFile()) {
+      return new JarFileDirectoryImpl( dir );
+    } else {
+      return new JavaDirectoryImpl(this, dir, _cachingMode );
+    }
+  }
+
+  private static File normalizeFile(File file) {
     String absolutePath = file.getAbsolutePath();
     List<String> components = new ArrayList<String>();
     boolean reallyNormalized = false;
@@ -235,41 +225,5 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
     }
 
     return reallyNormalized ? new File(GosuStringUtil.join(components, "/")) : file;
-  }
-
-  public static boolean isDirectory(File f) {
-    String name = f.getName();
-
-    if (isAssumedFileSuffix(getFileSuffix(name))) {
-      return false;
-    } else {
-      return f.isDirectory();
-    }
-  }
-
-  private static String getFileSuffix(String name) {
-    int dotIndex = name.lastIndexOf('.');
-    if (dotIndex == -1) {
-      return null;
-    } else {
-      return name.substring(dotIndex + 1);
-    }
-  }
-
-  private static boolean isAssumedFileSuffix(String suffix) {
-    return FILE_SUFFIXES.contains(suffix);
-  }
-
-  @Override
-  public IDirectory createDir( File dir ) {
-    // PL-21817 in OSGi/Equinox JAR could be named as "bundlefile"
-    if ( (dir.getName().toLowerCase().endsWith(".jar") ||
-          dir.getName().toLowerCase().endsWith(".zip") ||
-          dir.getName().equals("bundlefile")) &&
-            dir.isFile()) {
-      return new JarFileDirectoryImpl( dir );
-    } else {
-      return new JavaDirectoryImpl(this, dir, _cachingMode );
-    }
   }
 }

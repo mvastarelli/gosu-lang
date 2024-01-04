@@ -320,7 +320,7 @@ public class LabFrame extends JFrame implements IGosuEditor
     URL marker = EditorUtilities.class.getClassLoader().getResource( "examples/marker.txt" );
     try
     {
-      IDirectory examplesDir = CommonServices.INSTANCE.getFileSystem().getIFile( marker ).getParent();
+      IDirectory examplesDir = CommonServices.INSTANCE.getFileSystem().getFile( marker ).getParent();
       copyExamples( examplesDir, gosuDir );
     }
     catch( Exception e )

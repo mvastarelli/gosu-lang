@@ -20,7 +20,6 @@ import gw.lang.reflect.module.IProject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -337,7 +336,7 @@ public class GosucProject implements IProject {
         addTypesForFile( types, f );
       }
       else {
-        IFile file = CommonServices.INSTANCE.getFileSystem().getIFile( f );
+        IFile file = CommonServices.INSTANCE.getFileSystem().getFile( f );
         String[] typesForFile = TypeSystem.getTypesForFile( TypeSystem.getGlobalModule(), file );
         if( typesForFile.length > 0 ) {
           for( String type: typesForFile ) {

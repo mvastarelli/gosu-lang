@@ -3,7 +3,6 @@ package gw.internal.gosu.module.fs.cachestrategy;
 import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.IFile;
-import gw.internal.gosu.module.fs.FileSystemImpl;
 import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
 
 import java.io.File;
@@ -21,8 +20,8 @@ public class UncachedFileRetrievalStrategy extends FileRetrievalStrategy {
     File[] files = getParent().getFile().listFiles();
     if (files != null) {
       for (File f : getParent().getFile().listFiles()) {
-        if (FileSystemImpl.isDirectory(f)) {
-          results.add(CommonServices.INSTANCE.getFileSystem().getIDirectory(f));
+        if (isDirectory(f)) {
+          results.add(CommonServices.INSTANCE.getFileSystem().getDirectory(f));
         }
       }
     }
@@ -35,8 +34,8 @@ public class UncachedFileRetrievalStrategy extends FileRetrievalStrategy {
     File[] files = getParent().getFile().listFiles();
     if (files != null) {
       for (File f : files) {
-        if (!FileSystemImpl.isDirectory(f)) {
-          results.add(CommonServices.INSTANCE.getFileSystem().getIFile(f));
+        if (!isDirectory(f)) {
+          results.add(CommonServices.INSTANCE.getFileSystem().getFile(f));
         }
       }
     }

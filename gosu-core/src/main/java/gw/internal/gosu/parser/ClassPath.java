@@ -90,7 +90,7 @@ public class ClassPath implements IClassPath
     }
     //## todo: it'd be better if ClassPath could listen to FS changes and not query the FS for every
     // Get the file *fresh* from the abstract file system
-    return _fs.getIFile( (URL)value );
+    return _fs.getFile( (URL)value );
   }
 
   public Set<String> getFilteredClassNames() {
@@ -152,7 +152,7 @@ public class ClassPath implements IClassPath
       List<String> jreJars = getJreJars();
       javaClassPath.addAll( jreJars.stream()
         .map( uri -> CommonServices.INSTANCE.getFileSystem()
-          .getIDirectory( Paths.get( URI.create( uri ) ) ) )
+          .getDirectory( Paths.get( URI.create( uri ) ) ) )
         .collect( Collectors.toList() ) );
     }
   }

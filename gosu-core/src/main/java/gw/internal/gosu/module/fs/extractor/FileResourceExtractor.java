@@ -21,7 +21,7 @@ public class FileResourceExtractor extends ResourceExtractor<IFile> {
 
   @Override
   protected IFile fromFile(URL location) {
-    return getFileSystem().getIFile( getFileFromURL(location) );
+    return getFileSystem().getFile( getFileFromURL(location) );
   }
 
   @Override

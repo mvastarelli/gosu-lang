@@ -899,7 +899,7 @@ public class TypeSystem
    */
   public static void refreshedFiles(String[] filePaths) {
     for (String filePath : filePaths) {
-      IFile file = CommonServices.INSTANCE.getFileSystem().getIFile(new File(filePath));
+      IFile file = CommonServices.INSTANCE.getFileSystem().getFile(new File(filePath));
       if (file != null) {
         TypeSystem.refreshed(file);
       }

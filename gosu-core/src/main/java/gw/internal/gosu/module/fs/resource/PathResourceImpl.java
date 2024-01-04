@@ -43,7 +43,7 @@ public abstract class PathResourceImpl implements IResource, Serializable
     }
     else
     {
-      return _fileSystem.getIDirectory( parent );
+      return _fileSystem.getDirectory( parent );
     }
   }
 

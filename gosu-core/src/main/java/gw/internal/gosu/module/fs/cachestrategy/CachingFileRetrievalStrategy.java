@@ -50,10 +50,10 @@ public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy
     File[] files = javaFile.listFiles();
     if (files != null) {
       for (File f : files) {
-        if (FileSystemImpl.isDirectory(f)) {
-          _directories.add(CommonServices.INSTANCE.getFileSystem().getIDirectory(f));
+        if (isDirectory(f)) {
+          _directories.add(CommonServices.INSTANCE.getFileSystem().getDirectory(f));
         } else {
-          _files.add(CommonServices.INSTANCE.getFileSystem().getIFile(f));
+          _files.add(CommonServices.INSTANCE.getFileSystem().getFile(f));
         }
       }
     }
