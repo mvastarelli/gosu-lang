@@ -2,6 +2,7 @@ package gw.internal.gosu.module.fs.cachestrategy;
 
 import gw.fs.IFile;
 import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.File;
 import java.util.Set;
@@ -10,15 +11,15 @@ import java.util.stream.Collectors;
 public class FullyCachedFileRetrievalStrategy extends CachingFileRetrievalStrategy {
   private Set<String> fileNamesSet;
 
-  public FullyCachedFileRetrievalStrategy(JavaDirectoryImpl parent) {
-    super(parent);
+  public FullyCachedFileRetrievalStrategy(IFileSystem fileSystem, JavaDirectoryImpl parent) {
+    super(fileSystem, parent);
   }
 
   @Override
   protected void refreshIfNecessary() {
-    if (_files == null) {
+    if (getFiles().isEmpty()) {
       refreshInfo();
-      fileNamesSet =_files.stream().map(IFile::getName).collect(Collectors.toSet());
+      fileNamesSet =getFiles().stream().map(IFile::getName).collect(Collectors.toSet());
     }
   }
 

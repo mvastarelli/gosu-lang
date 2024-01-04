@@ -1,28 +1,35 @@
 package gw.internal.gosu.module.fs.cachestrategy;
 
-import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.IFile;
 import gw.internal.gosu.module.fs.FileSystemImpl;
 import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy {
-  protected List<IDirectory> _directories;
-  protected List<IFile> _files;
+  private final List<IDirectory> _directories = new ArrayList<>();
+  private final List<IFile> _files = new ArrayList<>();
 
-  public CachingFileRetrievalStrategy(JavaDirectoryImpl parent) {
-    super(parent);
+  protected CachingFileRetrievalStrategy(IFileSystem fileSystem, JavaDirectoryImpl parent) {
+    super(fileSystem, parent);
+  }
+
+  public List<IDirectory> getDirectories() {
+    return _directories;
+  }
+
+  public List<IFile> getFiles() {
+    return _files;
   }
 
   public void clearCache() {
     // This should always be called with the CACHED_FILE_SYSTEM_LOCK monitor already acquired
-    _directories = null;
-    _files = null;
+    _directories.clear();
+    _files.clear();
   }
 
   @Override
@@ -42,8 +49,7 @@ public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy
   }
 
   protected void refreshInfo() {
-    _files = new ArrayList<>();
-    _directories = new ArrayList<>();
+    clearCache();
     File javaFile = getParent().toJavaFile();
     maybeSetTimestamp(javaFile);
 
@@ -51,23 +57,19 @@ public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy
     if (files != null) {
       for (File f : files) {
         if (isDirectory(f)) {
-          _directories.add(CommonServices.INSTANCE.getFileSystem().getDirectory(f));
+          _directories.add(getFileSystem().getDirectory(f));
         } else {
-          _files.add(CommonServices.INSTANCE.getFileSystem().getFile(f));
+          _files.add(getFileSystem().getFile(f));
         }
       }
     }
 
-    if (_directories.isEmpty()) {
-      _directories = Collections.emptyList();
-    } else {
-      ((ArrayList) _directories).trimToSize();
+    if (!_directories.isEmpty()) {
+      ((ArrayList<IDirectory>) _directories).trimToSize();
     }
 
-    if (_files.isEmpty()) {
-      _files = Collections.emptyList();
-    } else {
-      ((ArrayList) _files).trimToSize();
+    if (!_files.isEmpty()) {
+      ((ArrayList<IFile>) _files).trimToSize();
     }
   }
 

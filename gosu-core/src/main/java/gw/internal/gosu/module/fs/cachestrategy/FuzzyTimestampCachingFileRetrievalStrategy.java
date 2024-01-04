@@ -1,16 +1,16 @@
 package gw.internal.gosu.module.fs.cachestrategy;
 
 import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.File;
-import java.util.Collections;
 
 public class FuzzyTimestampCachingFileRetrievalStrategy extends CachingFileRetrievalStrategy {
   private long _lastFileTimestamp;  // in ms, absolute time
   private long _lastRefreshTimestamp; // in ms, absolute time
 
-  public FuzzyTimestampCachingFileRetrievalStrategy(JavaDirectoryImpl parent) {
-    super(parent);
+  public FuzzyTimestampCachingFileRetrievalStrategy(IFileSystem fileSystem, JavaDirectoryImpl parent) {
+    super(fileSystem, parent);
   }
 
   public void clearCache() {
@@ -28,8 +28,8 @@ public class FuzzyTimestampCachingFileRetrievalStrategy extends CachingFileRetri
       long currentTimestamp = file.lastModified();
       if (currentTimestamp == 0) {
         // If the timestamp is 0, assume it's been deleted
-        _files = Collections.emptyList();
-        _directories = Collections.emptyList();
+        getFiles().clear();
+        getDirectories().clear();
       } else if (_lastFileTimestamp != currentTimestamp) {
         doRefreshImpl();
       } else {

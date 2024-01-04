@@ -15,10 +15,10 @@ import gw.lang.reflect.module.IFileSystem;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
-  private static final Map<String, Function<JavaDirectoryImpl, FileRetrievalStrategy>> CACHING_MODE_TO_STRATEGY = new HashMap<>();
+  private static final Map<String, BiFunction<IFileSystem, JavaDirectoryImpl, FileRetrievalStrategy>> CACHING_MODE_TO_STRATEGY = new HashMap<>();
 
   private FileRetrievalStrategy _fileRetrievalStrategy;
 
@@ -38,7 +38,7 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
     var strategyHandler = CACHING_MODE_TO_STRATEGY.getOrDefault(cachingMode.name(), null);
 
     if(strategyHandler != null) {
-      _fileRetrievalStrategy = strategyHandler.apply(this);
+      _fileRetrievalStrategy = strategyHandler.apply(getFileSystem(), this);
     } else {
       throw new IllegalStateException("Unrecognized caching mode " + cachingMode);
     }
@@ -56,13 +56,13 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
   @Override
   public IDirectory dir(String relativePath) {
       File subDir = new File(this.getFile(), relativePath);
-    return CommonServices.INSTANCE.getFileSystem().getDirectory(subDir);
+    return getFileSystem().getDirectory(subDir);
   }
 
   @Override
   public IFile file(String path) {
       File subFile = new File(this.getFile(), path)/*.getCanonicalFile()*/;
-    return CommonServices.INSTANCE.getFileSystem().getFile(subFile);
+    return getFileSystem().getFile(subFile);
   }
 
   @Override

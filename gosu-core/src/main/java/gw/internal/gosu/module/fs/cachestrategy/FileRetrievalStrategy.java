@@ -3,6 +3,7 @@ package gw.internal.gosu.module.fs.cachestrategy;
 import gw.fs.IDirectory;
 import gw.fs.IFile;
 import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.File;
 import java.util.Arrays;
@@ -35,10 +36,16 @@ public abstract class FileRetrievalStrategy {
           "xml",
           "xsd"));
 
+  private final IFileSystem _fileSystem;
   private final JavaDirectoryImpl _parent;
 
-  protected FileRetrievalStrategy(JavaDirectoryImpl parent) {
+  protected FileRetrievalStrategy(IFileSystem fileSystem, JavaDirectoryImpl parent) {
+    _fileSystem = fileSystem;
     _parent = parent;
+  }
+
+  protected  IFileSystem getFileSystem() {
+    return _fileSystem;
   }
 
   protected JavaDirectoryImpl getParent() {
