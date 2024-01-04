@@ -4,17 +4,17 @@
 
 package gw.internal.gosu.module.fs.resource;
 
-import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.IDirectoryUtil;
 import gw.fs.IFile;
 import gw.fs.IResource;
-import gw.internal.gosu.module.fs.FileSystemImpl;
 import gw.internal.gosu.module.fs.cachestrategy.*;
 import gw.lang.reflect.module.IFileSystem;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
@@ -45,11 +45,9 @@ public class JavaDirectoryImpl extends JavaResourceImpl implements IDirectory {
   }
 
   @Override
-  public void clearCaches() {
+  public synchronized void clearCaches() {
     if (_fileRetrievalStrategy instanceof CachingFileRetrievalStrategy) {
-      synchronized (FileSystemImpl.CACHED_FILE_SYSTEM_LOCK) {
-        ((CachingFileRetrievalStrategy) _fileRetrievalStrategy).clearCache();
-      }
+      ((CachingFileRetrievalStrategy) _fileRetrievalStrategy).clearCache();
     }
   }
 

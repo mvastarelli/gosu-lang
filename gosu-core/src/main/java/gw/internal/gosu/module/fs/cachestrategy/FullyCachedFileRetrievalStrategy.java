@@ -16,11 +16,17 @@ public class FullyCachedFileRetrievalStrategy extends CachingFileRetrievalStrate
   }
 
   @Override
-  protected void refreshIfNecessary() {
-    if (getFiles().isEmpty()) {
-      refreshInfo();
-      fileNamesSet =getFiles().stream().map(IFile::getName).collect(Collectors.toSet());
-    }
+  protected boolean shouldRefresh() {
+    return getFiles().isEmpty();
+  }
+
+  @Override
+  protected void refresh() {
+    super.refresh();
+    fileNamesSet = getFiles()
+            .stream()
+            .map(IFile::getName)
+            .collect(Collectors.toSet());
   }
 
   @Override

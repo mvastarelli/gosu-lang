@@ -32,11 +32,6 @@ public class FileSystemImpl extends BaseService implements IFileSystem {
   private static final Map<String, IProtocolAdapter> _protocolAdapters = new HashMap<>();
   public static boolean USE_NEW_API = false;
 
-  // Really gross, non-granular synchronization, but in general we shouldn't
-  // be hitting this cache much after startup anyway, so it ought to not
-  // turn into a perf issue
-  public static final Object CACHED_FILE_SYSTEM_LOCK = new Object();
-
   private final ConcurrentHashMap<File, IDirectory> _cache = new ConcurrentHashMap<>();
   private volatile CachingMode _cachingMode;
 

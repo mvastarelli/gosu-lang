@@ -20,30 +20,33 @@ public class FuzzyTimestampCachingFileRetrievalStrategy extends CachingFileRetri
     _lastRefreshTimestamp = -1;
   }
 
-  protected void refreshIfNecessary() {
+  @Override
+  protected boolean shouldRefresh() {
     if (_lastFileTimestamp == -1) {
-      doRefreshImpl();
+      return true;
     } else {
-      File file = getParent().toJavaFile();
-      long currentTimestamp = file.lastModified();
-      if (currentTimestamp == 0) {
-        // If the timestamp is 0, assume it's been deleted
-        getFiles().clear();
-        getDirectories().clear();
-      } else if (_lastFileTimestamp != currentTimestamp) {
-        doRefreshImpl();
-      } else {
-        long refreshDelta = _lastRefreshTimestamp - currentTimestamp;
-        if(refreshDelta > -16 && refreshDelta < 16) {
-          doRefreshImpl();
-        }
-      }
+      var file = getParent().toJavaFile();
+      var currentTimestamp = file.lastModified();
+      var refreshDelta = _lastRefreshTimestamp - currentTimestamp;
+
+      return currentTimestamp == 0 ||
+              _lastFileTimestamp != currentTimestamp ||
+              refreshDelta > -16 && refreshDelta < 16;
     }
   }
 
-  private void doRefreshImpl() {
-    _lastRefreshTimestamp = System.currentTimeMillis();
-    refreshInfo();
+  @Override
+  protected void refresh() {
+    File file = getParent().toJavaFile();
+    long currentTimestamp = file.lastModified();
+
+    if (currentTimestamp == 0) {
+      getFiles().clear();
+      getDirectories().clear();
+    } else {
+      _lastRefreshTimestamp = System.currentTimeMillis();
+      super.refresh();
+    }
   }
 
   @Override

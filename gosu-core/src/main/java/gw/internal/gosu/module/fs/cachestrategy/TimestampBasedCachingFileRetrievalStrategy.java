@@ -17,19 +17,33 @@ public class TimestampBasedCachingFileRetrievalStrategy extends CachingFileRetri
     _lastTimestamp = -1;
   }
 
-  protected void refreshIfNecessary() {
+  @Override
+  protected boolean shouldRefresh() {
     if (_lastTimestamp == -1) {
-      refreshInfo();
+      return true;
+    }
+
+    var file = getParent().toJavaFile();
+    var currentTimestamp = file.lastModified();
+
+    if (currentTimestamp == 0) {
+      return true;
     } else {
-      File file = getParent().toJavaFile();
-      long currentTimestamp = file.lastModified();
-      if (currentTimestamp == 0) {
-        // If the timestamp is 0, assume it's been deleted
-        getFiles().clear();
-        getDirectories().clear();
-      } else if (_lastTimestamp != currentTimestamp) {
-        refreshInfo();
-      }
+      return _lastTimestamp != currentTimestamp;
+    }
+  }
+
+  @Override
+  protected void refresh() {
+    File file = getParent().toJavaFile();
+    long currentTimestamp = file.lastModified();
+
+    if (currentTimestamp == 0) {
+      getFiles().clear();
+      getDirectories().clear();
+    }
+    else {
+      super.refresh();
     }
   }
 

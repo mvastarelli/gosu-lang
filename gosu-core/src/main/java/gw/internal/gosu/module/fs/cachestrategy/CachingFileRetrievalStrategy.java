@@ -2,15 +2,15 @@ package gw.internal.gosu.module.fs.cachestrategy;
 
 import gw.fs.IDirectory;
 import gw.fs.IFile;
-import gw.internal.gosu.module.fs.FileSystemImpl;
 import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
 import gw.lang.reflect.module.IFileSystem;
+import gw.util.concurrent.SyncRoot;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy {
+public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy implements SyncRoot.ReaderWriter {
   private final List<IDirectory> _directories = new ArrayList<>();
   private final List<IFile> _files = new ArrayList<>();
 
@@ -27,28 +27,35 @@ public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy
   }
 
   public void clearCache() {
-    // This should always be called with the CACHED_FILE_SYSTEM_LOCK monitor already acquired
-    _directories.clear();
-    _files.clear();
+    acquireWrite(() -> {
+      // This should always be called with the CACHED_FILE_SYSTEM_LOCK monitor already acquired
+      _directories.clear();
+      _files.clear();
+    });
   }
 
   @Override
   public List<IDirectory> listDirs() {
-    synchronized (FileSystemImpl.CACHED_FILE_SYSTEM_LOCK) {
-      refreshIfNecessary();
-      return _directories;
-    }
+    refreshIfNecessary();
+    return acquireRead( () -> (List<IDirectory>)new ArrayList<>(_directories));
   }
 
   @Override
   public List<IFile> listFiles() {
-    synchronized (FileSystemImpl.CACHED_FILE_SYSTEM_LOCK) {
-      refreshIfNecessary();
-      return _files;
+    refreshIfNecessary();
+    return acquireRead( () -> (List<IFile>)new ArrayList<>(_files));
+  }
+
+  protected void refreshIfNecessary() {
+    var needsRefresh = acquireRead(this::shouldRefresh);
+
+    if(needsRefresh) {
+      acquireWrite(this::refresh);
+      refresh();
     }
   }
 
-  protected void refreshInfo() {
+  protected void refresh() {
     clearCache();
     File javaFile = getParent().toJavaFile();
     maybeSetTimestamp(javaFile);
@@ -79,7 +86,7 @@ public abstract class CachingFileRetrievalStrategy extends FileRetrievalStrategy
     return childFile != null && childFile.exists();
   }
 
-  protected abstract void refreshIfNecessary();
+  protected abstract boolean shouldRefresh();
 
   protected abstract void maybeSetTimestamp(File javaFile);
 }
