@@ -16,25 +16,27 @@ import java.nio.file.Path;
 @UnstableAPI
 public interface IFileSystem extends IService {
 
-  IDirectory getIDirectory(File dir);
+  IDirectory getDirectory(File dir);
 
-  IDirectory getIDirectory( Path dir );
+  IDirectory getDirectory(Path dir );
 
-  IFile getIFile(File file);
+  IDirectory getDirectory(URL url);
 
-  IFile getIFile( Path file );
+  IDirectory createDir(File dir);
+
+  IFile getFile(File file);
+
+  IFile getFile(Path file );
+
+  IFile getFile(URL url );
+
+  IFile getFakeFile(URL url, IModule module);
 
   void setCachingMode(CachingMode cachingMode);
 
   void clearAllCaches();
 
-  IDirectory getIDirectory(URL url);
-
-  IFile getIFile( URL url );
-
-  IFile getFakeFile(URL url, IModule module);
-
-  public enum CachingMode {
+  enum CachingMode {
     NO_CACHING,
     CHECK_TIMESTAMPS,
     FUZZY_TIMESTAMPS,

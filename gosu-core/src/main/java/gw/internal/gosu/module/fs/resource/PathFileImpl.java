@@ -1,4 +1,4 @@
-package gw.internal.gosu.module.fs;
+package gw.internal.gosu.module.fs.resource;
 
 import gw.fs.IFile;
 import java.io.IOException;
@@ -7,13 +7,15 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+
+import gw.lang.reflect.module.IFileSystem;
 import manifold.api.fs.IFileUtil;
 
 public class PathFileImpl extends PathResourceImpl implements IFile
 {
-  PathFileImpl( Path path )
+  public PathFileImpl(IFileSystem fileSystem, Path path )
   {
-    super( path );
+    super(fileSystem, path );
   }
 
   @Override

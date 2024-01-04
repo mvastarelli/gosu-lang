@@ -108,7 +108,7 @@ public abstract class AbstractPlatformHelper extends BaseService implements IPla
       return true;
     }
 
-    final IFile file = CommonServices.INSTANCE.getFileSystem().getIFile(new File(relativePath));
+    final IFile file = CommonServices.INSTANCE.getFileSystem().getFile(new File(relativePath));
     // AHK - We use file.getParent().hasChild() instead of file.exists() since we don't want to hit the disk
     // for the file existence check if we don't have to, and hasChild() will usually work off the cached sub-files
     // of a given directory

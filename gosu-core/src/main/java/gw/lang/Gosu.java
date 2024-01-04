@@ -6,7 +6,6 @@ package gw.lang;
 
 import gw.config.CommonServices;
 import gw.fs.IDirectory;
-import gw.lang.gosuc.GosucUtil;
 import gw.lang.init.ClasspathToGosuPathEntryUtil;
 import gw.lang.init.GosuInitialization;
 import gw.lang.parser.GosuParserFactory;
@@ -45,12 +44,10 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import gw.util.concurrent.LocklessLazyVar;
-import manifold.util.JreUtil;
 import manifold.util.NecessaryEvilUtil;
 import manifold.util.ReflectUtil;
 //import sun.misc.URLClassPath;
@@ -241,13 +238,13 @@ public class Gosu
             String pathname = cmdLineCP
                               ? s
                               : scriptRoot + File.separatorChar + s;
-            cp.add( CommonServices.INSTANCE.getFileSystem().getIDirectory( new File( pathname ) ) );
+            cp.add( CommonServices.INSTANCE.getFileSystem().getDirectory( new File( pathname ) ) );
           }
         }
         else
         {
           String pathname = cmdLineCP ? s : scriptRoot + File.separatorChar + s;
-          cp.add( CommonServices.INSTANCE.getFileSystem().getIDirectory( new File( pathname ) ) );
+          cp.add( CommonServices.INSTANCE.getFileSystem().getDirectory( new File( pathname ) ) );
         }
       }
     }
@@ -396,7 +393,7 @@ public class Gosu
         {
           try
           {
-            IDirectory file = CommonServices.INSTANCE.getFileSystem().getIDirectory( Paths.get( url.toURI() ) );
+            IDirectory file = CommonServices.INSTANCE.getFileSystem().getDirectory( Paths.get( url.toURI() ) );
             if( file.exists() )
             {
               ll.add( file );

@@ -5,8 +5,9 @@
 package gw.lang.init;
 
 import gw.fs.IDirectory;
+import gw.internal.gosu.module.fs.FileSystemImpl;
 import gw.test.TestClass;
-import gw.internal.gosu.module.fs.JavaDirectoryImpl;
+import gw.internal.gosu.module.fs.resource.JavaDirectoryImpl;
 import gw.lang.reflect.module.IFileSystem;
 
 import java.util.Collections;
@@ -32,8 +33,10 @@ public class GosuPathEntryTest extends TestClass {
   }
 
   public void testConstructorThrowsIllegalArgumentExceptionIfSrcsIsNull() {
+    var fs = new FileSystemImpl(IFileSystem.CachingMode.NO_CACHING);
+
     try {
-      new GosuPathEntry(new JavaDirectoryImpl(new File("foo/bar"), IFileSystem.CachingMode.NO_CACHING), null);
+      new GosuPathEntry(new JavaDirectoryImpl(fs, new File("foo/bar"), IFileSystem.CachingMode.NO_CACHING), null);
       fail();
     } catch (IllegalArgumentException e) {
       // Expected();
@@ -41,6 +44,8 @@ public class GosuPathEntryTest extends TestClass {
   }
 
   public void testConstructorDoesNothingElseIfArgumentsAreValid() {
-    new GosuPathEntry(new JavaDirectoryImpl(new File("foo/bar"), IFileSystem.CachingMode.NO_CACHING), Collections.<IDirectory>emptyList());
+    var fs = new FileSystemImpl(IFileSystem.CachingMode.NO_CACHING);
+
+    new GosuPathEntry(new JavaDirectoryImpl(fs, new File("foo/bar"), IFileSystem.CachingMode.NO_CACHING), Collections.<IDirectory>emptyList());
   }
 }

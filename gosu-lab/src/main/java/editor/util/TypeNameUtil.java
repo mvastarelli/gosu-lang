@@ -37,7 +37,7 @@ public class TypeNameUtil
       {
         try
         {
-          IDirectory dir = fileSystem.getIDirectory( PathUtil.create( path ).toUri().toURL() );
+          IDirectory dir = fileSystem.getDirectory( PathUtil.create( path ).toUri().toURL() );
           if( classIFile.isDescendantOf( dir ) )
           {
             root = dir;

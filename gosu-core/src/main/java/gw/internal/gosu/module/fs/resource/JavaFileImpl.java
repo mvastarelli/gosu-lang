@@ -2,10 +2,11 @@
  * Copyright 2014 Guidewire Software, Inc.
  */
 
-package gw.internal.gosu.module.fs;
+package gw.internal.gosu.module.fs.resource;
 
 import gw.fs.IFile;
 import gw.fs.IFileUtil;
+import gw.lang.reflect.module.IFileSystem;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -15,24 +16,23 @@ import java.io.FileOutputStream;
 import java.io.File;
 
 public class JavaFileImpl extends JavaResourceImpl implements IFile {
-
-  public JavaFileImpl(File file) {
-    super(file);
+  public JavaFileImpl(IFileSystem fileSystem, File file) {
+    super(fileSystem, file);
   }
 
   @Override
   public InputStream openInputStream() throws IOException {
-    return new FileInputStream(_file);
+    return new FileInputStream(getFile());
   }
 
   @Override
   public OutputStream openOutputStream() throws IOException {
-    return new FileOutputStream(_file);
+    return new FileOutputStream(getFile());
   }
 
   @Override
   public OutputStream openOutputStreamForAppend() throws IOException {
-    return new FileOutputStream(_file, true);
+    return new FileOutputStream(getFile(), true);
   }
 
   @Override
@@ -48,7 +48,7 @@ public class JavaFileImpl extends JavaResourceImpl implements IFile {
   @Override
   public boolean create() {
     try {
-      return _file.createNewFile();
+      return getFile().createNewFile();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -56,6 +56,6 @@ public class JavaFileImpl extends JavaResourceImpl implements IFile {
 
   @Override
   public boolean exists() {
-    return _file.isFile();
+    return getFile().isFile();
   }
 }

@@ -2,12 +2,13 @@
  * Copyright 2014 Guidewire Software, Inc.
  */
 
-package gw.internal.gosu.module.fs;
+package gw.internal.gosu.module.fs.resource;
 
-import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.IResource;
 import gw.fs.ResourcePath;
+import gw.lang.reflect.module.IFileSystem;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -18,10 +19,12 @@ import java.nio.file.Path;
 
 public abstract class PathResourceImpl implements IResource, Serializable
 {
+  protected final IFileSystem _fileSystem;
   private Path _path;
 
-  PathResourceImpl( Path path )
+  PathResourceImpl(IFileSystem fileSystem, Path path )
   {
+    _fileSystem = fileSystem;
     _path = path.toAbsolutePath();
   }
 
@@ -40,7 +43,7 @@ public abstract class PathResourceImpl implements IResource, Serializable
     }
     else
     {
-      return CommonServices.INSTANCE.getFileSystem().getIDirectory( parent );
+      return _fileSystem.getDirectory( parent );
     }
   }
 
