@@ -4,10 +4,12 @@ import gw.fs.FileFactory;
 import gw.fs.IFile;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
@@ -236,7 +238,7 @@ public class PathUtil
 
   public static IFile getIFile( Path classFile )
   {
-    return FileFactory.instance().getFile( classFile.toUri() );
+    return FileFactory.instance().getIFile( classFile.toUri() );
   }
 
   public static void delete( Path path )

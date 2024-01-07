@@ -35,7 +35,7 @@ public class FileFactory {
     return INSTANCE;
   }
 
-  public IDirectory getDirectory(File f) {
+  public IDirectory getIDirectory(File f) {
     if (f.getName().endsWith(".jar") && f.isFile()) {
       return new JarFileDirectoryImpl(f);
     } else {
@@ -43,7 +43,11 @@ public class FileFactory {
     }
   }
 
-  public IDirectory getDirectory(String absolutePath) {
+  public IFile getIFile(File f) {
+    return new PhysicalFileImpl(ResourcePath.parse(f.getAbsolutePath()), _defaultPhysicalFileSystem);
+  }
+
+  public IDirectory getIDirectory(String absolutePath) {
     if (absolutePath.endsWith(".jar") && new File(absolutePath).isFile()) {
       return new JarFileDirectoryImpl(new File(absolutePath));
     } else {
@@ -51,43 +55,36 @@ public class FileFactory {
     }
   }
 
-  public IFile getFile(File f) {
-    return new PhysicalFileImpl(ResourcePath.parse(f.getAbsolutePath()), _defaultPhysicalFileSystem);
-  }
-
-  public IFile getFile(String absolutePath) {
+  public IFile getIFile(String absolutePath) {
     return new PhysicalFileImpl(ResourcePath.parse(absolutePath), _defaultPhysicalFileSystem);
   }
 
-  public IFile getFile(URL url) {
+  public IFile getIFile(URL url) {
     try {
-      return getFile( url.toURI() );
+      return getIFile( url.toURI() );
     }
     catch( URISyntaxException e ) {
       throw new RuntimeException( e );
     }
   }
-
-  public IFile getFile(URI uri) {
-    return getFile( uri, true );
+  public IFile getIFile(URI uri) {
+    return getIFile( uri, true );
   }
-
-  public IFile getFile(URL url, boolean bCreateIfNotExists) {
+  public IFile getIFile(URL url, boolean bCreateIfNotExists) {
     try {
-      return getFile( url.toURI(), bCreateIfNotExists );
+      return getIFile( url.toURI(), bCreateIfNotExists );
     }
     catch( URISyntaxException e ) {
       throw new RuntimeException( e );
     }
   }
-
-  public IFile getFile(URI uri, boolean bCreateIfNotExists) {
+  public IFile getIFile(URI uri, boolean bCreateIfNotExists) {
     if ( uri.getScheme().equals("file")) {
       try {
         if (uri.getFragment() != null) {
           uri = new URI(uri.getScheme(), uri.getSchemeSpecificPart(), null);
         }
-        return getFile(new File(uri));
+        return getIFile(new File(uri));
       }
       catch (URISyntaxException ex) {
         throw new RuntimeException(ex);
@@ -104,7 +101,7 @@ public class FileFactory {
       String jarPath = path.substring(0, idx);
       File jarFile;
       try {
-        jarFile = getFile(new URL(jarPath)).toJavaFile();
+        jarFile = getIFile(new URL(jarPath)).toJavaFile();
       }
       catch (MalformedURLException e) {
         throw new RuntimeException(e);
