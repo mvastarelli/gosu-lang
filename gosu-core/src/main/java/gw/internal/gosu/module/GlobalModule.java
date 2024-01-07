@@ -10,6 +10,7 @@ import gw.config.TypeLoaderSpec;
 import gw.fs.IDirectory;
 import gw.internal.gosu.parser.FileSystemGosuClassRepository;
 import gw.internal.gosu.parser.ModuleTypeLoader;
+import gw.internal.gosu.parser.TypeLoaderAccess;
 import gw.lang.reflect.ITypeLoader;
 import gw.lang.reflect.TypeSystem;
 import gw.lang.reflect.gs.GosuClassTypeLoader;
@@ -26,11 +27,40 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GlobalModule extends Module implements IGlobalModule
-{
-  public GlobalModule(IExecutionEnvironment execEnv, String moduleName)
-  {
-    super( execEnv, moduleName);
+public class GlobalModule extends Module implements IGlobalModule {
+  public GlobalModule(IExecutionEnvironment execEnv, String moduleName) {
+    super(execEnv, moduleName);
+  }
+
+  protected static ITypeLoader createTypeLoader(
+          IFileSystemGosuClassRepository classRepository,
+          IModule module,
+          Class loaderClass)
+          throws ClassNotFoundException, InstantiationException,
+          IllegalAccessException, InvocationTargetException {
+
+    try {
+      ITypeLoader typeLoader;
+      CommonServices.INSTANCE.getGosuInitializationHooks().beforeTypeLoaderCreation(loaderClass);
+      Constructor[] constructors = loaderClass.getConstructors();
+      typeLoader = null;
+      for (Constructor cons : constructors) {
+        Class[] parameterTypes = cons.getParameterTypes();
+        if (parameterTypes.length == 0) {
+          typeLoader = (ITypeLoader) cons.newInstance();
+        } else if (parameterTypes.length == 1 &&
+                parameterTypes[0] == gw.lang.reflect.module.IModule.class) {
+          typeLoader = (ITypeLoader) cons.newInstance(module);
+        } else if (cons.getParameterTypes().length == 1 && cons.getParameterTypes()[0] == IGosuClassRepository.class) {
+          typeLoader = (ITypeLoader) cons.newInstance(classRepository);
+        } else {
+          // Ignore it
+        }
+      }
+      return typeLoader;
+    } catch (LinkageError le) {
+      throw le;
+    }
   }
 
   @Override
@@ -41,7 +71,7 @@ public class GlobalModule extends Module implements IGlobalModule
   @Override
   protected void createStandardTypeLoaders() {
     FileSystemGosuClassRepository repository = new FileSystemGosuClassRepository(this);
-    CommonServices.getTypeSystem().pushTypeLoader(this, new GosuClassTypeLoader(this, repository));
+    TypeLoaderAccess.instance().pushTypeLoader(this, new GosuClassTypeLoader(this, repository));
     createGlobalTypeloaders();
   }
 
@@ -49,7 +79,7 @@ public class GlobalModule extends Module implements IGlobalModule
     ModuleTypeLoader _moduleTypeLoader = getModuleTypeLoader();
 
     List<Class<? extends ITypeLoader>> globalLoaderTypes = CommonServices.INSTANCE.getGlobalLoaderProvider().getGlobalLoaderTypes();
-    if( globalLoaderTypes != null ) {
+    if (globalLoaderTypes != null) {
       Collections.reverse(globalLoaderTypes);
     }
     IFileSystemGosuClassRepository classRepository = new FileSystemGosuClassRepository(this);
@@ -57,7 +87,7 @@ public class GlobalModule extends Module implements IGlobalModule
 
     TypeSystem.pushModule(this);
     try {
-      if( globalLoaderTypes != null ) {
+      if (globalLoaderTypes != null) {
         for (Class<? extends ITypeLoader> globalLoader : globalLoaderTypes) {
           try {
             ITypeLoader typeLoader = createTypeLoader(classRepository, this, globalLoader);
@@ -112,37 +142,6 @@ public class GlobalModule extends Module implements IGlobalModule
       if (!traversalList.contains(dependencyModule)) {
         traverse(dependencyModule, traversalList);
       }
-    }
-  }
-
-  protected static ITypeLoader createTypeLoader(
-      IFileSystemGosuClassRepository classRepository,
-      IModule module,
-      Class loaderClass)
-      throws ClassNotFoundException, InstantiationException,
-      IllegalAccessException, InvocationTargetException {
-
-    try {
-    ITypeLoader typeLoader;
-    CommonServices.INSTANCE.getGosuInitializationHooks().beforeTypeLoaderCreation(loaderClass);
-    Constructor[] constructors = loaderClass.getConstructors();
-    typeLoader = null;
-    for (Constructor cons : constructors) {
-      Class[] parameterTypes = cons.getParameterTypes();
-      if (parameterTypes.length == 0) {
-        typeLoader = (ITypeLoader) cons.newInstance();
-      } else if (parameterTypes.length == 1 &&
-                 parameterTypes[0] == gw.lang.reflect.module.IModule.class) {
-        typeLoader = (ITypeLoader) cons.newInstance(module);
-      } else if (cons.getParameterTypes().length == 1 && cons.getParameterTypes()[0] == IGosuClassRepository.class) {
-        typeLoader = (ITypeLoader) cons.newInstance(classRepository);
-      } else {
-        // Ignore it
-      }
-    }
-    return typeLoader;
-    } catch (LinkageError le) {
-      throw le;
     }
   }
 

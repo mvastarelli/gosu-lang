@@ -42,6 +42,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  */
 public class TypeLoaderAccess extends BaseService implements ITypeSystem {
+  private static final TypeLoaderAccess INSTANCE = new TypeLoaderAccess();
+
   private static final Map<CharSequence, TypeGetter> EMPTY_DEFAULT_TYPES = new HashMap<CharSequence, TypeGetter>();
   private static final ThreadLocal<ArrayList<IModule>> g_moduleStack = new ThreadLocal<ArrayList<IModule>>();
   public static LockingLazyVar<Map<String, IJavaType>> PRIMITIVE_TYPES_BY_NAME = new LockingLazyVar<Map<String, IJavaType>>() {
@@ -77,13 +79,13 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem {
   private Map<CharSequence, TypeGetter> _defaultTypes;
   private boolean _defaultTypesIniting = false;
 
-  public TypeLoaderAccess() {
+  private TypeLoaderAccess() {
     _listeners = new CopyOnWriteArrayList<WeakReference<ITypeLoaderListener>>();
     addShutdownListener(() -> GosuShop.clearThreadLocal(g_moduleStack));
   }
 
   public static TypeLoaderAccess instance() {
-    return (TypeLoaderAccess) CommonServices.getTypeSystem();
+    return INSTANCE;
   }
 
   private static ExecutionEnvironment getExecutionEnv() {

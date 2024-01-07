@@ -7,232 +7,176 @@ package gw.lang;
 import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.IFile;
+import gw.internal.gosu.parser.TypeLoaderAccess;
 import gw.lang.gosuc.ICustomParser;
 import gw.lang.gosuc.IGosuc;
 import gw.lang.init.GosuPathEntry;
 import gw.lang.ir.IRClassCompiler;
 import gw.lang.ir.IRTypeResolver;
 import gw.lang.javadoc.IJavaDocFactory;
-import gw.lang.parser.IConstructorInfoFactory;
-import gw.lang.parser.IDynamicFunctionSymbol;
-import gw.lang.parser.IExpression;
-import gw.lang.parser.IFullParserState;
-import gw.lang.parser.IParsedElement;
-import gw.lang.parser.IReducedDynamicFunctionSymbol;
-import gw.lang.parser.IScope;
-import gw.lang.parser.ISourceCodeTokenizer;
-import gw.lang.parser.IStackProvider;
-import gw.lang.parser.ISymbol;
-import gw.lang.parser.ISymbolTable;
-import gw.lang.parser.ITokenizerInstructor;
-import gw.lang.parser.ITypeUsesMap;
+import gw.lang.parser.*;
 import gw.lang.parser.expressions.IIdentifierExpression;
 import gw.lang.parser.expressions.INullExpression;
 import gw.lang.parser.template.ITemplateHost;
 import gw.lang.parser.template.TemplateParseException;
-import gw.lang.reflect.IAnnotationInfo;
-import gw.lang.reflect.IAnnotationInfoFactory;
-import gw.lang.reflect.IEntityAccess;
-import gw.lang.reflect.IFeatureInfo;
-import gw.lang.reflect.IFunctionType;
-import gw.lang.reflect.IMetaType;
-import gw.lang.reflect.IMethodInfo;
-import gw.lang.reflect.IPropertyAccessor;
-import gw.lang.reflect.IPropertyInfo;
-import gw.lang.reflect.IType;
-import gw.lang.reflect.ITypeInfo;
-import gw.lang.reflect.ITypeInfoFactory;
-import gw.lang.reflect.TypeSystem;
-import gw.lang.reflect.gs.GosuClassTypeLoader;
-import gw.lang.reflect.gs.IEnhancementIndex;
-import gw.lang.reflect.gs.IFileSystemGosuClassRepository;
-import gw.lang.reflect.gs.IGosuClass;
-import gw.lang.reflect.gs.IGosuEnhancement;
-import gw.lang.reflect.gs.IGosuProgram;
-import gw.lang.reflect.gs.ISourceFileHandle;
-import gw.lang.reflect.gs.ITemplateType;
+import gw.lang.reflect.*;
+import gw.lang.reflect.gs.*;
 import gw.lang.reflect.java.IJavaClassInfo;
 import gw.lang.reflect.module.IClassPath;
 import gw.lang.reflect.module.IExecutionEnvironment;
 import gw.lang.reflect.module.IModule;
+import gw.util.Array;
+import manifold.util.ReflectUtil;
 
 import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
-import gw.util.Array;
-import manifold.util.ReflectUtil;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class GosuShop
-{
-  public static ISymbolTable createSymbolTable()
-  {
+public class GosuShop {
+  static Set<String> SPECIAL_PUBLISH_TYPES = new HashSet<String>() {{
+    this.add("gw.internal.xml.ws.IWsdlConfig");
+    this.add("gw.internal.xml.ws.rt.WsdlPortImpl");
+    this.add("gw.xml.ws.IWsdlPort");
+    this.add("gw.xml.ws.Wsdl2Gosu");
+    this.add("gw.xml.XmlElement");
+  }};
+
+  public static ISymbolTable createSymbolTable() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbolTable();
   }
 
-  public static ISymbolTable createSymbolTable( boolean bDefineCommonSymbols )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbolTable( bDefineCommonSymbols );
+  public static ISymbolTable createSymbolTable(boolean bDefineCommonSymbols) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbolTable(bDefineCommonSymbols);
   }
 
-  public static ITemplateHost createTemplateHost()
-  {
+  public static ITemplateHost createTemplateHost() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplateHost();
   }
 
-  public static IPropertyInfo createLengthProperty(ITypeInfo typeInfo)
-  {
+  public static IPropertyInfo createLengthProperty(ITypeInfo typeInfo) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createLengthProperty(typeInfo);
   }
 
-  public static IFunctionType createFunctionType( IMethodInfo mi )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createFunctionType( mi );
+  public static IFunctionType createFunctionType(IMethodInfo mi) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createFunctionType(mi);
   }
 
-  public static ITypeInfoFactory getTypeInfoFactory()
-  {
+  public static ITypeInfoFactory getTypeInfoFactory() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getTypeInfoFactory();
   }
 
-  public static IConstructorInfoFactory getConstructorInfoFactory()
-  {
+  public static IConstructorInfoFactory getConstructorInfoFactory() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getConstructorInfoFactory();
   }
 
-  public static IAnnotationInfoFactory getAnnotationInfoFactory()
-  {
+  public static IAnnotationInfoFactory getAnnotationInfoFactory() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getAnnotationInfoFactory();
   }
 
-  public static IJavaDocFactory getJavaDocFactory()
-  {
+  public static IJavaDocFactory getJavaDocFactory() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getJavaDocFactory();
   }
 
-  public static ISymbol createSymbol( CharSequence name, IType type, Object value )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbol( name, type, value );
-  }
-  public static ISymbol createSymbol( CharSequence name, IType type, IStackProvider stackProvider )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbol( name, type, stackProvider );
+  public static ISymbol createSymbol(CharSequence name, IType type, Object value) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbol(name, type, value);
   }
 
-  public static IClassPath createClassPath(IModule module, boolean includeAllClasses)
-  {
+  public static ISymbol createSymbol(CharSequence name, IType type, IStackProvider stackProvider) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createSymbol(name, type, stackProvider);
+  }
+
+  public static IClassPath createClassPath(IModule module, boolean includeAllClasses) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createClassPath(module, includeAllClasses);
   }
 
-  public static IEntityAccess getDefaultEntityAccess()
-  {
+  public static IEntityAccess getDefaultEntityAccess() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getDefaultEntityAccess();
   }
 
-  public static ITemplateHost createSimpleTemplateHost()
-  {
+  public static ITemplateHost createSimpleTemplateHost() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createSimpleTemplateHost();
   }
 
-  public static ISourceCodeTokenizer createSourceCodeTokenizer( CharSequence code )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createSourceCodeTokenizer( code );
-  }
-  public static ISourceCodeTokenizer createSourceCodeTokenizer( CharSequence code, boolean bTemplate )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createSourceCodeTokenizer( code, bTemplate );
-  }
-  public static ISourceCodeTokenizer createSourceCodeTokenizer( Reader reader )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createSourceCodeTokenizer( reader );
-  }
-  public static ITokenizerInstructor createTemplateInstructor( ISourceCodeTokenizer tokenizer )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplateInstructor( tokenizer );
+  public static ISourceCodeTokenizer createSourceCodeTokenizer(CharSequence code) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createSourceCodeTokenizer(code);
   }
 
-  public static IScope createCommonSymbolScope()
-  {
+  public static ISourceCodeTokenizer createSourceCodeTokenizer(CharSequence code, boolean bTemplate) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createSourceCodeTokenizer(code, bTemplate);
+  }
+
+  public static ISourceCodeTokenizer createSourceCodeTokenizer(Reader reader) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createSourceCodeTokenizer(reader);
+  }
+
+  public static ITokenizerInstructor createTemplateInstructor(ISourceCodeTokenizer tokenizer) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplateInstructor(tokenizer);
+  }
+
+  public static IScope createCommonSymbolScope() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createCommnoSymbolScope();
   }
 
-  public static IIdentifierExpression createIdentifierExpression()
-  {
+  public static IIdentifierExpression createIdentifierExpression() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createIdentifierExpression();
   }
 
-  public static void generateTemplate( Reader readerTemplate, Writer writerOut, ISymbolTable threadLocalSymbolTable ) throws TemplateParseException
-  {
-    CommonServices.INSTANCE.getGosuIndustrialPark().generateTemplate( readerTemplate, writerOut, threadLocalSymbolTable );
+  public static void generateTemplate(Reader readerTemplate, Writer writerOut, ISymbolTable threadLocalSymbolTable) throws TemplateParseException {
+    CommonServices.INSTANCE.getGosuIndustrialPark().generateTemplate(readerTemplate, writerOut, threadLocalSymbolTable);
   }
 
-  public static ITokenizerInstructor createTemplateTokenizerInstructor( ISourceCodeTokenizer tokenizer )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplateTokenizerInstructor( tokenizer );
+  public static ITokenizerInstructor createTemplateTokenizerInstructor(ISourceCodeTokenizer tokenizer) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplateTokenizerInstructor(tokenizer);
   }
 
-  public static ISymbolTable getGosuClassSymbolTable()
-  {
+  public static ISymbolTable getGosuClassSymbolTable() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getGosuClassSymbolTable();
   }
 
-  public static ISymbol createDynamicFunctionSymbol( ISymbolTable symbolTable, String strMemberName, IFunctionType functionType, List<ISymbol> params, IExpression expression )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createDynamicFunctionSymbol( symbolTable, strMemberName, functionType, params, expression );
+  public static ISymbol createDynamicFunctionSymbol(ISymbolTable symbolTable, String strMemberName, IFunctionType functionType, List<ISymbol> params, IExpression expression) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createDynamicFunctionSymbol(symbolTable, strMemberName, functionType, params, expression);
   }
 
-  public static IEnhancementIndex createEnhancementIndex( GosuClassTypeLoader loader )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createEnhancementIndex( loader );
+  public static IEnhancementIndex createEnhancementIndex(GosuClassTypeLoader loader) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createEnhancementIndex(loader);
   }
 
-  public static IGosuClass createClass( String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createClass( strNamespace, strRelativeName, loader, sourceFile, typeUsesMap );
-  }
-  public static IGosuProgram createProgram( String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap, ISymbolTable symTable )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createProgram( strNamespace, strRelativeName, loader, sourceFile, typeUsesMap, symTable );
-  }
-  public static IGosuProgram createProgramForEval( String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap, ISymbolTable symTable )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createProgramForEval( strNamespace, strRelativeName, loader, sourceFile, typeUsesMap, symTable );
-  }
-  public static IGosuEnhancement createEnhancement( String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createEnhancement( strNamespace, strRelativeName, loader, sourceFile, typeUsesMap );
-  }
-  public static ITemplateType createTemplate( String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap, ISymbolTable symTable )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplate( strNamespace, strRelativeName, loader, sourceFile, typeUsesMap, symTable );
+  public static IGosuClass createClass(String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createClass(strNamespace, strRelativeName, loader, sourceFile, typeUsesMap);
   }
 
-  public static IFileSystemGosuClassRepository createFileSystemGosuClassRepository(IModule module, IDirectory[] files)
-  {
+  public static IGosuProgram createProgram(String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap, ISymbolTable symTable) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createProgram(strNamespace, strRelativeName, loader, sourceFile, typeUsesMap, symTable);
+  }
+
+  public static IGosuProgram createProgramForEval(String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap, ISymbolTable symTable) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createProgramForEval(strNamespace, strRelativeName, loader, sourceFile, typeUsesMap, symTable);
+  }
+
+  public static IGosuEnhancement createEnhancement(String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createEnhancement(strNamespace, strRelativeName, loader, sourceFile, typeUsesMap);
+  }
+
+  public static ITemplateType createTemplate(String strNamespace, String strRelativeName, GosuClassTypeLoader loader, ISourceFileHandle sourceFile, ITypeUsesMap typeUsesMap, ISymbolTable symTable) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createTemplate(strNamespace, strRelativeName, loader, sourceFile, typeUsesMap, symTable);
+  }
+
+  public static IFileSystemGosuClassRepository createFileSystemGosuClassRepository(IModule module, IDirectory[] files) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createFileSystemGosuClassRepository(module, files);
   }
-  public static IFileSystemGosuClassRepository createFileSystemGosuClassRepository(IModule module, IDirectory[] files, String[] extensions)
-  {
+
+  public static IFileSystemGosuClassRepository createFileSystemGosuClassRepository(IModule module, IDirectory[] files, String[] extensions) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createFileSystemGosuClassRepository(module, files, extensions);
   }
 
-  public static ITypeUsesMap createTypeUsesMap( List<String> specialTypeUses )
-  {
+  public static ITypeUsesMap createTypeUsesMap(List<String> specialTypeUses) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createTypeUsesMap(specialTypeUses);
   }
 
-  public static IFullParserState createStandardParserState( IParsedElement rootParsedElement, String scriptSrc, boolean b )
-  {
+  public static IFullParserState createStandardParserState(IParsedElement rootParsedElement, String scriptSrc, boolean b) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createStandardParserState(rootParsedElement, scriptSrc, b);
   }
 
@@ -244,13 +188,11 @@ public class GosuShop
     return CommonServices.INSTANCE.getGosuIndustrialPark().createPropertyDelegate(container, prop);
   }
 
-  public static IModule createModule( IExecutionEnvironment execEnv, String strMemberName )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().createModule( execEnv, strMemberName );
+  public static IModule createModule(IExecutionEnvironment execEnv, String strMemberName) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().createModule(execEnv, strMemberName);
   }
 
-  public static IModule createGlobalModule(IExecutionEnvironment execEnv)
-  {
+  public static IModule createGlobalModule(IExecutionEnvironment execEnv) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createGlobalModule(execEnv);
   }
 
@@ -258,8 +200,8 @@ public class GosuShop
     return CommonServices.INSTANCE.getGosuIndustrialPark().getNullExpressionInstance();
   }
 
-  public static IGosuClass getBlockToInterfaceConversionClass( IType typeToCoerceTo, IType enclosingType ) {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().getBlockToInterfaceConversionClass( typeToCoerceTo, enclosingType );
+  public static IGosuClass getBlockToInterfaceConversionClass(IType typeToCoerceTo, IType enclosingType) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getBlockToInterfaceConversionClass(typeToCoerceTo, enclosingType);
   }
 
   public static IRTypeResolver getIRTypeResolver() {
@@ -270,22 +212,13 @@ public class GosuShop
     return CommonServices.INSTANCE.getGosuIndustrialPark().getIRClassCompiler();
   }
 
-  public static IPropertyAccessor getLengthAccessor()
-  {
+  public static IPropertyAccessor getLengthAccessor() {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getLengthAccessor();
   }
 
   public static GosuPathEntry createPathEntryFromModuleFile(IFile f) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().createPathEntryFromModuleFile(f);
   }
-
-  static Set<String> SPECIAL_PUBLISH_TYPES = new HashSet<String>() {{
-    this.add("gw.internal.xml.ws.IWsdlConfig");
-    this.add("gw.internal.xml.ws.rt.WsdlPortImpl");
-    this.add("gw.xml.ws.IWsdlPort");
-    this.add("gw.xml.ws.Wsdl2Gosu");
-    this.add("gw.xml.XmlElement");
-  }};
 
   public static Map<IType, IType> getPublishedTypeMap(IJavaClassInfo classInfo) {
     if (SPECIAL_PUBLISH_TYPES.contains(classInfo.getName())) {
@@ -315,11 +248,10 @@ public class GosuShop
   }
 
   public static List<String> urls2paths(List<URL> urls) {
-    List<String> paths = new ArrayList<String>( urls.size() );
-    for( URL url : urls )
-    {
+    List<String> paths = new ArrayList<String>(urls.size());
+    for (URL url : urls) {
       String path = URLDecoder.decode(new File(url.getFile()).getAbsolutePath());
-      paths.add( path );
+      paths.add(path);
     }
     return paths;
   }
@@ -358,12 +290,12 @@ public class GosuShop
   private static void clearThreadLocal(ThreadLocal tl, Thread thread) {
     Object map = getMap(thread);
     if (map != null) {
-      ReflectUtil.method( map.getClass(), "set", ThreadLocal.class, Object.class ).invoke(map, tl, null);
+      ReflectUtil.method(map.getClass(), "set", ThreadLocal.class, Object.class).invoke(map, tl, null);
     }
   }
 
   private static Object getMap(Thread thread) {
-    return ReflectUtil.field( Thread.class, "threadLocals" ).get(thread);
+    return ReflectUtil.field(Thread.class, "threadLocals").get(thread);
   }
 
   public static boolean isGosuFile(String fileName) {
@@ -374,8 +306,8 @@ public class GosuShop
     return false;
   }
 
-  public static IGosuc makeGosucCompiler( String gosucProjectFile, ICustomParser custParser ) {
-    return CommonServices.getTypeSystem().makeGosucCompiler( gosucProjectFile, custParser );
+  public static IGosuc makeGosucCompiler(String gosucProjectFile, ICustomParser custParser) {
+    return TypeLoaderAccess.instance().makeGosucCompiler(gosucProjectFile, custParser);
   }
 
   public static IModule getModule(IType type) {
@@ -448,24 +380,23 @@ public class GosuShop
     return CommonServices.INSTANCE.getGosuIndustrialPark().createMetaType(type, literal);
   }
 
-  public static byte[] updateReloadClassesIndicator(List<String> changedTypes, String strScript ) {
+  public static byte[] updateReloadClassesIndicator(List<String> changedTypes, String strScript) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().updateReloadClassesIndicator(changedTypes, strScript);
   }
 
-  public static void print( Object ret ) {
-    CommonServices.INSTANCE.getGosuIndustrialPark().print( ret );
+  public static void print(Object ret) {
+    CommonServices.INSTANCE.getGosuIndustrialPark().print(ret);
   }
 
-  public static String toString( Object val ) {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().toString( val );
+  public static String toString(Object val) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().toString(val);
   }
 
-  public static IGosuClass getGosuClassFrom( IType fromType ) {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().getGosuClassFrom( fromType );
+  public static IGosuClass getGosuClassFrom(IType fromType) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getGosuClassFrom(fromType);
   }
 
-  public static String generateJavaStub( IGosuClass gsClass )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().generateJavaStub( gsClass );
+  public static String generateJavaStub(IGosuClass gsClass) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().generateJavaStub(gsClass);
   }
 }

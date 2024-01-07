@@ -7,14 +7,10 @@ package gw.lang.reflect;
 import gw.config.CommonServices;
 import gw.fs.IFile;
 import gw.fs.IResource;
+import gw.internal.gosu.parser.TypeLoaderAccess;
 import gw.internal.gosu.parser.TypeSystemState;
 import gw.lang.UnstableAPI;
-import gw.lang.parser.GosuParserFactory;
-import gw.lang.parser.GosuParserTypes;
-import gw.lang.parser.IParserPart;
-import gw.lang.parser.ISymbolTable;
-import gw.lang.parser.ITypeUsesMap;
-import gw.lang.parser.TypeVarToTypeMap;
+import gw.lang.parser.*;
 import gw.lang.parser.exceptions.ParseException;
 import gw.lang.parser.exceptions.ParseResultsException;
 import gw.lang.parser.expressions.ITypeLiteralExpression;
@@ -22,11 +18,7 @@ import gw.lang.reflect.gs.IGenericTypeVariable;
 import gw.lang.reflect.gs.IGosuArrayClass;
 import gw.lang.reflect.gs.IGosuClass;
 import gw.lang.reflect.gs.IGosuClassLoader;
-import gw.lang.reflect.java.IJavaArrayType;
-import gw.lang.reflect.java.IJavaBackedType;
-import gw.lang.reflect.java.IJavaClassInfo;
-import gw.lang.reflect.java.IJavaType;
-import gw.lang.reflect.java.JavaTypes;
+import gw.lang.reflect.java.*;
 import gw.lang.reflect.module.IExecutionEnvironment;
 import gw.lang.reflect.module.IModule;
 import gw.lang.reflect.module.IProject;
@@ -42,8 +34,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @UnstableAPI
-public class TypeSystem
-{
+public class TypeSystem {
   private static final Lock GLOBAL_LOCK = new ReentrantLock();
   public static InvocationCounter tyeRequestCounter = new InvocationCounter(false);
   public static InvocationCounter tyeLoadingCounter = new InvocationCounter(false);
@@ -56,33 +47,30 @@ public class TypeSystem
    * do have such an object, use {@link #getFromObject} instead.
    *
    * @param javaClass the Class to convert to an intrinsic type
-   *
    * @return the IType that corresponds to that class
-   *
    * @see #getFromObject(Object)
    */
-  public static IType get( Class javaClass )
-  {
-    return CommonServices.getTypeSystem().get( javaClass );
+  public static IType get(Class javaClass) {
+    return TypeLoaderAccess.instance().get(javaClass);
   }
 
   public static IType get(Class javaClass, IModule module) {
     TypeSystem.pushModule(module);
     try {
-      return CommonServices.getTypeSystem().get( javaClass );
+      return TypeLoaderAccess.instance().get(javaClass);
     } finally {
       TypeSystem.popModule(module);
     }
   }
 
   public static IType get(IJavaClassInfo javaClassInfo) {
-    return CommonServices.getTypeSystem().get(javaClassInfo);
+    return TypeLoaderAccess.instance().get(javaClassInfo);
   }
 
   public static IType get(IJavaClassInfo classInfo, IModule module) {
     TypeSystem.pushModule(module);
     try {
-      return CommonServices.getTypeSystem().get(classInfo);
+      return TypeLoaderAccess.instance().get(classInfo);
     } finally {
       TypeSystem.popModule(module);
     }
@@ -92,29 +80,24 @@ public class TypeSystem
    * Returns the intrinsic type for the given Object.
    *
    * @param object the object to get an IType for
-   *
    * @return the IType for the object
-   *
    * @see #get(Class)
    */
-  public static IType getFromObject( Object object )
-  {
-    return CommonServices.getTypeSystem().getFromObject(object);
+  public static IType getFromObject(Object object) {
+    return TypeLoaderAccess.instance().getFromObject(object);
   }
 
-  public static IType getFromObject( Object object, IModule module)
-  {
+  public static IType getFromObject(Object object, IModule module) {
     pushModule(module);
     try {
-      return CommonServices.getTypeSystem().getFromObject(object);
+      return TypeLoaderAccess.instance().getFromObject(object);
     } finally {
       popModule(module);
     }
   }
 
-  public static IType getByRelativeName( String relativeName ) throws ClassNotFoundException
-  {
-    return CommonServices.getTypeSystem().getByRelativeName(relativeName);
+  public static IType getByRelativeName(String relativeName) throws ClassNotFoundException {
+    return TypeLoaderAccess.instance().getByRelativeName(relativeName);
   }
 
   /**
@@ -126,14 +109,11 @@ public class TypeSystem
    *
    * @param relativeName the relative name of the type
    * @param typeUses     the map of used types to use when resolving
-   *
    * @return the corresponding IType
-   *
    * @throws ClassNotFoundException if the specified name doesn't correspond to any type
    */
-  public static IType getByRelativeName( String relativeName, ITypeUsesMap typeUses ) throws ClassNotFoundException
-  {
-    return CommonServices.getTypeSystem().getByRelativeName(relativeName, typeUses);
+  public static IType getByRelativeName(String relativeName, ITypeUsesMap typeUses) throws ClassNotFoundException {
+    return TypeLoaderAccess.instance().getByRelativeName(relativeName, typeUses);
   }
 
   /**
@@ -143,29 +123,26 @@ public class TypeSystem
    * are supported.
    *
    * @param fullyQualifiedName the fully qualified name of the type
-   *
    * @return the corresponding IType
-   *
    * @throws RuntimeException if the specified name doesn't correspond to any type
    */
-  public static IType getByFullName( String fullyQualifiedName )
-  {
-    return CommonServices.getTypeSystem().getByFullName(fullyQualifiedName);
+  public static IType getByFullName(String fullyQualifiedName) {
+    return TypeLoaderAccess.instance().getByFullName(fullyQualifiedName);
   }
 
-  public static IType getByFullName( String fullyQualifiedName, IModule module )
-  {
+  public static IType getByFullName(String fullyQualifiedName, IModule module) {
     TypeSystem.pushModule(module);
     try {
-      return CommonServices.getTypeSystem().getByFullName(fullyQualifiedName);
+      return TypeLoaderAccess.instance().getByFullName(fullyQualifiedName);
     } finally {
       TypeSystem.popModule(module);
     }
   }
 
-  /** @deprecated call getByFullName( String, IModule ) */
-  public static IType getByFullName( String fullyQualifiedName, String moduleName )
-  {
+  /**
+   * @deprecated call getByFullName( String, IModule )
+   */
+  public static IType getByFullName(String fullyQualifiedName, String moduleName) {
     IModule module = moduleName == null ? getExecutionEnvironment().getJreModule() : getExecutionEnvironment().getModule(moduleName);
     if (module == null) {
       throw new RuntimeException("Could not find module with name " + moduleName + " for " + fullyQualifiedName);
@@ -186,21 +163,18 @@ public class TypeSystem
    * like "entity.User", the name of a typekey, like "typekey.SystemPermission", or a class name, like
    * "java.lang.String".  Names can have [] appended to them to create arrays, and multi-dimensional arrays
    * are supported.
-   *
+   * <p>
    * This method behaves the same as getByFullName execept instead of throwing it returns null.
    *
    * @param fullyQualifiedName the fully qualified name of the type
-   *
    * @return the corresponding IType or null if the type does not exist
    */
-  public static IType getByFullNameIfValid( String fullyQualifiedName )
-  {
-    return CommonServices.getTypeSystem().getByFullNameIfValid(fullyQualifiedName);
+  public static IType getByFullNameIfValid(String fullyQualifiedName) {
+    return TypeLoaderAccess.instance().getByFullNameIfValid(fullyQualifiedName);
   }
 
-  public static IType getByFullNameIfValidNoJava( String fullyQualifiedName )
-  {
-    return CommonServices.getTypeSystem().getByFullNameIfValidNoJava(fullyQualifiedName);
+  public static IType getByFullNameIfValidNoJava(String fullyQualifiedName) {
+    return TypeLoaderAccess.instance().getByFullNameIfValidNoJava(fullyQualifiedName);
   }
 
   public static IType getByFullNameIfValid(String typeName, IModule module) {
@@ -212,19 +186,16 @@ public class TypeSystem
     }
   }
 
-  public static void clearErrorTypes()
-  {
-    CommonServices.getTypeSystem().clearErrorTypes();
+  public static void clearErrorTypes() {
+    TypeLoaderAccess.instance().clearErrorTypes();
   }
 
-  public static int getRefreshChecksum()
-  {
-    return CommonServices.getTypeSystem().getRefreshChecksum();
+  public static int getRefreshChecksum() {
+    return TypeLoaderAccess.instance().getRefreshChecksum();
   }
 
-  public static int getSingleRefreshChecksum()
-  {
-    return CommonServices.getTypeSystem().getSingleRefreshChecksum();
+  public static int getSingleRefreshChecksum() {
+    return TypeLoaderAccess.instance().getSingleRefreshChecksum();
   }
 
   /**
@@ -234,59 +205,50 @@ public class TypeSystem
    * @return the parsed type
    * @throws IllegalArgumentException if the type string doesn't correspond to any known IType
    */
-  public static IType parseType( String typeString ) throws IllegalArgumentException
-  {
-    return CommonServices.getTypeSystem().parseType(typeString);
+  public static IType parseType(String typeString) throws IllegalArgumentException {
+    return TypeLoaderAccess.instance().parseType(typeString);
   }
 
-  public static IType parseType( String typeString, ITypeUsesMap typeUsesMap ) throws IllegalArgumentException
-  {
-    return CommonServices.getTypeSystem().parseType( typeString, typeUsesMap );
+  public static IType parseType(String typeString, ITypeUsesMap typeUsesMap) throws IllegalArgumentException {
+    return TypeLoaderAccess.instance().parseType(typeString, typeUsesMap);
   }
 
-  public static IType parseType( String typeString,  TypeVarToTypeMap actualParamByVarName ) throws IllegalArgumentException
-  {
-    return CommonServices.getTypeSystem().parseType(typeString, actualParamByVarName);
-  }
-  public static IType parseType( String typeString,  TypeVarToTypeMap actualParamByVarName, ITypeUsesMap typeUsesMap ) throws IllegalArgumentException
-  {
-    return CommonServices.getTypeSystem().parseType(typeString, actualParamByVarName, typeUsesMap);
+  public static IType parseType(String typeString, TypeVarToTypeMap actualParamByVarName) throws IllegalArgumentException {
+    return TypeLoaderAccess.instance().parseType(typeString, actualParamByVarName);
   }
 
-  public static ITypeLiteralExpression parseTypeExpression( String typeString, TypeVarToTypeMap actualParamByVarName, ITypeUsesMap typeUsesMap ) throws ParseResultsException
-  {
-    return CommonServices.getTypeSystem().parseTypeExpression(typeString, actualParamByVarName, typeUsesMap);
+  public static IType parseType(String typeString, TypeVarToTypeMap actualParamByVarName, ITypeUsesMap typeUsesMap) throws IllegalArgumentException {
+    return TypeLoaderAccess.instance().parseType(typeString, actualParamByVarName, typeUsesMap);
+  }
+
+  public static ITypeLiteralExpression parseTypeExpression(String typeString, TypeVarToTypeMap actualParamByVarName, ITypeUsesMap typeUsesMap) throws ParseResultsException {
+    return TypeLoaderAccess.instance().parseTypeExpression(typeString, actualParamByVarName, typeUsesMap);
   }
 
   /**
    * Acquires the global type-system lock
    */
-  public static void lock()
-  {
+  public static void lock() {
     GLOBAL_LOCK.lock();
   }
 
   /**
    * Releases the global type-system lock
    */
-  public static void unlock()
-  {
+  public static void unlock() {
     GLOBAL_LOCK.unlock();
   }
 
-  public static Lock getGlobalLock()
-  {
+  public static Lock getGlobalLock() {
     return GLOBAL_LOCK;
   }
 
-  public static IType getComponentType( IType valueType )
-  {
-    return CommonServices.getTypeSystem().getComponentType(valueType);
+  public static IType getComponentType(IType valueType) {
+    return TypeLoaderAccess.instance().getComponentType(valueType);
   }
 
-  public static INamespaceType getNamespace( String strFqNamespace )
-  {
-    return CommonServices.getTypeSystem().getNamespace(strFqNamespace);
+  public static INamespaceType getNamespace(String strFqNamespace) {
+    return TypeLoaderAccess.instance().getNamespace(strFqNamespace);
   }
 
   public static INamespaceType getNamespace(String strType, IModule module) {
@@ -300,54 +262,48 @@ public class TypeSystem
 
   /**
    * Returns all type names in the system for all type loaders.
+   *
    * @return all type names in the system.
    */
-  public static Set<? extends CharSequence> getAllTypeNames()
-  {
-    return CommonServices.getTypeSystem().getAllTypeNames();
+  public static Set<? extends CharSequence> getAllTypeNames() {
+    return TypeLoaderAccess.instance().getAllTypeNames();
   }
 
-  public static ITypeVariableType getOrCreateTypeVariableType( String strName, IType boundingType, IType enclosingType )
-  {
-    return CommonServices.getTypeSystem().getOrCreateTypeVariableType(strName, boundingType, enclosingType);
+  public static ITypeVariableType getOrCreateTypeVariableType(String strName, IType boundingType, IType enclosingType) {
+    return TypeLoaderAccess.instance().getOrCreateTypeVariableType(strName, boundingType, enclosingType);
   }
 
-  public static IFunctionType getOrCreateFunctionType( IMethodInfo mi )
-  {
-    return CommonServices.getTypeSystem().getOrCreateFunctionType(mi);
-  }
-  public static IFunctionType getOrCreateFunctionType( String strFunctionName, IType retType, IType[] paramTypes )
-  {
-    return CommonServices.getTypeSystem().getOrCreateFunctionType( strFunctionName, retType, paramTypes );
+  public static IFunctionType getOrCreateFunctionType(IMethodInfo mi) {
+    return TypeLoaderAccess.instance().getOrCreateFunctionType(mi);
   }
 
-  public static <E extends IType> E getPureGenericType( E type )
-  {
-    while( type.isParameterizedType() )
-    {
+  public static IFunctionType getOrCreateFunctionType(String strFunctionName, IType retType, IType[] paramTypes) {
+    return TypeLoaderAccess.instance().getOrCreateFunctionType(strFunctionName, retType, paramTypes);
+  }
+
+  public static <E extends IType> E getPureGenericType(E type) {
+    while (type.isParameterizedType()) {
       //noinspection unchecked
-      type = (E)type.getGenericType();
+      type = (E) type.getGenericType();
     }
     return type;
   }
 
-  public static boolean isBeanType( IType typeSource )
-  {
+  public static boolean isBeanType(IType typeSource) {
     return
-      typeSource != GosuParserTypes.STRING_TYPE() &&
-      typeSource != GosuParserTypes.BOOLEAN_TYPE() &&
-     // typeSource != GosuParserTypes.DATETIME_TYPE() &&
-      typeSource != GosuParserTypes.NULL_TYPE() &&
-      typeSource != GosuParserTypes.NUMBER_TYPE() &&
-      !typeSource.isPrimitive() &&
-      !typeSource.isArray() &&
-      !(typeSource instanceof IFunctionType) &&
-      !(typeSource instanceof IConstructorType) &&
-      !(typeSource instanceof IMetaType);
+            typeSource != GosuParserTypes.STRING_TYPE() &&
+                    typeSource != GosuParserTypes.BOOLEAN_TYPE() &&
+                    // typeSource != GosuParserTypes.DATETIME_TYPE() &&
+                    typeSource != GosuParserTypes.NULL_TYPE() &&
+                    typeSource != GosuParserTypes.NUMBER_TYPE() &&
+                    !typeSource.isPrimitive() &&
+                    !typeSource.isArray() &&
+                    !(typeSource instanceof IFunctionType) &&
+                    !(typeSource instanceof IConstructorType) &&
+                    !(typeSource instanceof IMetaType);
   }
 
-  public static boolean isNumericType( IType intrType )
-  {
+  public static boolean isNumericType(IType intrType) {
     return intrType != null && ((intrType.isPrimitive() &&
             intrType != JavaTypes.pBOOLEAN() &&
             intrType != JavaTypes.pVOID()) ||
@@ -357,352 +313,299 @@ public class TypeSystem
 
   }
 
-  public static boolean isBoxedTypeFor( IType primitiveType, IType boxedType )
-  {
-    if( primitiveType != null && primitiveType.isPrimitive() )
-    {
-      if( primitiveType == JavaTypes.pBOOLEAN() && boxedType == JavaTypes.BOOLEAN() )
-      {
+  public static boolean isBoxedTypeFor(IType primitiveType, IType boxedType) {
+    if (primitiveType != null && primitiveType.isPrimitive()) {
+      if (primitiveType == JavaTypes.pBOOLEAN() && boxedType == JavaTypes.BOOLEAN()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pBYTE() && boxedType == JavaTypes.BYTE() )
-      {
+      if (primitiveType == JavaTypes.pBYTE() && boxedType == JavaTypes.BYTE()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pCHAR() && boxedType == JavaTypes.CHARACTER() )
-      {
+      if (primitiveType == JavaTypes.pCHAR() && boxedType == JavaTypes.CHARACTER()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pDOUBLE() && boxedType == JavaTypes.DOUBLE() )
-      {
+      if (primitiveType == JavaTypes.pDOUBLE() && boxedType == JavaTypes.DOUBLE()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pFLOAT() && boxedType == JavaTypes.FLOAT() )
-      {
+      if (primitiveType == JavaTypes.pFLOAT() && boxedType == JavaTypes.FLOAT()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pINT() && boxedType == JavaTypes.INTEGER() )
-      {
+      if (primitiveType == JavaTypes.pINT() && boxedType == JavaTypes.INTEGER()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pLONG() && boxedType == JavaTypes.LONG() )
-      {
+      if (primitiveType == JavaTypes.pLONG() && boxedType == JavaTypes.LONG()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pSHORT() && boxedType == JavaTypes.SHORT() )
-      {
+      if (primitiveType == JavaTypes.pSHORT() && boxedType == JavaTypes.SHORT()) {
         return true;
       }
-      if( primitiveType == JavaTypes.pVOID() && boxedType == JavaTypes.VOID() )
-      {
-        return true;
-      }
+      return primitiveType == JavaTypes.pVOID() && boxedType == JavaTypes.VOID();
     }
     return false;
   }
 
-  public static TypeVarToTypeMap mapTypeByVarName( IType ownersType, IType declaringType )
-  {
-    return CommonServices.getTypeSystem().mapTypeByVarName( ownersType, declaringType );
+  public static TypeVarToTypeMap mapTypeByVarName(IType ownersType, IType declaringType) {
+    return TypeLoaderAccess.instance().mapTypeByVarName(ownersType, declaringType);
   }
 
-  public static IType getActualType( IType type, TypeVarToTypeMap actualParamByVarName, boolean bKeepTypeVars )
-  {
-    return CommonServices.getTypeSystem().getActualType(type, actualParamByVarName, bKeepTypeVars);
+  public static IType getActualType(IType type, TypeVarToTypeMap actualParamByVarName, boolean bKeepTypeVars) {
+    return TypeLoaderAccess.instance().getActualType(type, actualParamByVarName, bKeepTypeVars);
   }
 
-  public static void inferTypeVariableTypesFromGenParamTypeAndConcreteType( IType genParamType, IType argType, TypeVarToTypeMap map, boolean bReverse )
-  {
-    if( bReverse )
-    {
-      CommonServices.getTypeSystem().inferTypeVariableTypesFromGenParamTypeAndConcreteType_Reverse( genParamType, argType, map );
-    }
-    else
-    {
-      CommonServices.getTypeSystem().inferTypeVariableTypesFromGenParamTypeAndConcreteType( genParamType, argType, map );
+  public static void inferTypeVariableTypesFromGenParamTypeAndConcreteType(IType genParamType, IType argType, TypeVarToTypeMap map, boolean bReverse) {
+    if (bReverse) {
+      TypeLoaderAccess.instance().inferTypeVariableTypesFromGenParamTypeAndConcreteType_Reverse(genParamType, argType, map);
+    } else {
+      TypeLoaderAccess.instance().inferTypeVariableTypesFromGenParamTypeAndConcreteType(genParamType, argType, map);
     }
   }
 
-  public static IErrorType getErrorType()
-  {
-    return CommonServices.getTypeSystem().getErrorType();
-  }
-  public static IErrorType getErrorType( String strErrantName )
-  {
-    return CommonServices.getTypeSystem().getErrorType( strErrantName );
-  }
-  public static IErrorType getErrorType( ParseResultsException pe )
-  {
-    return CommonServices.getTypeSystem().getErrorType(pe);
+  public static IErrorType getErrorType() {
+    return TypeLoaderAccess.instance().getErrorType();
   }
 
-  public static IDefaultTypeLoader getDefaultTypeLoader()
-  {
-    return CommonServices.getTypeSystem().getDefaultTypeLoader();
+  public static IErrorType getErrorType(String strErrantName) {
+    return TypeLoaderAccess.instance().getErrorType(strErrantName);
   }
 
-  public static IType findParameterizedType( IType type, IType rhsType )
-  {
-    return CommonServices.getTypeSystem().findParameterizedType( type, rhsType );
+  public static IErrorType getErrorType(ParseResultsException pe) {
+    return TypeLoaderAccess.instance().getErrorType(pe);
   }
 
-  public static void addTypeLoaderListenerAsWeakRef( ITypeLoaderListener listener )
-  {
-    CommonServices.getTypeSystem().addTypeLoaderListenerAsWeakRef( listener );
+  public static IDefaultTypeLoader getDefaultTypeLoader() {
+    return TypeLoaderAccess.instance().getDefaultTypeLoader();
   }
 
-  public static Set<String> getNamespacesFromTypeNames( Set<? extends CharSequence> allTypeNames, Set<String> namespaces )
-  {
-    return CommonServices.getTypeSystem().getNamespacesFromTypeNames( allTypeNames, namespaces );
+  public static IType findParameterizedType(IType type, IType rhsType) {
+    return TypeLoaderAccess.instance().findParameterizedType(type, rhsType);
   }
 
-  public static void pushTypeLoader( IModule module, ITypeLoader loader )
-  {
-    CommonServices.getTypeSystem().pushTypeLoader(module, loader);
-  }
-  public static void removeTypeLoader( Class<? extends ITypeLoader> loader )
-  {
-    CommonServices.getTypeSystem().removeTypeLoader( loader );
+  public static void addTypeLoaderListenerAsWeakRef(ITypeLoaderListener listener) {
+    TypeLoaderAccess.instance().addTypeLoaderListenerAsWeakRef(listener);
   }
 
-  public static IType getKeyType()
-  {
+  public static Set<String> getNamespacesFromTypeNames(Set<? extends CharSequence> allTypeNames, Set<String> namespaces) {
+    return TypeLoaderAccess.instance().getNamespacesFromTypeNames(allTypeNames, namespaces);
+  }
+
+  public static void pushTypeLoader(IModule module, ITypeLoader loader) {
+    TypeLoaderAccess.instance().pushTypeLoader(module, loader);
+  }
+
+  public static void removeTypeLoader(Class<? extends ITypeLoader> loader) {
+    TypeLoaderAccess.instance().removeTypeLoader(loader);
+  }
+
+  public static IType getKeyType() {
     return CommonServices.INSTANCE.getEntityAccess().getKeyType();
   }
 
-  public static void pushIncludeAll()
-  {
-    CommonServices.getTypeSystem().pushIncludeAll();
-  }
-  public static void popIncludeAll()
-  {
-    CommonServices.getTypeSystem().popIncludeAll();
-  }
-  public static boolean isIncludeAll()
-  {
-    return CommonServices.getTypeSystem().isIncludeAll();
+  public static void pushIncludeAll() {
+    TypeLoaderAccess.instance().pushIncludeAll();
   }
 
-  public static ITypeUsesMap getDefaultTypeUsesMap()
-  {
+  public static void popIncludeAll() {
+    TypeLoaderAccess.instance().popIncludeAll();
+  }
+
+  public static boolean isIncludeAll() {
+    return TypeLoaderAccess.instance().isIncludeAll();
+  }
+
+  public static ITypeUsesMap getDefaultTypeUsesMap() {
     return CommonServices.INSTANCE.getEntityAccess().getDefaultTypeUses();
   }
 
   public static IType getCurrentCompilingType() {
-    return CommonServices.getTypeSystem().getCurrentCompilingType();
+    return TypeLoaderAccess.instance().getCurrentCompilingType();
   }
 
-  public static IType getCompilingType( String strName )
-  {
-    return CommonServices.getTypeSystem().getCompilingType(strName);
+  public static IType getCompilingType(String strName) {
+    return TypeLoaderAccess.instance().getCompilingType(strName);
   }
 
   public static void pushCompilingType(IType type) {
-    CommonServices.getTypeSystem().pushCompilingType(type);
+    TypeLoaderAccess.instance().pushCompilingType(type);
   }
 
   public static void popCompilingType() {
-    CommonServices.getTypeSystem().popCompilingType();
+    TypeLoaderAccess.instance().popCompilingType();
   }
 
-  public static String getUnqualifiedClassName( IType cls )
-  {
+  public static String getUnqualifiedClassName(IType cls) {
     return cls == null ? "<null>" : cls.getRelativeName();
   }
 
-  public static void pushSymTableCtx( ISymbolTable ctx )
-  {
-    CommonServices.getTypeSystem().pushSymTableCtx(ctx);
-  }
-  public static void popSymTableCtx()
-  {
-    CommonServices.getTypeSystem().popSymTableCtx();
-  }
-  public static ISymbolTable getSymTableCtx()
-  {
-    return CommonServices.getTypeSystem().getSymTableCtx();
+  public static void pushSymTableCtx(ISymbolTable ctx) {
+    TypeLoaderAccess.instance().pushSymTableCtx(ctx);
   }
 
-  public static <T extends ITypeLoader> T getTypeLoader( Class<? extends T> loaderClass )
-  {
-    return CommonServices.getTypeSystem().getTypeLoader( loaderClass, TypeSystem.getGlobalModule() );
-  }
-  
-  public static <T extends ITypeLoader> T getTypeLoader( Class<? extends T> loaderClass, IModule module )
-  {
-    return CommonServices.getTypeSystem().getTypeLoader(loaderClass, module);
+  public static void popSymTableCtx() {
+    TypeLoaderAccess.instance().popSymTableCtx();
   }
 
-  public static String getNameOfParams( IType[] paramTypes, boolean bRelative, boolean bWithEnclosingType )
-  {
-    return CommonServices.getTypeSystem().getNameOfParams(paramTypes, bRelative, bWithEnclosingType);
+  public static ISymbolTable getSymTableCtx() {
+    return TypeLoaderAccess.instance().getSymTableCtx();
   }
 
-  public static ISymbolTable getCompiledGosuClassSymbolTable()
-  {
-    return CommonServices.getTypeSystem().getCompiledGosuClassSymbolTable();
+  public static <T extends ITypeLoader> T getTypeLoader(Class<? extends T> loaderClass) {
+    return TypeLoaderAccess.instance().getTypeLoader(loaderClass, TypeSystem.getGlobalModule());
   }
 
-  public static List<ITypeLoader> getAllTypeLoaders()
-  {
-    return CommonServices.getTypeSystem().getAllTypeLoaders();
+  public static <T extends ITypeLoader> T getTypeLoader(Class<? extends T> loaderClass, IModule module) {
+    return TypeLoaderAccess.instance().getTypeLoader(loaderClass, module);
   }
 
-  public static String getGenericRelativeName( IType type, boolean bRelativeBounds )
-  {
-    return getGenericName( type, true, bRelativeBounds );
+  public static String getNameOfParams(IType[] paramTypes, boolean bRelative, boolean bWithEnclosingType) {
+    return TypeLoaderAccess.instance().getNameOfParams(paramTypes, bRelative, bWithEnclosingType);
   }
 
-  public static String getGenericName( IType type )
-  {
+  public static ISymbolTable getCompiledGosuClassSymbolTable() {
+    return TypeLoaderAccess.instance().getCompiledGosuClassSymbolTable();
+  }
+
+  public static List<ITypeLoader> getAllTypeLoaders() {
+    return TypeLoaderAccess.instance().getAllTypeLoaders();
+  }
+
+  public static String getGenericRelativeName(IType type, boolean bRelativeBounds) {
+    return getGenericName(type, true, bRelativeBounds);
+  }
+
+  public static String getGenericName(IType type) {
     return getGenericName(type, false, false);
   }
 
-  public static String getGenericName( IType type, boolean bRelative, boolean bRelativeBounds )
-  {
-    if( !type.isGenericType() || type.isParameterizedType() )
-    {
+  public static String getGenericName(IType type, boolean bRelative, boolean bRelativeBounds) {
+    if (!type.isGenericType() || type.isParameterizedType()) {
       return bRelative ? type.getRelativeName() : type.getName();
     }
 
-    StringBuilder sb = new StringBuilder( (bRelative ? type.getRelativeName() : type.getName()) + "<" );
+    StringBuilder sb = new StringBuilder((bRelative ? type.getRelativeName() : type.getName()) + "<");
     IGenericTypeVariable[] typeVars = type.getGenericTypeVariables();
-    for( int i = 0; i < typeVars.length; i++ )
-    {
+    for (int i = 0; i < typeVars.length; i++) {
       IGenericTypeVariable typeVar = typeVars[i];
-      sb.append( typeVar.getNameWithBounds( bRelativeBounds ) );
-      if( i < typeVars.length - 1 )
-      {
-        sb.append( ',' );
+      sb.append(typeVar.getNameWithBounds(bRelativeBounds));
+      if (i < typeVars.length - 1) {
+        sb.append(',');
       }
     }
-    sb.append( '>' );
+    sb.append('>');
     return sb.toString();
   }
 
-  public static IPropertyInfo getPropertyInfo( IType classBean, String strProperty, IFeatureFilter filter, IParserPart parserBase, IScriptabilityModifier scriptabilityConstraint) throws ParseException
-  {
+  public static IPropertyInfo getPropertyInfo(IType classBean, String strProperty, IFeatureFilter filter, IParserPart parserBase, IScriptabilityModifier scriptabilityConstraint) throws ParseException {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getPropertyInfo(classBean, strProperty, filter, parserBase, scriptabilityConstraint);
   }
-  public static List<? extends IPropertyInfo> getProperties( ITypeInfo beanInfo, IType classSource )
-  {
+
+  public static List<? extends IPropertyInfo> getProperties(ITypeInfo beanInfo, IType classSource) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getProperties(beanInfo, classSource);
   }
-  public static List<? extends IMethodInfo> getMethods( ITypeInfo beanInfo, IType ownersIntrinsicType )
-  {
+
+  public static List<? extends IMethodInfo> getMethods(ITypeInfo beanInfo, IType ownersIntrinsicType) {
     return CommonServices.INSTANCE.getGosuIndustrialPark().getMethods(beanInfo, ownersIntrinsicType);
   }
 
   @Deprecated // calls TypeSystem.get( javaClass )
   public static IType getJavaType(Class javaClass) {
-    return CommonServices.getTypeSystem().getJavaType(javaClass);
+    return TypeLoaderAccess.instance().getJavaType(javaClass);
   }
 
   public static String getNameWithQualifiedTypeVariables(IType type) {
-    return CommonServices.getTypeSystem().getNameWithQualifiedTypeVariables(type);
+    return TypeLoaderAccess.instance().getNameWithQualifiedTypeVariables(type);
   }
 
   public static IType getDefaultParameterizedType(IType type) {
-    return CommonServices.getTypeSystem().getDefaultParameterizedType(type);
+    return TypeLoaderAccess.instance().getDefaultParameterizedType(type);
   }
 
   public static IType getDefaultParameterizedTypeWithTypeVars(IType type) {
-    return CommonServices.getTypeSystem().getDefaultParameterizedTypeWithTypeVars(type);
+    return TypeLoaderAccess.instance().getDefaultParameterizedTypeWithTypeVars(type);
   }
 
   public static boolean canCast(IType lhsType, IType rhsType) {
-    return CommonServices.getTypeSystem().canCast(lhsType, rhsType);
+    return TypeLoaderAccess.instance().canCast(lhsType, rhsType);
   }
 
   public static void removeTypeLoaderListener(ITypeLoaderListener listener) {
-    CommonServices.getTypeSystem().removeTypeLoaderListener(listener);
+    TypeLoaderAccess.instance().removeTypeLoaderListener(listener);
   }
 
   public static IJavaType getPrimitiveType(String name) {
-    return CommonServices.getTypeSystem().getPrimitiveType(name);
+    return TypeLoaderAccess.instance().getPrimitiveType(name);
   }
 
   public static IType getPrimitiveType(IType boxType) {
-    return CommonServices.getTypeSystem().getPrimitiveType(boxType);
+    return TypeLoaderAccess.instance().getPrimitiveType(boxType);
   }
 
   public static IType getBoxType(IType primitiveType) {
-    return CommonServices.getTypeSystem().getBoxType(primitiveType);
+    return TypeLoaderAccess.instance().getBoxType(primitiveType);
   }
 
-  public static IType[] boxPrimitiveTypeParams( IType[] typeParams )
-  {
+  public static IType[] boxPrimitiveTypeParams(IType[] typeParams) {
     IType[] newTypes = new IType[typeParams.length];
-    for( int i = 0; i < typeParams.length; i++ )
-    {
-      if( typeParams[i].isPrimitive() )
-      {
-        newTypes[i] = TypeSystem.getBoxType( typeParams[i] );
-      }
-      else
-      {
+    for (int i = 0; i < typeParams.length; i++) {
+      if (typeParams[i].isPrimitive()) {
+        newTypes[i] = TypeSystem.getBoxType(typeParams[i]);
+      } else {
         newTypes[i] = typeParams[i];
       }
     }
     return newTypes;
   }
 
-  public static IExecutionEnvironment getExecutionEnvironment()
-  {
-    return CommonServices.getTypeSystem().getExecutionEnvironment();
+  public static IExecutionEnvironment getExecutionEnvironment() {
+    return TypeLoaderAccess.instance().getExecutionEnvironment();
   }
 
-  public static IExecutionEnvironment getExecutionEnvironment( IProject project )
-  {
-    return CommonServices.getTypeSystem().getExecutionEnvironment(project);
+  public static IExecutionEnvironment getExecutionEnvironment(IProject project) {
+    return TypeLoaderAccess.instance().getExecutionEnvironment(project);
   }
 
-  public static IModule getCurrentModule()
-  {
-    return CommonServices.getTypeSystem().getCurrentModule();
+  public static IModule getCurrentModule() {
+    return TypeLoaderAccess.instance().getCurrentModule();
   }
 
   /**
    * IMPORTANT: The only time you should call this method is:
    * 1) within a class implementing IType, or
    * 2) wrapping a call to a Type constructor, typically within a type loader
-   *   e.g., TypeSystem.getOrCreateTypeReference( new MyVeryOwnType() )
-   *
+   * e.g., TypeSystem.getOrCreateTypeReference( new MyVeryOwnType() )
+   * <p>
    * Gets or creates a type ref for the specified type.
    *
    * @param type A raw or proxied type.
    * @return If the type is already a reference, returns the type as-is, otherwise creates and returns a new type ref.
    */
-  public static ITypeRef getOrCreateTypeReference( IType type )
-  {
-    return CommonServices.getTypeSystem().getOrCreateTypeReference(type);
+  public static ITypeRef getOrCreateTypeReference(IType type) {
+    return TypeLoaderAccess.instance().getOrCreateTypeReference(type);
   }
 
   /**
    * IMPORTANT: The only time you should call this method is:
    * 1) wrapping a call to a Type constructor, typically within a type loader
-   *   e.g., TypeSystem.getOrCreateTypeReference( new MyVeryOwnType() )
-   *
+   * e.g., TypeSystem.getOrCreateTypeReference( new MyVeryOwnType() )
+   * <p>
    * Do NOT call this when creating the type.  Instead call getOrCreateTypeReference
    * Gets or creates a type ref for the specified type.
-   *
+   * <p>
    * This method will NOT update the type reference in the proxy.
    *
    * @param type A raw or proxied type.
    * @return returns the already created type reference or throws if the ref does not exist
    */
-  public static ITypeRef getTypeReference( IType type )
-  {
-    return CommonServices.getTypeSystem().getTypeReference(type);
+  public static ITypeRef getTypeReference(IType type) {
+    return TypeLoaderAccess.instance().getTypeReference(type);
   }
 
-  public static IType getTypeFromObject( Object obj )
-  {
-    return CommonServices.getTypeSystem().getTypeFromObject(obj);
+  public static IType getTypeFromObject(Object obj) {
+    return TypeLoaderAccess.instance().getTypeFromObject(obj);
   }
 
   /**
    * Parses a type name such as Iterable&lt;Claim&gt;.
+   *
    * @param typeName the name to parse
    * @return the type
    */
@@ -718,13 +621,12 @@ public class TypeSystem
     }
   }
 
-  public static boolean isExpandable( IType type )
-  {
-    return CommonServices.getTypeSystem().isExpandable(type);
+  public static boolean isExpandable(IType type) {
+    return TypeLoaderAccess.instance().isExpandable(type);
   }
 
   public static IType boundTypes(IType targetType, List<IType> typesToBound) {
-    return CommonServices.getTypeSystem().boundTypes(targetType, typesToBound);
+    return TypeLoaderAccess.instance().boundTypes(targetType, typesToBound);
   }
 
   public static IJavaClassInfo getJavaClassInfo(Class jClass) {
@@ -743,7 +645,7 @@ public class TypeSystem
       Class componentType = jClass.getComponentType();
       IJavaClassInfo javaClassInfo = getJavaClassInfo(componentType, module);
       return javaClassInfo.getArrayType();
-    } else if(Proxy.class.isAssignableFrom(jClass)) {
+    } else if (Proxy.class.isAssignableFrom(jClass)) {
       IDefaultTypeLoader defaultTypeLoader = module.getModuleTypeLoader().getDefaultTypeLoader();
       return defaultTypeLoader.getJavaClassInfoForClassDirectly(jClass, module);
     } else {
@@ -751,39 +653,35 @@ public class TypeSystem
     }
   }
 
-  public static Method[] getDeclaredMethods( Class cls )
-  {
-    return CommonServices.INSTANCE.getGosuIndustrialPark().getDeclaredMethods( cls );
+  public static Method[] getDeclaredMethods(Class cls) {
+    return CommonServices.INSTANCE.getGosuIndustrialPark().getDeclaredMethods(cls);
   }
 
-  public static boolean isBytecodeType( IType type )
-  {
+  public static boolean isBytecodeType(IType type) {
     return type instanceof IJavaType ||
-     type instanceof IGosuClass ||
-     type instanceof IGosuArrayClass ||
-     type instanceof IJavaArrayType ||
-     type instanceof ICompoundType && ((ICompoundType)type).getTypes().stream().allMatch( TypeSystem::isBytecodeType );
+            type instanceof IGosuClass ||
+            type instanceof IGosuArrayClass ||
+            type instanceof IJavaArrayType ||
+            type instanceof ICompoundType && ((ICompoundType) type).getTypes().stream().allMatch(TypeSystem::isBytecodeType);
   }
 
   public static IType getTypeFromJavaBackedType(IType type) {
-    if( type instanceof IJavaType) {
-      return ((IJavaType)type).getTypeFromJavaBackedType();
+    if (type instanceof IJavaType) {
+      return ((IJavaType) type).getTypeFromJavaBackedType();
     } else {
       return type;
     }
   }
-  
+
   public static IType getTypeFromJavaBasedType(IJavaBackedType javaType) {
     int iDims = 0;
     IJavaClassInfo ci = javaType.getBackingClassInfo();
-    while( ci.isArray() )
-    {
+    while (ci.isArray()) {
       iDims++;
       ci = ci.getComponentType();
     }
-    IType reresovledType = TypeSystem.getByFullName( ci.getName().replace('$', '.'), javaType.getTypeLoader().getModule() );
-    for( int i = 0; i < iDims; i++ )
-    {
+    IType reresovledType = TypeSystem.getByFullName(ci.getName().replace('$', '.'), javaType.getTypeLoader().getModule());
+    for (int i = 0; i < iDims; i++) {
       reresovledType = reresovledType.getArrayType();
     }
     if (javaType.isParameterizedType()) {
@@ -793,7 +691,7 @@ public class TypeSystem
   }
 
   public static IJavaClassInfo getJavaClassInfo(String fullyQualifiedName, IModule module) {
-    if( module == null ) {
+    if (module == null) {
       module = TypeSystem.getGlobalModule();
     }
     for (IModule m : module.getModuleTraversalList()) {
@@ -815,11 +713,11 @@ public class TypeSystem
 
   public static IModule getModuleFromType(IType type) {
     IModule result = null;
-    if(type != null) {
+    if (type != null) {
       ITypeLoader loader = type.getTypeLoader();
-      if(loader == null) {
+      if (loader == null) {
         IType candidate = type.getEnclosingType();
-        if(candidate != type) {
+        if (candidate != type) {
           result = getModuleFromType(candidate);
         }
         // FIXME circular loop where type == candiate implies null result.
@@ -831,19 +729,19 @@ public class TypeSystem
   }
 
   public static void pushModule(IModule gosuModule) {
-    CommonServices.getTypeSystem().pushModule(gosuModule);
+    TypeLoaderAccess.instance().pushModule(gosuModule);
   }
 
   public static void popModule(IModule gosuModule) {
-    CommonServices.getTypeSystem().popModule(gosuModule);
+    TypeLoaderAccess.instance().popModule(gosuModule);
   }
 
   public static IGosuClassLoader getGosuClassLoader() {
-    return CommonServices.getTypeSystem().getGosuClassLoader();
+    return TypeLoaderAccess.instance().getGosuClassLoader();
   }
 
   public static void dumpGosuClassLoader() {
-    CommonServices.getTypeSystem().dumpGosuClassLoader();
+    TypeLoaderAccess.instance().dumpGosuClassLoader();
   }
 
   public static IModule getGlobalModule() {
@@ -851,20 +749,16 @@ public class TypeSystem
   }
 
   public static IMetaType getDefaultType() {
-    return CommonServices.getTypeSystem().getDefaultType();
+    return TypeLoaderAccess.instance().getDefaultType();
   }
 
   public static void shutdown(IExecutionEnvironment execEnv) {
-    try {
-      TypeSystem.pushModule( execEnv.getGlobalModule() );
-      CommonServices.getTypeSystem().shutdown();
-    } finally {
-//      TypeSystem.popModule( execEnv.getGlobalModule());
-    }
+    TypeSystem.pushModule(execEnv.getGlobalModule());
+    TypeLoaderAccess.instance().shutdown();
   }
 
   public static void addShutdownListener(TypeSystemShutdownListener listener) {
-    CommonServices.getTypeSystem().addShutdownListener(listener);
+    TypeLoaderAccess.instance().addShutdownListener(listener);
   }
 
   public static TypeSystemState getState() {
@@ -872,29 +766,27 @@ public class TypeSystem
   }
 
   public static String[] getTypesForFile(IModule module, IFile file) {
-    return CommonServices.getTypeSystem().getTypesForFile(module, file);
+    return TypeLoaderAccess.instance().getTypesForFile(module, file);
   }
 
-  public static void refresh( boolean bRefreshCaches )
-  {
-    CommonServices.getTypeSystem().refresh(bRefreshCaches);
+  public static void refresh(boolean bRefreshCaches) {
+    TypeLoaderAccess.instance().refresh(bRefreshCaches);
   }
 
-  public static void refresh(IModule module)
-  {
-    CommonServices.getTypeSystem().refresh(module);
+  public static void refresh(IModule module) {
+    TypeLoaderAccess.instance().refresh(module);
   }
 
   /**
    * Refresh just the specified type i.e., a gosu editor calls this on changes
    */
-  public static void refresh(ITypeRef typeRef)
-  {
-    CommonServices.getTypeSystem().refresh(typeRef);
+  public static void refresh(ITypeRef typeRef) {
+    TypeLoaderAccess.instance().refresh(typeRef);
   }
 
   /**
    * DO NOT USE OR DELETE. Called form the debugging process (IDE).
+   *
    * @param filePaths
    */
   public static void refreshedFiles(String[] filePaths) {
@@ -907,49 +799,48 @@ public class TypeSystem
   }
 
   public static void refreshed(IResource resource) {
-    CommonServices.getTypeSystem().refreshed(resource, null, RefreshKind.MODIFICATION);
+    TypeLoaderAccess.instance().refreshed(resource, null, RefreshKind.MODIFICATION);
   }
 
   public static void deleted(IResource resource) {
-    CommonServices.getTypeSystem().refreshed(resource, null, RefreshKind.DELETION);
+    TypeLoaderAccess.instance().refreshed(resource, null, RefreshKind.DELETION);
   }
 
   public static void deleted(IResource resource, String typeName) {
-    CommonServices.getTypeSystem().refreshed(resource, typeName, RefreshKind.DELETION);
+    TypeLoaderAccess.instance().refreshed(resource, typeName, RefreshKind.DELETION);
   }
 
   public static void created(IResource resource) {
-    CommonServices.getTypeSystem().refreshed(resource, null, RefreshKind.CREATION);
+    TypeLoaderAccess.instance().refreshed(resource, null, RefreshKind.CREATION);
   }
 
   public static void created(IResource resource, String typeName) {
-    CommonServices.getTypeSystem().refreshed(resource, typeName, RefreshKind.CREATION);
+    TypeLoaderAccess.instance().refreshed(resource, typeName, RefreshKind.CREATION);
   }
 
   public static boolean isDeleted(IType type) {
     return type instanceof ITypeRef && // a type that's not proxied is never deleted
-           ((ITypeRef)type).isDeleted();
+            ((ITypeRef) type).isDeleted();
   }
 
-  public static IType replaceTypeVariableTypeParametersWithBoundingTypes( IType type, IType enclosingType ) {
-    return CommonServices.getTypeSystem().replaceTypeVariableTypeParametersWithBoundingTypes( type, enclosingType );
+  public static IType replaceTypeVariableTypeParametersWithBoundingTypes(IType type, IType enclosingType) {
+    return TypeLoaderAccess.instance().replaceTypeVariableTypeParametersWithBoundingTypes(type, enclosingType);
   }
 
-  public static boolean isParameterizedWith( IType type, ITypeVariableType... typeVar ) {
-    return CommonServices.getTypeSystem().isParameterizedWith( type, typeVar );
+  public static boolean isParameterizedWith(IType type, ITypeVariableType... typeVar) {
+    return TypeLoaderAccess.instance().isParameterizedWith(type, typeVar);
   }
 
   public static IModule getJreModule() {
     return getExecutionEnvironment().getJreModule();
   }
 
-  public static IType getCompoundType( Set<IType> types ) {
-    return CommonServices.getTypeSystem().getCompoundType( types );
+  public static IType getCompoundType(Set<IType> types) {
+    return TypeLoaderAccess.instance().getCompoundType(types);
   }
 
-  public static IType getFunctionalInterface( IFunctionType type )
-  {
-    return CommonServices.getTypeSystem().getFunctionalInterface( type );
+  public static IType getFunctionalInterface(IFunctionType type) {
+    return TypeLoaderAccess.instance().getFunctionalInterface(type);
   }
 }
 

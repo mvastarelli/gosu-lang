@@ -8,11 +8,7 @@ import gw.config.CommonServices;
 import gw.fs.IDirectory;
 import gw.fs.jar.JarFileDirectoryImpl;
 import gw.internal.gosu.dynamic.DynamicTypeLoader;
-import gw.internal.gosu.parser.DefaultTypeLoader;
-import gw.internal.gosu.parser.FileSystemGosuClassRepository;
-import gw.internal.gosu.parser.IModuleClassLoader;
-import gw.internal.gosu.parser.ModuleClassLoader;
-import gw.internal.gosu.parser.ModuleTypeLoader;
+import gw.internal.gosu.parser.*;
 import gw.internal.gosu.properties.PropertiesTypeLoader;
 import gw.lang.parser.ILanguageLevel;
 import gw.lang.reflect.ITypeLoader;
@@ -33,48 +29,56 @@ import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-public class Module implements IModule
-{
+public class Module implements IModule {
   private final IExecutionEnvironment _execEnv;
-  private String _strName;
-
-  private List<Dependency> _dependencies = new ArrayList<>();
-  private LocklessLazyVar<IModule[]> _traversalList = new LocklessLazyVar<IModule[]>() {
+  private final IFileSystemGosuClassRepository _fileRepository = new FileSystemGosuClassRepository(this);
+  private final LocklessLazyVar<IModule[]> _traversalList = new LocklessLazyVar<IModule[]>() {
     @Override
     protected IModule[] init() {
       return buildTraversalList();
     }
   };
+  private String _strName;
+  private List<Dependency> _dependencies = new ArrayList<>();
   private ModuleTypeLoader _modTypeLoader;
-
   // Paths
   private List<IDirectory> _classpath = new ArrayList<>();
   private List<IDirectory> _backingSourcePath = new ArrayList<>();
-
   private INativeModule _nativeModule;
   private ClassLoader _moduleClassLoader;
   private ClassLoader _extensionsClassLoader;
 
-  private final IFileSystemGosuClassRepository _fileRepository = new FileSystemGosuClassRepository(this);
-
-  public Module(IExecutionEnvironment execEnv, String strName)
-  {
+  public Module(IExecutionEnvironment execEnv, String strName) {
     _execEnv = execEnv;
     _strName = strName;
   }
 
-  public final IExecutionEnvironment getExecutionEnvironment()
-  {
+  private static void scanPaths(List<IDirectory> paths, Set<String> extensions, List<IDirectory> roots) {
+    extensions.add(".java");
+    extensions.add(".xsd");
+    extensions.addAll(Arrays.asList(GosuClassTypeLoader.ALL_EXTS));
+    //noinspection Convert2streamapi
+    for (IDirectory root : paths) {
+      // roots without manifests are considered source roots
+      if (!Extensions.containsManifest(root) || !Extensions.getExtensions(root, Extensions.CONTAINS_SOURCES).isEmpty() ||
+              // Weblogic packages all WEB-INF/classes content into this JAR
+              // http://middlewaremagic.com/weblogic/?p=408
+              // http://www.coderanch.com/t/69641/BEA-Weblogic/wl-cls-gen-jar-coming
+              // So we need to always treat it as containing sources
+              root.getName().equals("_wl_cls_gen.jar")) {
+        if (!roots.contains(root)) {
+          roots.add(root);
+        }
+      }
+    }
+  }
+
+  public final IExecutionEnvironment getExecutionEnvironment() {
     return _execEnv;
   }
 
@@ -84,39 +88,34 @@ public class Module implements IModule
   }
 
   @Override
+  public List<Dependency> getDependencies() {
+    return _dependencies;
+  }
+
+  @Override
   public void setDependencies(List<Dependency> newDeps) {
     _dependencies = new ArrayList<>(newDeps);
     _traversalList.clear();
   }
 
   @Override
-  public List<Dependency> getDependencies()
-  {
-    return _dependencies;
-  }
-
-  @Override
-  public void addDependency( Dependency d )
-  {
+  public void addDependency(Dependency d) {
     _dependencies.add(d);
     _traversalList.clear();
   }
 
-  public void removeDependency( Dependency d )
-  {
+  public void removeDependency(Dependency d) {
     _dependencies.remove(d);
     _traversalList.clear();
   }
 
   @Override
-  public List<IDirectory> getSourcePath()
-  {
+  public List<IDirectory> getSourcePath() {
     return Arrays.asList(_fileRepository.getSourcePath());
   }
 
   @Override
-  public void setSourcePath( List<IDirectory> sourcePaths )
-  {
+  public void setSourcePath(List<IDirectory> sourcePaths) {
     List<IDirectory> sources = new ArrayList<>(sourcePaths);
 
     //## todo: Kill this so the classpath from the ClassLoaders is 1:1 with Modules i.e., why are we not copying these into the target classpath??!!
@@ -151,49 +150,24 @@ public class Module implements IModule
     _moduleClassLoader = null;
   }
 
-  private static void scanPaths(List<IDirectory> paths, Set<String> extensions, List<IDirectory> roots) {
-    extensions.add(".java");
-    extensions.add(".xsd");
-    extensions.addAll(Arrays.asList(GosuClassTypeLoader.ALL_EXTS));
-    //noinspection Convert2streamapi
-    for (IDirectory root : paths) {
-      // roots without manifests are considered source roots
-      if (!Extensions.containsManifest(root) || !Extensions.getExtensions(root, Extensions.CONTAINS_SOURCES).isEmpty() ||
-              // Weblogic packages all WEB-INF/classes content into this JAR
-              // http://middlewaremagic.com/weblogic/?p=408
-              // http://www.coderanch.com/t/69641/BEA-Weblogic/wl-cls-gen-jar-coming
-              // So we need to always treat it as containing sources
-              root.getName().equals("_wl_cls_gen.jar")) {
-        if( !roots.contains( root ) )
-        {
-          roots.add( root );
-        }
-      }
-    }
-  }
-
   @Override
-  public IDirectory getOutputPath()
-  {
+  public IDirectory getOutputPath() {
     return _nativeModule.getOutputPath();
   }
 
-  public ModuleTypeLoader getModuleTypeLoader()
-  {
+  public ModuleTypeLoader getModuleTypeLoader() {
     return _modTypeLoader;
   }
 
-  public void setModuleTypeLoader( ModuleTypeLoader modTypeLoader )
-  {
+  public void setModuleTypeLoader(ModuleTypeLoader modTypeLoader) {
     _modTypeLoader = modTypeLoader;
   }
 
   @Override
-  public void configurePaths( List<IDirectory> classpath, List<IDirectory> sourcePaths, List<IDirectory> backingSourcePaths )
-  {
+  public void configurePaths(List<IDirectory> classpath, List<IDirectory> sourcePaths, List<IDirectory> backingSourcePaths) {
     // Maybe expand paths to include Class-Path attribute from Manifest...
-    classpath = addFromManifestClassPath( classpath );
-    sourcePaths = addFromManifestClassPath( sourcePaths );
+    classpath = addFromManifestClassPath(classpath);
+    sourcePaths = addFromManifestClassPath(sourcePaths);
 
     // Scan....
     List<IDirectory> sourceRoots = new ArrayList<>(sourcePaths);
@@ -202,7 +176,7 @@ public class Module implements IModule
 
     setSourcePath(sourceRoots);
     setJavaClassPath(classpath);
-    setBackingSourcePath( backingSourcePaths );
+    setBackingSourcePath(backingSourcePaths);
   }
 
   /**
@@ -213,76 +187,64 @@ public class Module implements IModule
    *   <li>The Class-Path entry contains a space-delimited list of URIs</li>
    * </ul>
    * <p>Then the entries will be parsed and added to the Gosu classpath.
-   * 
+   *
    * <p>This logic also handles strange libraries packaged pre-Maven such as xalan:xalan:2.4.1
-   * 
+   *
    * <p>The xalan JAR above has a Class-Path attribute referencing the following:
    * <pre>
    *   Class-Path: xercesImpl.jar xml-apis.jar
    * </pre>
-   * 
+   * <p>
    * These unqualified references should have been resolved by the build tooling, and if we try to interfere and resolve
    * the references, we may cause classpath confusion. Therefore any Class-Path entry not resolvable to an absolute
    * path on disk (and, therefore, can be listed as a URL) will be skipped.
-   * 
-   * @see java.util.jar.Attributes.Name#CLASS_PATH
+   *
    * @param classpath The module's Java classpath
    * @return The original classpath, possibly with dependencies listed in JAR manifests Class-Path extracted and explicitly listed
+   * @see java.util.jar.Attributes.Name#CLASS_PATH
    */
-  private List<IDirectory> addFromManifestClassPath( List<IDirectory> classpath )
-  {
-    if( classpath == null )
-    {
+  private List<IDirectory> addFromManifestClassPath(List<IDirectory> classpath) {
+    if (classpath == null) {
       return classpath;
     }
 
     ArrayList<IDirectory> newClasspath = new ArrayList<>();
-    for( IDirectory root : classpath )
-    {
+    for (IDirectory root : classpath) {
       //add the root JAR itself first, preserving ordering
-      if( !newClasspath.contains( root ) )
-      {
-        newClasspath.add( root );
+      if (!newClasspath.contains(root)) {
+        newClasspath.add(root);
       }
-      if( root instanceof JarFileDirectoryImpl )
-      {
-        JarFile jarFile = ((JarFileDirectoryImpl)root).getJarFile();
-        try
-        {
+      if (root instanceof JarFileDirectoryImpl) {
+        JarFile jarFile = ((JarFileDirectoryImpl) root).getJarFile();
+        try {
           Manifest manifest = jarFile.getManifest();
-          if( manifest != null )
-          {
+          if (manifest != null) {
             Attributes man = manifest.getMainAttributes();
-            String paths = man.getValue( Attributes.Name.CLASS_PATH );
-            if( paths != null && !paths.isEmpty() )
-            {
+            String paths = man.getValue(Attributes.Name.CLASS_PATH);
+            if (paths != null && !paths.isEmpty()) {
               // We found a Jar with a Class-Path listing.
               // Note sometimes happens when running from IntelliJ where the
               // classpath would otherwise make the command line to java.exe
               // too long.
-              for( String j : paths.split( " " ) )
-              {
+              for (String j : paths.split(" ")) {
                 // Add each of the paths to our classpath
                 URL url;
                 try {
-                  url = new URL( j );
+                  url = new URL(j);
                 } catch (MalformedURLException e) {
                   //Class-Path contained an invalid URL, skip it
                   continue;
                 }
-                File dirOrJar = new File( url.toURI() );
-                IDirectory idir = CommonServices.INSTANCE.getFileSystem().getDirectory( dirOrJar );
-                if( !newClasspath.contains( idir ) )
-                {
-                  newClasspath.add( idir );
+                File dirOrJar = new File(url.toURI());
+                IDirectory idir = CommonServices.INSTANCE.getFileSystem().getDirectory(dirOrJar);
+                if (!newClasspath.contains(idir)) {
+                  newClasspath.add(idir);
                 }
               }
             }
           }
-        }
-        catch( Exception e )
-        {
-          throw GosuExceptionUtil.forceThrow( e );
+        } catch (Exception e) {
+          throw GosuExceptionUtil.forceThrow(e);
         }
       }
     }
@@ -291,47 +253,44 @@ public class Module implements IModule
   }
 
   @Override
-  public List<IDirectory> getJavaClassPath()
-  {
+  public List<IDirectory> getJavaClassPath() {
     return _classpath;
   }
+
   @Override
-  public void setJavaClassPath( List<IDirectory> classpath ) {
+  public void setJavaClassPath(List<IDirectory> classpath) {
     _classpath = classpath;
   }
 
   @Override
-  public List<IDirectory> getBackingSourcePath()
-  {
+  public List<IDirectory> getBackingSourcePath() {
     return _backingSourcePath;
   }
+
   @Override
-  public void setBackingSourcePath( List<IDirectory> backingSourcePath ) {
+  public void setBackingSourcePath(List<IDirectory> backingSourcePath) {
     _backingSourcePath = backingSourcePath;
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return _strName;
   }
 
   @Override
-  public Object getNativeModule()
-  {
+  public Object getNativeModule() {
     return _nativeModule != null ? _nativeModule.getNativeModule() : null;
   }
 
   @Override
-  public void setNativeModule( INativeModule nativeModule )
-  {
+  public void setNativeModule(INativeModule nativeModule) {
     _nativeModule = nativeModule;
   }
 
   public void initializeTypeLoaders() {
     maybeCreateModuleTypeLoader();
     createStandardTypeLoaders();
-    if( CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard() ) {
+    if (CommonServices.INSTANCE.getEntityAccess().getLanguageLevel().isStandard()) {
       createExtensionTypeLoaders();
     }
 
@@ -348,7 +307,7 @@ public class Module implements IModule
 
   protected void createExtensionTypeloadersImpl() {
     Set<String> typeLoaders = getExtensionTypeloaderNames();
-    for( String additionalTypeLoader : typeLoaders) {
+    for (String additionalTypeLoader : typeLoaders) {
       try {
         createAndPushTypeLoader(_fileRepository, additionalTypeLoader);
       } catch (Throwable e) {
@@ -369,21 +328,20 @@ public class Module implements IModule
     return set;
   }
 
-  protected void createStandardTypeLoaders()
-  {
-    CommonServices.getTypeSystem().pushTypeLoader( this, new GosuClassTypeLoader( this, _fileRepository ) );
-    if( ILanguageLevel.Util.STANDARD_GOSU() ) {
-      CommonServices.getTypeSystem().pushTypeLoader( this, new PropertiesTypeLoader( this ) );
+  protected void createStandardTypeLoaders() {
+    TypeLoaderAccess.instance().pushTypeLoader(this, new GosuClassTypeLoader(this, _fileRepository));
+    if (ILanguageLevel.Util.STANDARD_GOSU()) {
+      TypeLoaderAccess.instance().pushTypeLoader(this, new PropertiesTypeLoader(this));
     }
-    if( ILanguageLevel.Util.DYNAMIC_TYPE() ) {
-      CommonServices.getTypeSystem().pushTypeLoader( this, new DynamicTypeLoader( this ) );
+    if (ILanguageLevel.Util.DYNAMIC_TYPE()) {
+      TypeLoaderAccess.instance().pushTypeLoader(this, new DynamicTypeLoader(this));
     }
   }
 
   protected void maybeCreateModuleTypeLoader() {
     if (getModuleTypeLoader() == null) {
-      ModuleTypeLoader tla = new ModuleTypeLoader( this, new DefaultTypeLoader(this) );
-      setModuleTypeLoader( tla );
+      ModuleTypeLoader tla = new ModuleTypeLoader(this, new DefaultTypeLoader(this));
+      setModuleTypeLoader(tla);
     }
   }
 
@@ -404,7 +362,7 @@ public class Module implements IModule
     if (this != globalModule) {
       traversalList.add(0, globalModule);
     }
-    return traversalList.toArray( new IModule[traversalList.size()] );
+    return traversalList.toArray(new IModule[traversalList.size()]);
   }
 
 
@@ -436,67 +394,47 @@ public class Module implements IModule
     return results;
   }
 
-  private ITypeLoader createAndPushTypeLoader(IFileSystemGosuClassRepository classRepository, String className)
-  {
+  private ITypeLoader createAndPushTypeLoader(IFileSystemGosuClassRepository classRepository, String className) {
     ITypeLoader typeLoader = null;
-    try
-    {
-      Class loaderClass = getExtensionClassLoader().loadClass( className );
-      CommonServices.INSTANCE.getGosuInitializationHooks().beforeTypeLoaderCreation( loaderClass );
+    try {
+      Class loaderClass = getExtensionClassLoader().loadClass(className);
+      CommonServices.INSTANCE.getGosuInitializationHooks().beforeTypeLoaderCreation(loaderClass);
 
-      Constructor constructor = getConstructor( loaderClass, IModule.class );
-      if( constructor != null )
-      {
-        typeLoader = (ITypeLoader) constructor.newInstance( this );
-      }
-      else
-      {
-        constructor = getConstructor( loaderClass, IModule.class );
-        if( constructor != null )
-        {
-          typeLoader = (ITypeLoader) constructor.newInstance( this );
-        }
-        else
-        {
-          if( constructor != null )
-          {
-            typeLoader = (ITypeLoader) constructor.newInstance( this );
-          }
-          else
-          {
-            constructor = getConstructor( loaderClass, IGosuClassRepository.class );
-            if( constructor != null )
-            {
-              typeLoader = (ITypeLoader) constructor.newInstance( classRepository );
-            }
-            else
-            {
-              constructor = getConstructor( loaderClass );
-              if( constructor != null )
-              {
+      Constructor constructor = getConstructor(loaderClass, IModule.class);
+      if (constructor != null) {
+        typeLoader = (ITypeLoader) constructor.newInstance(this);
+      } else {
+        constructor = getConstructor(loaderClass, IModule.class);
+        if (constructor != null) {
+          typeLoader = (ITypeLoader) constructor.newInstance(this);
+        } else {
+          if (constructor != null) {
+            typeLoader = (ITypeLoader) constructor.newInstance(this);
+          } else {
+            constructor = getConstructor(loaderClass, IGosuClassRepository.class);
+            if (constructor != null) {
+              typeLoader = (ITypeLoader) constructor.newInstance(classRepository);
+            } else {
+              constructor = getConstructor(loaderClass);
+              if (constructor != null) {
                 typeLoader = (ITypeLoader) constructor.newInstance();
               }
             }
           }
         }
       }
+    } catch (Exception e) {
+      throw GosuExceptionUtil.forceThrow(e);
     }
-    catch( Exception e )
-    {
-      throw GosuExceptionUtil.forceThrow( e );
-    }
-    if( typeLoader != null )
-    {
-      CommonServices.getTypeSystem().pushTypeLoader( this, typeLoader );
+    if (typeLoader != null) {
+      TypeLoaderAccess.instance().pushTypeLoader(this, typeLoader);
       CommonServices.INSTANCE.getGosuInitializationHooks().afterTypeLoaderCreation();
-    }
-    else
-    {
+    } else {
       throw new IllegalStateException(
-        "TypeLoader class " + className + " must have one of the following constructor signatures:\n" +
-        "  <init>()\n" +
-        "  <init>(gw.lang.reflect.module.IModule)\n" +
-        "  <init>(gw.lang.reflect.gs.IGosuClassRepository)\n" );
+              "TypeLoader class " + className + " must have one of the following constructor signatures:\n" +
+                      "  <init>()\n" +
+                      "  <init>(gw.lang.reflect.module.IModule)\n" +
+                      "  <init>(gw.lang.reflect.gs.IGosuClassRepository)\n");
     }
     return typeLoader;
   }
@@ -522,14 +460,10 @@ public class Module implements IModule
     return urls.toArray(new URL[urls.size()]);
   }
 
-  private Constructor getConstructor( Class<?> loaderClass, Class... argTypes )
-  {
-    try
-    {
-      return loaderClass.getConstructor( argTypes );
-    }
-    catch( NoSuchMethodException e )
-    {
+  private Constructor getConstructor(Class<?> loaderClass, Class... argTypes) {
+    try {
+      return loaderClass.getConstructor(argTypes);
+    } catch (NoSuchMethodException e) {
       return null;
     }
   }
@@ -547,8 +481,7 @@ public class Module implements IModule
   }
 
   @Override
-  public String getName()
-  {
+  public String getName() {
     return _strName;
   }
 
@@ -574,7 +507,11 @@ public class Module implements IModule
     };
 
     static {
-      TypeSystem.addShutdownListener( INSTANCE::clear );
+      TypeSystem.addShutdownListener(INSTANCE::clear);
+    }
+
+    private ExtensionClassLoader(ClassLoader parent) {
+      super(new URL[0], parent);
     }
 
     public static ClassLoader create(URL[] urls) {
@@ -583,10 +520,6 @@ public class Module implements IModule
         loader.addURL(url);
       }
       return loader;
-    }
-
-    private ExtensionClassLoader(ClassLoader parent) {
-      super(new URL[0], parent);
     }
   }
 
