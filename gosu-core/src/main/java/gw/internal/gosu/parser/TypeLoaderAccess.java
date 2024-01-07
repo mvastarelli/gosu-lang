@@ -22,41 +22,12 @@ import gw.lang.parser.StandardCoercionManager;
 import gw.lang.parser.TypeVarToTypeMap;
 import gw.lang.parser.exceptions.ParseResultsException;
 import gw.lang.parser.expressions.ITypeLiteralExpression;
-import gw.lang.reflect.FunctionType;
-import gw.lang.reflect.ICompoundType;
-import gw.lang.reflect.IDefaultTypeLoader;
-import gw.lang.reflect.IErrorType;
-import gw.lang.reflect.IFunctionType;
-import gw.lang.reflect.IMetaType;
-import gw.lang.reflect.IMethodInfo;
-import gw.lang.reflect.INamespaceType;
-import gw.lang.reflect.INonLoadableType;
-import gw.lang.reflect.IPlaceholder;
-import gw.lang.reflect.IType;
-import gw.lang.reflect.ITypeLoader;
-import gw.lang.reflect.ITypeLoaderListener;
-import gw.lang.reflect.ITypeRef;
-import gw.lang.reflect.ITypeRefFactory;
-import gw.lang.reflect.ITypeSystem;
-import gw.lang.reflect.ITypeVariableType;
-import gw.lang.reflect.NoReferenceFoundException;
-import gw.lang.reflect.RefreshKind;
-import gw.lang.reflect.RefreshRequest;
-import gw.lang.reflect.TypeSystem;
-import gw.lang.reflect.TypeSystemShutdownListener;
-import gw.lang.reflect.gs.GosuClassTypeLoader;
-import gw.lang.reflect.gs.IGenericTypeVariable;
-import gw.lang.reflect.gs.IGosuClass;
-import gw.lang.reflect.gs.IGosuClassLoader;
-import gw.lang.reflect.gs.IGosuEnhancement;
+import gw.lang.reflect.*;
+import gw.lang.reflect.gs.*;
 import gw.lang.reflect.java.IJavaClassInfo;
 import gw.lang.reflect.java.IJavaType;
 import gw.lang.reflect.java.JavaTypes;
-import gw.lang.reflect.module.IExecutionEnvironment;
-import gw.lang.reflect.module.IJreModule;
-import gw.lang.reflect.module.IModule;
-import gw.lang.reflect.module.IProject;
-import gw.lang.reflect.module.ITypeLoaderStack;
+import gw.lang.reflect.module.*;
 import gw.util.GosuExceptionUtil;
 import gw.util.IdentitySet;
 import gw.util.concurrent.LockingLazyVar;
@@ -64,26 +35,18 @@ import gw.util.concurrent.LockingLazyVar;
 import java.io.FileNotFoundException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
+ *
  */
-public class TypeLoaderAccess extends BaseService implements ITypeSystem
-{
-  private Map<IType, IType> _boxToPrimitiveMap;
-  private Map<IType, IType> _primitiveToBoxMap;
+public class TypeLoaderAccess extends BaseService implements ITypeSystem {
+  private static final Map<CharSequence, TypeGetter> EMPTY_DEFAULT_TYPES = new HashMap<CharSequence, TypeGetter>();
+  private static final ThreadLocal<ArrayList<IModule>> g_moduleStack = new ThreadLocal<ArrayList<IModule>>();
   public static LockingLazyVar<Map<String, IJavaType>> PRIMITIVE_TYPES_BY_NAME = new LockingLazyVar<Map<String, IJavaType>>() {
     protected Map<String, IJavaType> init() {
-      HashMap<String, IJavaType> returnMap = new HashMap<String, IJavaType>( 9 );
+      HashMap<String, IJavaType> returnMap = new HashMap<String, IJavaType>(9);
       returnMap.put("byte", JavaTypes.pBYTE());
       returnMap.put("char", JavaTypes.pCHAR());
       returnMap.put("double", JavaTypes.pDOUBLE());
@@ -96,59 +59,85 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       return returnMap;
     }
   };
-  private static final Map<CharSequence, TypeGetter> EMPTY_DEFAULT_TYPES = new HashMap<CharSequence, TypeGetter>();
-  private static final ThreadLocal<ArrayList<IModule>> g_moduleStack = new ThreadLocal<ArrayList<IModule>>();
-
-  // This integer is incremented every time the typesystem is flushed so that a type can know if it
-  // is curent or not
+  //A weak cache of listeners who will be notified when typesystem events occur
+  private final CopyOnWriteArrayList<WeakReference<ITypeLoaderListener>> _listeners;
+  private final List<TypeSystemShutdownListener> _shutdownListeners = new ArrayList<TypeSystemShutdownListener>();
+  private final ArgCallable<IType, String> getNamespaceTypeIfValid_Callable =
+          strNamespace -> getCurrentModuleTypeLoader().getNamespaceType(strNamespace);
+  private final ArgCallable<IType, Object> getIntrinsicTypeFromObject_Callable =
+          object -> getCurrentModuleTypeLoader().getIntrinsicTypeFromObject(object);
+  private Map<IType, IType> _boxToPrimitiveMap;
+  private Map<IType, IType> _primitiveToBoxMap;
+  // This integer is incremented every time the typesystem is flushed so that a type can know if it is current or not
   private int _iRefreshChecksum = 0;
   private int _iSingleRefreshChecksum = 0;
-
   //------------------------------------------------------------
   // Type system caches
   //------------------------------------------------------------
   private Map<CharSequence, TypeGetter> _defaultTypes;
   private boolean _defaultTypesIniting = false;
 
-  //A weak cache of listeners who will be notified when typesystem events occur
-  private final CopyOnWriteArrayList<WeakReference<ITypeLoaderListener>> _listeners;
-  private final List<TypeSystemShutdownListener> _shutdownListeners = new ArrayList<TypeSystemShutdownListener>();
+  public TypeLoaderAccess() {
+    _listeners = new CopyOnWriteArrayList<WeakReference<ITypeLoaderListener>>();
+    addShutdownListener(() -> GosuShop.clearThreadLocal(g_moduleStack));
+  }
 
-  public static TypeLoaderAccess instance()
-  {
+  public static TypeLoaderAccess instance() {
     return (TypeLoaderAccess) CommonServices.getTypeSystem();
   }
 
-  private ModuleTypeLoader getCurrentModuleTypeLoader()
-  {
+  private static ExecutionEnvironment getExecutionEnv() {
+    return ExecutionEnvironment.instance();
+  }
+
+  private static void getDefaultTypes(Map<CharSequence, TypeGetter> typeMap) {
+    // primitives
+    typeMap.put("void", () -> JavaType.get(Void.TYPE, _getDefaultLoader()));
+    typeMap.put("boolean", () -> JavaType.get(Boolean.TYPE, _getDefaultLoader()));
+    typeMap.put("byte", () -> JavaType.get(Byte.TYPE, _getDefaultLoader()));
+    typeMap.put("char", () -> JavaType.get(Character.TYPE, _getDefaultLoader()));
+    typeMap.put("double", () -> JavaType.get(Double.TYPE, _getDefaultLoader()));
+    typeMap.put("float", () -> JavaType.get(Float.TYPE, _getDefaultLoader()));
+    typeMap.put("int", () -> JavaType.get(Integer.TYPE, _getDefaultLoader()));
+    typeMap.put("long", () -> JavaType.get(Long.TYPE, _getDefaultLoader()));
+    typeMap.put("short", () -> JavaType.get(Short.TYPE, _getDefaultLoader()));
+    typeMap.put("void", () -> JavaType.get(Void.TYPE, _getDefaultLoader()));
+
+    // build-in types
+    typeMap.put("Type", () -> MetaType.ROOT_TYPE_TYPE.get());
+  }
+
+  private static DefaultTypeLoader _getDefaultLoader() {
+    //!!
+    //!! Ensure we use the execution environment in conext -- we handle multiple exec environments now
+    //!!
+    IModule jreModule = ExecutionEnvironment.instance().getJreModule();
+    return (DefaultTypeLoader) jreModule.getModuleTypeLoader().getDefaultTypeLoader();
+  }
+
+  private ModuleTypeLoader getCurrentModuleTypeLoader() {
     Module module = getCurrentModule();
     return module == null ? null : module.getModuleTypeLoader();
   }
 
-  public Module getCurrentModule()
-  {
-    if( !ExecutionMode.isIDE() )
-    {
-      return (Module)TypeSystem.getGlobalModule();
+  public Module getCurrentModule() {
+    if (!ExecutionMode.isIDE()) {
+      return (Module) TypeSystem.getGlobalModule();
     }
 
-    ArrayList list = (ArrayList)g_moduleStack.get();
-    if( list != null && !list.isEmpty() )
-    {
-      return (Module)list.get(list.size() - 1);
+    ArrayList list = g_moduleStack.get();
+    if (list != null && !list.isEmpty()) {
+      return (Module) list.get(list.size() - 1);
     }
 
-    if( ExecutionEnvironment.getAll().size() == 1 )
-    {
-      if( TypeSystem.getGlobalModule() instanceof DefaultSingleModule )
-      {
+    if (ExecutionEnvironment.getAll().size() == 1) {
+      if (TypeSystem.getGlobalModule() instanceof DefaultSingleModule) {
         // For single module IDE
-        return (Module)TypeSystem.getGlobalModule();
+        return (Module) TypeSystem.getGlobalModule();
       }
     }
 
     return null;
-    //throw new RuntimeException("Current module should never be null");
   }
 
   public void pushModule(IModule module) {
@@ -175,28 +164,17 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     IModule remove = list.get(last);
     if (module != remove) {
       throw new IllegalStateException("Tried to pop a module that was not at the top of the stack.\n" +
-          "Tried: " + module + "  Current: " + Arrays.toString(list.toArray()));
+              "Tried: " + module + "  Current: " + Arrays.toString(list.toArray()));
     }
     list.remove(last);
   }
 
-  public TypeLoaderAccess()
-  {
-    _listeners = new CopyOnWriteArrayList<WeakReference<ITypeLoaderListener>>();
-    addShutdownListener(new TypeSystemShutdownListener() {
-      public void shutdown() {
-        GosuShop.clearThreadLocal(g_moduleStack);
-      }
-    });
-  }
-
   @Override
-  public IGosuc makeGosucCompiler( String gosucProjectFile, ICustomParser custParser ) {
+  public IGosuc makeGosucCompiler(String gosucProjectFile, ICustomParser custParser) {
     try {
-      return new Gosuc( gosucProjectFile, custParser );
-    }
-    catch( FileNotFoundException e ) {
-      throw new RuntimeException( e );
+      return new Gosuc(gosucProjectFile, custParser);
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -205,16 +183,12 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return getter != null ? getter.get() : null;
   }
 
-  public boolean isParameterizedWith( IType type, ITypeVariableType... typeVars )
-  {
-    if( typeVars == null )
-    {
+  public boolean isParameterizedWith(IType type, ITypeVariableType... typeVars) {
+    if (typeVars == null) {
       return false;
     }
-    for( ITypeVariableType tv: typeVars )
-    {
-      if( type.equals( tv ) || TypeLord.isParameterizedWith( type, (TypeVariableType)tv) )
-      {
+    for (ITypeVariableType tv : typeVars) {
+      if (type.equals(tv) || TypeLord.isParameterizedWith(type, (TypeVariableType) tv)) {
         return true;
       }
     }
@@ -222,13 +196,11 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   }
 
   @Override
-  public IType getCompoundType( Set<IType> types )
-  {
-    return CompoundType.get( types );
+  public IType getCompoundType(Set<IType> types) {
+    return CompoundType.get(types);
   }
 
-  Map<CharSequence, TypeGetter> getDefaultTypes()
-  {
+  Map<CharSequence, TypeGetter> getDefaultTypes() {
     if (_defaultTypesIniting) {
       return EMPTY_DEFAULT_TYPES;
     }
@@ -237,7 +209,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       _defaultTypesIniting = true;
 
       Map<CharSequence, TypeGetter> defaultTypes = new HashMap<CharSequence, TypeGetter>();
-      getDefaultTypes( defaultTypes );
+      getDefaultTypes(defaultTypes);
       _defaultTypes = defaultTypes;
 
       _defaultTypesIniting = false;
@@ -254,23 +226,19 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return loaders;
   }
 
-  public void pushTypeLoader( IModule module, ITypeLoader typeLoader )
-  {
-    if( module == null )
-    {
+  public void pushTypeLoader(IModule module, ITypeLoader typeLoader) {
+    if (module == null) {
       module = getCurrentModule();
-      if( module == null )
-      {
-        throw new IllegalStateException( "There is no current module. If you are not running/testing the Eclipse Gosu Plugin, maybe ExecutionEnvironment.initDefault() was not called first?" );
+      if (module == null) {
+        throw new IllegalStateException("There is no current module. If you are not running/testing the Eclipse Gosu Plugin, maybe ExecutionEnvironment.initDefault() was not called first?");
       }
     }
-    ((Module)module).getModuleTypeLoader().pushTypeLoader(typeLoader);
+    ((Module) module).getModuleTypeLoader().pushTypeLoader(typeLoader);
   }
 
-  public void removeTypeLoader( final Class<? extends ITypeLoader> loaderType )
-  {
+  public void removeTypeLoader(final Class<? extends ITypeLoader> loaderType) {
     for (IModule module : getExecutionEnv().getModules()) {
-      ((ModuleTypeLoader)module.getModuleTypeLoader()).removeTypeLoader(loaderType);
+      ((ModuleTypeLoader) module.getModuleTypeLoader()).removeTypeLoader(loaderType);
     }
   }
 
@@ -281,8 +249,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       ITypeLoaderListener typeLoaderListener = ref.get();
       if (typeLoaderListener != null) {
         listeners.add(typeLoaderListener);
-      }
-      else {
+      } else {
         if (obsoleteListeners == null) {
           obsoleteListeners = new ArrayList<WeakReference<ITypeLoaderListener>>();
         }
@@ -290,89 +257,60 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       }
     }
     if (obsoleteListeners != null) {
-      _listeners.removeAll( obsoleteListeners );
+      _listeners.removeAll(obsoleteListeners);
     }
 
     return listeners;
   }
 
-  public ITypeRef getTypeReference(final IType type)
-  {
+  public ITypeRef getTypeReference(final IType type) {
     ITypeLoader typeLoader = type.getTypeLoader();
     ITypeRef ref = typeLoader.getModule().getModuleTypeLoader().getTypeRefFactory().get(type);
-    if( ref == null )
-    {
-      throw new NoReferenceFoundException( type );
+    if (ref == null) {
+      throw new NoReferenceFoundException(type);
     }
     return ref;
   }
 
-  public ITypeRef getOrCreateTypeReference(final IType type)
-  {
+  public ITypeRef getOrCreateTypeReference(final IType type) {
     ITypeLoader typeLoader = type.getTypeLoader();
     return typeLoader.getModule().getModuleTypeLoader().getTypeRefFactory().create(type);
   }
 
-  public <T extends ITypeLoader> T getTypeLoader( final Class<? extends T> loaderType, IModule module )
-  {
-    return ((Module)module).getModuleTypeLoader().getTypeLoader(loaderType);
+  public <T extends ITypeLoader> T getTypeLoader(final Class<? extends T> loaderType, IModule module) {
+    return ((Module) module).getModuleTypeLoader().getTypeLoader(loaderType);
   }
 
-  private final ArgCallable<IType, String> getNamespaceTypeIfValid_Callable =
-    new ArgCallable<IType, String>()
-      {
-        @Override
-        public IType call(String strNamespace) throws Exception
-        {
-          return getCurrentModuleTypeLoader().getNamespaceType(strNamespace);
-        }
-      };
   public INamespaceType getNamespace(String strFqNamespace) {
-    for(int i = 0; i < strFqNamespace.length(); ++i) {
+    for (int i = 0; i < strFqNamespace.length(); ++i) {
       char ch = strFqNamespace.charAt(i);
-      if (!(Character.isJavaIdentifierPart(ch) || ch == '.' || ch == '*' )) {
+      if (!(Character.isJavaIdentifierPart(ch) || ch == '.' || ch == '*')) {
         return null;
       }
     }
 
     IType namespaceType = returnFirstNonNull(getNamespaceTypeIfValid_Callable, strFqNamespace);
 
-    if( namespaceType instanceof INamespaceType )
-    {
-      return (INamespaceType)namespaceType;
+    if (namespaceType instanceof INamespaceType) {
+      return (INamespaceType) namespaceType;
     }
     return null;
   }
 
-  private final ArgCallable<IType, Object> getIntrinsicTypeFromObject_Callable =
-    new ArgCallable<IType, Object>()
-      {
-        @Override
-        public IType call(Object object) throws Exception
-        {
-          return getCurrentModuleTypeLoader().getIntrinsicTypeFromObject(object);
-        }
-      };
-
-  public IType getIntrinsicTypeFromObject( final Object object )
-  {
-    return returnFirstNonNull( getIntrinsicTypeFromObject_Callable, object );
+  public IType getIntrinsicTypeFromObject(final Object object) {
+    return returnFirstNonNull(getIntrinsicTypeFromObject_Callable, object);
   }
 
-  public IType getIntrinsicTypeByFullName( String fullyQualifiedName ) throws ClassNotFoundException
-  {
+  public IType getIntrinsicTypeByFullName(String fullyQualifiedName) throws ClassNotFoundException {
     IType type = FrequentUsedJavaTypeCache.instance(getExecutionEnv()).getHighUsageType(fullyQualifiedName);
     if (type != null) {
       return type;
     }
 
     type = getByFullNameIfValid(fullyQualifiedName);
-    if( type == null )
-    {
-      throw new ClassNotFoundException( fullyQualifiedName + " in module " + getCurrentModule());
-    }
-    else
-    {
+    if (type == null) {
+      throw new ClassNotFoundException(fullyQualifiedName + " in module " + getCurrentModule());
+    } else {
       return type;
     }
   }
@@ -391,45 +329,36 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
    */
   public IType getByRelativeName(String relativeName, ITypeUsesMap typeUses) throws ClassNotFoundException {
     String relativeName1 = relativeName;
-    IType type = FrequentUsedJavaTypeCache.instance( getExecutionEnv() ).getHighUsageType(relativeName1);
+    IType type = FrequentUsedJavaTypeCache.instance(getExecutionEnv()).getHighUsageType(relativeName1);
     if (type != null) {
       return type;
     }
     //## todo: consider handling requests to find a parameterized type... the following is a giant hack
-    int i = relativeName1 == null ? -1 : relativeName1.indexOf( '<' );
-    if( i >= 0 )
-    {
+    int i = relativeName1 == null ? -1 : relativeName1.indexOf('<');
+    if (i >= 0) {
       assert relativeName1 != null;
-      relativeName1 = relativeName1.substring( 0, i );
+      relativeName1 = relativeName1.substring(0, i);
     }
     //##
     type = getTypeByRelativeNameIfValid_NoGenerics(relativeName1, typeUses);
-    if( type == null )
-    {
+    if (type == null) {
       throw new ClassNotFoundException(relativeName1);
-    }
-    else
-    {
+    } else {
       return type;
     }
   }
 
-  public IType getTypeByRelativeNameIfValid_NoGenerics(String relativeName, ITypeUsesMap typeUses)
-  {
+  public IType getTypeByRelativeNameIfValid_NoGenerics(String relativeName, ITypeUsesMap typeUses) {
     IType type;
-    if( typeUses != null )
-    {
+    if (typeUses != null) {
       // Then if we have a type uses map and we are resolving let it try
       type = typeUses.resolveType(relativeName);
-    }
-    else
-    {
+    } else {
       // ask for it by full name
       type = getByFullNameIfValid(relativeName);
     }
 
-    if( type == null )
-    {
+    if (type == null) {
       type = getDefaultType(relativeName);
     }
     return type;
@@ -452,22 +381,19 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     }
   }
 
-  public void clearErrorTypes()
-  {
+  public void clearErrorTypes() {
     for (IModule module : getExecutionEnv().getModules()) {
       ((ModuleTypeLoader) module.getModuleTypeLoader()).clearErrorTypes();
     }
   }
 
-  public void refresh( final boolean clearCachedTypes )
-  {
+  public void refresh(final boolean clearCachedTypes) {
     IModule globalModule = TypeSystem.getGlobalModule();
 
     // dlank: should an exception be thrown if the server is not in dev mode?
     pushModule(globalModule);
     TypeSystem.lock();
-    try
-    {
+    try {
       dumpMaps();
 
       ++_iRefreshChecksum;
@@ -481,8 +407,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
 
       fireRefreshed();
 
-      if( clearCachedTypes )
-      {
+      if (clearCachedTypes) {
         for (IModule module : getExecutionEnv().getModules()) {
           module.getModuleTypeLoader().getTypeRefFactory().clearCaches();
         }
@@ -492,19 +417,15 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       SingleServingGosuClassLoader.clearCache();
 
       _defaultTypes = null;
-    }
-    finally
-    {
+    } finally {
       TypeSystem.unlock();
       popModule(globalModule);
     }
   }
 
-  public void shutdown()
-  {
+  public void shutdown() {
     TypeSystem.lock();
-    try
-    {
+    try {
       ExecutionEnvironment executionEnv = getExecutionEnv();
 
       for (IModule module : executionEnv.getModules()) {
@@ -518,9 +439,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       TypeSystem.refresh(false);
 
       executionEnv.shutdown();
-    }
-    finally
-    {
+    } finally {
       TypeSystem.unlock();
     }
   }
@@ -552,11 +471,11 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
               // add the current enhanced type
               IGosuEnhancement enhancement = (IGosuEnhancement) type;
               IType enhancedType = enhancement.getEnhancedType();
-              if( enhancedType != null && !(enhancedType instanceof INonLoadableType) && !TypeSystem.isDeleted( enhancedType ) ) {
-                AbstractTypeRef enhancedTopLevelType = (AbstractTypeRef)getTopLevelType( enhancedType );
-                if( enhancedTopLevelType != null ) {
-                  typesToRefresh.add( enhancedTopLevelType );
-                  doNotDelete.add( enhancedTopLevelType._getTypeName() );
+              if (enhancedType != null && !(enhancedType instanceof INonLoadableType) && !TypeSystem.isDeleted(enhancedType)) {
+                AbstractTypeRef enhancedTopLevelType = (AbstractTypeRef) getTopLevelType(enhancedType);
+                if (enhancedTopLevelType != null) {
+                  typesToRefresh.add(enhancedTopLevelType);
+                  doNotDelete.add(enhancedTopLevelType._getTypeName());
                 }
               }
             }
@@ -569,7 +488,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
                 IType orphanedEnhancement = typeRefFactory.get(orphanedEnhancementName);
                 if (orphanedEnhancement instanceof AbstractTypeRef && !((AbstractTypeRef) orphanedEnhancement).isStale()) {
                   typesToRefresh.add(orphanedEnhancement);
-                  doNotDelete.add( ((AbstractTypeRef)orphanedEnhancement)._getTypeName() );
+                  doNotDelete.add(((AbstractTypeRef) orphanedEnhancement)._getTypeName());
                 }
               }
             }
@@ -602,15 +521,15 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
       // Step 4: Sort all the types
       ITypeRef[] typesToMakeStaleArray = typesToMakeStaleSet.toArray(new ITypeRef[typesToMakeStaleSet.size()]);
       Arrays.sort(typesToMakeStaleArray,
-          new Comparator<IType>() {
-            public int compare(IType t1, IType t2) {
-              return computeSortIndex((AbstractTypeRef) t2) - computeSortIndex((AbstractTypeRef) t1);
-            }
+              new Comparator<IType>() {
+                public int compare(IType t1, IType t2) {
+                  return computeSortIndex((AbstractTypeRef) t2) - computeSortIndex((AbstractTypeRef) t1);
+                }
 
-            private int computeSortIndex(AbstractTypeRef ref) {
-              return ref != null ? ref._getIndexForSortingFast(ref._getTypeName()) : 10000;
-            }
-          }
+                private int computeSortIndex(AbstractTypeRef ref) {
+                  return ref != null ? ref._getIndexForSortingFast(ref._getTypeName()) : 10000;
+                }
+              }
       );
 
       Map<ITypeLoader, Set<String>> typeLoaderToTypeMap = new HashMap<ITypeLoader, Set<String>>();
@@ -623,20 +542,20 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
           typeRefs = new HashSet<String>(typesToMakeStaleSet.size());
           typeLoaderToTypeMap.put(typeLoader, typeRefs);
         }
-        typeRefs.add(((AbstractTypeRef)type)._getTypeName());
+        typeRefs.add(((AbstractTypeRef) type)._getTypeName());
       }
 
       // Step 5: Make the references stale
       for (IType type : typesToMakeStaleArray) {
         if (type != null) {
           RefreshKind kind = request.kind;
-          if( kind == RefreshKind.DELETION ) {
-            if( doNotDelete.stream().anyMatch( e -> ((AbstractTypeRef)type)._getTypeName().startsWith( e ) ) ) {
+          if (kind == RefreshKind.DELETION) {
+            if (doNotDelete.stream().anyMatch(e -> ((AbstractTypeRef) type)._getTypeName().startsWith(e))) {
               // only delete what was deleted e.g., if an enhancement is deleted, don't delete the enhanced type, just refresh it
               kind = RefreshKind.MODIFICATION;
             }
           }
-          ((ITypeRef)type)._setStale( kind );
+          ((ITypeRef) type)._setStale(kind);
         }
       }
 
@@ -668,11 +587,11 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return rootModule != null ? ((ModuleTypeLoader) rootModule.getModuleTypeLoader()) : null;
   }
 
-  private void addGosuProxyClass( IdentitySet<ITypeRef> allTypes, IType type ) {
-    if( type instanceof IJavaTypeInternal && !((AbstractTypeRef)type).isStale() && !((AbstractTypeRef)type).isDeleted()) {
-      IGosuClassInternal gsProxyClass = ((IJavaTypeInternal)type).getAdapterClassDirectly();
-      if( gsProxyClass != null ) {
-        allTypes.add( (ITypeRef)gsProxyClass );
+  private void addGosuProxyClass(IdentitySet<ITypeRef> allTypes, IType type) {
+    if (type instanceof IJavaTypeInternal && !((AbstractTypeRef) type).isStale() && !((AbstractTypeRef) type).isDeleted()) {
+      IGosuClassInternal gsProxyClass = ((IJavaTypeInternal) type).getAdapterClassDirectly();
+      if (gsProxyClass != null) {
+        allTypes.add((ITypeRef) gsProxyClass);
       }
     }
   }
@@ -686,13 +605,11 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     }
   }
 
-  public int getRefreshChecksum()
-  {
+  public int getRefreshChecksum() {
     return _iRefreshChecksum;
   }
 
-  public int getSingleRefreshChecksum()
-  {
+  public int getSingleRefreshChecksum() {
     return _iSingleRefreshChecksum;
   }
 
@@ -706,47 +623,40 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
    *
    * @param l Your type loader listener
    */
-  public void addTypeLoaderListenerAsWeakRef( ITypeLoaderListener l )
-  {
-    if(!hasListener(l)) {
+  public void addTypeLoaderListenerAsWeakRef(ITypeLoaderListener l) {
+    if (!hasListener(l)) {
       _listeners.add(new WeakReference<ITypeLoaderListener>(l));
     }
   }
 
-  public void removeTypeLoaderListener( ITypeLoaderListener l )
-    {
-    for(WeakReference<ITypeLoaderListener> ref : _listeners) {
-      if(ref.get() == l) {
+  public void removeTypeLoaderListener(ITypeLoaderListener l) {
+    for (WeakReference<ITypeLoaderListener> ref : _listeners) {
+      if (ref.get() == l) {
         _listeners.remove(ref);
         break;
-    }
+      }
     }
   }
 
-  private boolean hasListener( ITypeLoaderListener l ) {
-    for(WeakReference<ITypeLoaderListener> ref : _listeners) {
-      if(ref.get() == l) {
+  private boolean hasListener(ITypeLoaderListener l) {
+    for (WeakReference<ITypeLoaderListener> ref : _listeners) {
+      if (ref.get() == l) {
         return true;
-    }
+      }
     }
     return false;
   }
 
-  private void fireRefreshed()
-  {
+  private void fireRefreshed() {
     TypeSystem.lock();
-    try
-    {
+    try {
       for (IModule module : getExecutionEnv().getModules()) {
         module.getModuleTypeLoader().refreshed();
       }
-      for( ITypeLoaderListener listener : getListeners())
-      {
+      for (ITypeLoaderListener listener : getListeners()) {
         listener.refreshed();
       }
-    }
-    finally
-    {
+    } finally {
       TypeSystem.unlock();
     }
   }
@@ -754,11 +664,6 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   public void incrementChecksums() {
     _iRefreshChecksum++;
     _iSingleRefreshChecksum++;
-  }
-
-  private static ExecutionEnvironment getExecutionEnv()
-  {
-    return ExecutionEnvironment.instance();
   }
 
   private <E, A> E returnFirstNonNull(ArgCallable<E, A> callable, A argument) {
@@ -806,46 +711,6 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     _shutdownListeners.add(listener);
   }
 
-  static interface TypeGetter {
-    IType get();
-  }
-
-  private static void getDefaultTypes( Map<CharSequence, TypeGetter> typeMap )
-  {
-    // primitives
-    typeMap.put( "void",    new TypeGetter() { public IType get() { return JavaType.get(Void.TYPE, _getDefaultLoader() ); }} );
-    typeMap.put( "boolean", new TypeGetter() { public IType get() { return JavaType.get(Boolean.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "byte",    new TypeGetter() { public IType get() { return JavaType.get(Byte.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "char",    new TypeGetter() { public IType get() { return JavaType.get(Character.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "double",  new TypeGetter() { public IType get() { return JavaType.get(Double.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "float",   new TypeGetter() { public IType get() { return JavaType.get(Float.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "int",     new TypeGetter() { public IType get() { return JavaType.get(Integer.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "long",    new TypeGetter() { public IType get() { return JavaType.get(Long.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "short",   new TypeGetter() { public IType get() { return JavaType.get(Short.TYPE, _getDefaultLoader()); }} );
-    typeMap.put( "void",    new TypeGetter() { public IType get() { return JavaType.get(Void.TYPE, _getDefaultLoader()); }} );
-
-    // build-in types
-    typeMap.put( "Type",    new TypeGetter() { public IType get() { return MetaType.ROOT_TYPE_TYPE.get(); }} );
-  }
-
-  private static DefaultTypeLoader _getDefaultLoader() {
-    //!!
-    //!! Ensure we use the execution environment in conext -- we handle multiple exec environments now
-    //!!
-    IModule jreModule = ExecutionEnvironment.instance().getJreModule();
-    return (DefaultTypeLoader) jreModule.getModuleTypeLoader().getDefaultTypeLoader();
-  }
-
-  private interface ArgCallable<V, A1> {
-    /**
-     * Computes a result, or throws an exception if unable to do so.
-     *
-     * @return computed result
-     * @throws Exception if unable to compute a result
-     */
-    V call(A1 arg1) throws Exception;
-  }
-
   /**
    * Gets the intrinsic type for a given class.<p>
    * <p/>
@@ -859,7 +724,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
    */
   public IType get(Class<?> javaClass) {
     assert javaClass != null;
-    IType type = FrequentUsedJavaTypeCache.instance( getExecutionEnv() ).getHighUsageType(javaClass);
+    IType type = FrequentUsedJavaTypeCache.instance(getExecutionEnv()).getHighUsageType(javaClass);
     if (type != null) {
       return type;
     }
@@ -933,7 +798,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     }
 
     String name = javaClassInfo.getName().replace('$', '.');
-    IType type = FrequentUsedJavaTypeCache.instance( javaClassInfo.getModule().getExecutionEnvironment() ).getHighUsageType(name);
+    IType type = FrequentUsedJavaTypeCache.instance(javaClassInfo.getModule().getExecutionEnvironment()).getHighUsageType(name);
     if (type == null) {
       pushModule(javaClassInfo.getModule());
       try {
@@ -1030,23 +895,22 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
 
   private final boolean isValidTypeName(String fqn) {
     // empty names are invalid
-    if( fqn == null || fqn.length() == 0 ) {
+    if (fqn == null || fqn.length() == 0) {
       return false;
     }
 
-    if( fqn.indexOf("block(") != -1 ||
-        fqn.indexOf("block (") != -1 )
-    {
+    if (fqn.indexOf("block(") != -1 ||
+            fqn.indexOf("block (") != -1) {
       return false;
     }
 
     int braceIndex = fqn.indexOf('[');
-    if( braceIndex > 0 ) {
-      if( fqn.length() < braceIndex + 2 ||
-          fqn.charAt( braceIndex + 1 ) != ']' ) {
+    if (braceIndex > 0) {
+      if (fqn.length() < braceIndex + 2 ||
+              fqn.charAt(braceIndex + 1) != ']') {
         return false;
       }
-      fqn = fqn.substring( 0, braceIndex );
+      fqn = fqn.substring(0, braceIndex);
     }
 
     // primitives are ok
@@ -1055,11 +919,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     }
 
     // the last char should be an identifier char
-    if (!Character.isJavaIdentifierPart(fqn.charAt( fqn.length() - 1 ))) {
-      return false;
-    }
-
-    return true;
+    return Character.isJavaIdentifierPart(fqn.charAt(fqn.length() - 1));
   }
 
   private boolean isDefaultType(String fqn) {
@@ -1081,13 +941,11 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     PRIMITIVE_TYPES_BY_NAME.clear();
   }
 
-  public void refresh(IModule module)
-  {
+  public void refresh(IModule module) {
     // dlank: should an exception be thrown if the server is not in dev mode?
     pushModule(module);
     TypeSystem.lock();
-    try
-    {
+    try {
       if (module instanceof IJreModule) {
         dumpMaps();
       }
@@ -1097,18 +955,16 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
 
       getGlobalModuleTypeLoader().refreshed();
 
-      ((Module)module).getModuleTypeLoader().refreshed();
+      ((Module) module).getModuleTypeLoader().refreshed();
 
       CommonServices.INSTANCE.getPlatformHelper().refresh(module);
 
       fireRefreshed();
 
-      ((Module)module).getModuleTypeLoader().getTypeRefFactory().clearCaches();
+      ((Module) module).getModuleTypeLoader().getTypeRefFactory().clearCaches();
 
       _defaultTypes = null;
-    }
-    finally
-    {
+    } finally {
       TypeSystem.unlock();
       popModule(module);
     }
@@ -1150,17 +1006,17 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     }
 
     // Default
-    return new String[] {"default." + file.getBaseName()};
+    return new String[]{"default." + file.getBaseName()};
   }
 
   /**
-    * Converts a String name of a type into an IType.
-    *
-    * @throws IllegalArgumentException if the type string doesn't correspond to any known IType
-    */
-   public IType parseType(String typeString) throws IllegalArgumentException {
-     return parseType(typeString, (ITypeUsesMap)null);
-   }
+   * Converts a String name of a type into an IType.
+   *
+   * @throws IllegalArgumentException if the type string doesn't correspond to any known IType
+   */
+  public IType parseType(String typeString) throws IllegalArgumentException {
+    return parseType(typeString, (ITypeUsesMap) null);
+  }
 
   public IType parseType(String typeString, ITypeUsesMap typeUsesMap) throws IllegalArgumentException {
     IType type = getTypeByRelativeNameIfValid_NoGenerics(typeString, typeUsesMap);
@@ -1174,6 +1030,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   public IType parseType(String typeString, TypeVarToTypeMap actualParamByVarName) {
     return TypeLord.parseType(typeString, actualParamByVarName);
   }
+
   public IType parseType(String typeString, TypeVarToTypeMap actualParamByVarName, ITypeUsesMap typeUsesMap) {
     return TypeLord.parseType(typeString, actualParamByVarName, typeUsesMap);
   }
@@ -1218,8 +1075,8 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return new FunctionType(strFunctionName, retType, paramTypes);
   }
 
-  public TypeVarToTypeMap mapTypeByVarName( IType ownersType, IType declaringType ) {
-    return TypeLord.mapTypeByVarName( ownersType, declaringType );
+  public TypeVarToTypeMap mapTypeByVarName(IType ownersType, IType declaringType) {
+    return TypeLord.mapTypeByVarName(ownersType, declaringType);
   }
 
   public IType getActualType(IType type, TypeVarToTypeMap actualParamByVarName, boolean bKeepTypeVars) {
@@ -1229,6 +1086,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   public void inferTypeVariableTypesFromGenParamTypeAndConcreteType(IType genParamType, IType argType, TypeVarToTypeMap map) {
     TypeLord.inferTypeVariableTypesFromGenParamTypeAndConcreteType(genParamType, argType, map);
   }
+
   public void inferTypeVariableTypesFromGenParamTypeAndConcreteType_Reverse(IType genParamType, IType argType, TypeVarToTypeMap map) {
     TypeLord.inferTypeVariableTypesFromGenParamTypeAndConcreteType_Reverse(genParamType, argType, map);
   }
@@ -1333,63 +1191,56 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return TypeLord.getDefaultParameterizedTypeWithTypeVars(type);
   }
 
-  public boolean canCast( IType lhsType, IType rhsType ) {
-    if( lhsType instanceof ICompoundType ) {
-      return canCastCompountType( (ICompoundType)lhsType, rhsType );
+  public boolean canCast(IType lhsType, IType rhsType) {
+    if (lhsType instanceof ICompoundType) {
+      return canCastCompountType((ICompoundType) lhsType, rhsType);
     }
-    while( lhsType instanceof TypeVariableType && !TypeLord.isRecursiveType( (TypeVariableType)lhsType, ((TypeVariableType)lhsType).getBoundingType() ) ) {
-      lhsType = ((TypeVariableType)lhsType).getBoundingType();
+    while (lhsType instanceof TypeVariableType && !TypeLord.isRecursiveType((TypeVariableType) lhsType, ((TypeVariableType) lhsType).getBoundingType())) {
+      lhsType = ((TypeVariableType) lhsType).getBoundingType();
     }
-    while( rhsType instanceof TypeVariableType && !TypeLord.isRecursiveType( (TypeVariableType)rhsType, ((TypeVariableType)rhsType).getBoundingType() ) ) {
-      rhsType = ((TypeVariableType)rhsType).getBoundingType();
+    while (rhsType instanceof TypeVariableType && !TypeLord.isRecursiveType((TypeVariableType) rhsType, ((TypeVariableType) rhsType).getBoundingType())) {
+      rhsType = ((TypeVariableType) rhsType).getBoundingType();
     }
 
-    if( lhsType != null ) {
+    if (lhsType != null) {
       // Support explicit downcast
 
-      if( lhsType instanceof IMetaType && rhsType instanceof IMetaType ) {
+      if (lhsType instanceof IMetaType && rhsType instanceof IMetaType) {
         // unwrap metatypes
-        return canCast( ((IMetaType)lhsType).getType(), ((IMetaType)rhsType).getType() );
+        return canCast(((IMetaType) lhsType).getType(), ((IMetaType) rhsType).getType());
       }
 
-      if( rhsType.isAssignableFrom( lhsType ) ) {
+      if (rhsType.isAssignableFrom(lhsType)) {
         return true;
-      }
-      else if( lhsType.isAssignableFrom( rhsType ) ) {
+      } else if (lhsType.isAssignableFrom(rhsType)) {
         return true;
-      }
-      else if( rhsType.isInterface() && lhsType.isInterface() && !genericInterfacesClash( rhsType, lhsType ) ) {
+      } else if (rhsType.isInterface() && lhsType.isInterface() && !genericInterfacesClash(rhsType, lhsType)) {
         return true;
-      }
-      else if( rhsType.isInterface() && ((!lhsType.isFinal() && !lhsType.isPrimitive() && !(lhsType instanceof IFunctionType) && !(lhsType.isArray()) && !genericInterfacesClash( rhsType, lhsType)) || canCastMetaType( lhsType, rhsType )) ) {
+      } else if (rhsType.isInterface() && ((!lhsType.isFinal() && !lhsType.isPrimitive() && !(lhsType instanceof IFunctionType) && !(lhsType.isArray()) && !genericInterfacesClash(rhsType, lhsType)) || canCastMetaType(lhsType, rhsType))) {
         // Support cross-casting to an interface
         return true;
-      }
-      else if( lhsType.isInterface() && ((!rhsType.isFinal() && !rhsType.isPrimitive() && !(rhsType instanceof IFunctionType) && !(rhsType.isArray()) && !genericInterfacesClash( lhsType, rhsType))) ) {
+      } else if (lhsType.isInterface() && ((!rhsType.isFinal() && !rhsType.isPrimitive() && !(rhsType instanceof IFunctionType) && !(rhsType.isArray()) && !genericInterfacesClash(lhsType, rhsType)))) {
         return true;
-      }
-      else if( lhsType == JavaTypes.OBJECT() && rhsType.isPrimitive() && rhsType != JavaTypes.pVOID() ) {
+      } else if (lhsType == JavaTypes.OBJECT() && rhsType.isPrimitive() && rhsType != JavaTypes.pVOID()) {
         return true;
-      }
-      else if( lhsType.isParameterizedType() && rhsType.isParameterizedType() ) {
-        boolean bRawAssignable = rhsType.getGenericType().isAssignableFrom( lhsType.getGenericType() );
-        if( bRawAssignable || canCast( lhsType.getGenericType(), rhsType.getGenericType() ) ) {
+      } else if (lhsType.isParameterizedType() && rhsType.isParameterizedType()) {
+        boolean bRawAssignable = rhsType.getGenericType().isAssignableFrom(lhsType.getGenericType());
+        if (bRawAssignable || canCast(lhsType.getGenericType(), rhsType.getGenericType())) {
           IType compatibleRhsType;
-          if( bRawAssignable ) {
+          if (bRawAssignable) {
             compatibleRhsType = rhsType;
-          }
-          else {
-            compatibleRhsType = TypeLord.findParameterizedType( rhsType, lhsType.getGenericType() );
-            if( compatibleRhsType == null ) {
+          } else {
+            compatibleRhsType = TypeLord.findParameterizedType(rhsType, lhsType.getGenericType());
+            if (compatibleRhsType == null) {
               return false;
               //throw new IllegalStateException(); // generic types are assignable, so there must be a corresponding compatible type
             }
           }
           IType[] lhsParams = lhsType.getTypeParameters();
           IType[] rhsParams = compatibleRhsType.getTypeParameters();
-          for( int i = 0; i < lhsParams.length; i++ ) {
-            if( !rhsParams[i].isAssignableFrom( lhsParams[i] ) &&
-                !canCast( lhsParams[i], rhsParams[i] ) ) {
+          for (int i = 0; i < lhsParams.length; i++) {
+            if (!rhsParams[i].isAssignableFrom(lhsParams[i]) &&
+                    !canCast(lhsParams[i], rhsParams[i])) {
               return false;
             }
           }
@@ -1400,36 +1251,36 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return false;
   }
 
-  private boolean canCastCompountType( ICompoundType lhsType, IType rhsType )
-  {
-    for( IType type: lhsType.getTypes() ) {
-      if( !canCast( type, rhsType ) ) {
+  private boolean canCastCompountType(ICompoundType lhsType, IType rhsType) {
+    for (IType type : lhsType.getTypes()) {
+      if (!canCast(type, rhsType)) {
         return false;
       }
     }
     return true;
   }
 
-  private boolean genericInterfacesClash( IType rhsType, IType lhsType ) {
-    return _genericInterfacesClash( rhsType, lhsType ) || _genericInterfacesClash( lhsType, rhsType );
+  private boolean genericInterfacesClash(IType rhsType, IType lhsType) {
+    return _genericInterfacesClash(rhsType, lhsType) || _genericInterfacesClash(lhsType, rhsType);
   }
-  private boolean _genericInterfacesClash( IType rhsType, IType lhsType ) {
-    if( !rhsType.isParameterizedType() || !lhsType.isParameterizedType() ) {
+
+  private boolean _genericInterfacesClash(IType rhsType, IType lhsType) {
+    if (!rhsType.isParameterizedType() || !lhsType.isParameterizedType()) {
       return false;
     }
-    IType lhsTypeInRhs = TypeLord.findParameterizedType( lhsType, rhsType.getGenericType() );
-    if( lhsTypeInRhs != null ) {
-      lhsTypeInRhs = TypeLord.replaceTypeVariableTypeParametersWithBoundingTypes( lhsTypeInRhs, lhsTypeInRhs.getEnclosingType() );
-      return !rhsType.isAssignableFrom( lhsTypeInRhs ) && !lhsTypeInRhs.isAssignableFrom( rhsType );
+    IType lhsTypeInRhs = TypeLord.findParameterizedType(lhsType, rhsType.getGenericType());
+    if (lhsTypeInRhs != null) {
+      lhsTypeInRhs = TypeLord.replaceTypeVariableTypeParametersWithBoundingTypes(lhsTypeInRhs, lhsTypeInRhs.getEnclosingType());
+      return !rhsType.isAssignableFrom(lhsTypeInRhs) && !lhsTypeInRhs.isAssignableFrom(rhsType);
     }
     return false;
   }
 
-  private boolean canCastMetaType( IType lhsType, IType rhsType ) {
-    return (lhsType instanceof IMetaType && ((IMetaType) lhsType).getType() instanceof ITypeVariableType && canCast( ((ITypeVariableType) ((IMetaType) lhsType).getType()).getBoundingType(), rhsType )) ||
-      (rhsType instanceof IGosuClass && ((IGosuClass)rhsType).isStructure() &&
-           (lhsType instanceof IMetaType && StandardCoercionManager.isStructurallyAssignable( rhsType, ((IMetaType) lhsType).getType() ) ||
-            JavaTypes.CLASS().isAssignableFrom( lhsType ) && (!lhsType.isParameterizedType() || StandardCoercionManager.isStructurallyAssignable( rhsType, lhsType.getTypeParameters()[0] ))));
+  private boolean canCastMetaType(IType lhsType, IType rhsType) {
+    return (lhsType instanceof IMetaType && ((IMetaType) lhsType).getType() instanceof ITypeVariableType && canCast(((ITypeVariableType) ((IMetaType) lhsType).getType()).getBoundingType(), rhsType)) ||
+            (rhsType instanceof IGosuClass && ((IGosuClass) rhsType).isStructure() &&
+                    (lhsType instanceof IMetaType && StandardCoercionManager.isStructurallyAssignable(rhsType, ((IMetaType) lhsType).getType()) ||
+                            JavaTypes.CLASS().isAssignableFrom(lhsType) && (!lhsType.isParameterizedType() || StandardCoercionManager.isStructurallyAssignable(rhsType, lhsType.getTypeParameters()[0]))));
   }
 
   public IJavaType getPrimitiveType(String name) {
@@ -1446,8 +1297,8 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return _primitiveToBoxMap.get(primitiveType);
   }
 
-  public IType getExpandableComponentType( IType type ) {
-    return TypeLord.getExpandableComponentType( type );
+  public IType getExpandableComponentType(IType type) {
+    return TypeLord.getExpandableComponentType(type);
   }
 
   private void initBoxMapsIfNeeded() {
@@ -1482,7 +1333,7 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
     return ExecutionEnvironment.instance();
   }
 
-  public IExecutionEnvironment getExecutionEnvironment( IProject project ) {
+  public IExecutionEnvironment getExecutionEnvironment(IProject project) {
     return ExecutionEnvironment.instance(project);
   }
 
@@ -1499,8 +1350,8 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   }
 
   @Override
-  public IType replaceTypeVariableTypeParametersWithBoundingTypes( IType type, IType enclosingType ) {
-    return TypeLord.replaceTypeVariableTypeParametersWithBoundingTypes( type, enclosingType );
+  public IType replaceTypeVariableTypeParametersWithBoundingTypes(IType type, IType enclosingType) {
+    return TypeLord.replaceTypeVariableTypeParametersWithBoundingTypes(type, enclosingType);
   }
 
   @Override
@@ -1509,8 +1360,21 @@ public class TypeLoaderAccess extends BaseService implements ITypeSystem
   }
 
   @Override
-  public IType getFunctionalInterface( IFunctionType type )
-  {
-    return TypeLord.getFunctionalInterface( type );
+  public IType getFunctionalInterface(IFunctionType type) {
+    return TypeLord.getFunctionalInterface(type);
+  }
+
+  interface TypeGetter {
+    IType get();
+  }
+
+  private interface ArgCallable<V, A1> {
+    /**
+     * Computes a result, or throws an exception if unable to do so.
+     *
+     * @return computed result
+     * @throws Exception if unable to compute a result
+     */
+    V call(A1 arg1) throws Exception;
   }
 }
